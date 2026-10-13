@@ -76,3 +76,8 @@ export interface FuzzyModel extends FuzzyModelSummary {
   grade_conversions: GradeConversion[];
   validation_cases: ValidationCase[];
 }
+
+export interface PublicationReadiness {
+  ready: boolean;
+  checks: { key: string; label: string; ready: boolean; details: string[]; }[];
+}

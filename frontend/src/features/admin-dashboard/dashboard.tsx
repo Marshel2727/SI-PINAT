@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Notice, Pagination } from "@/components/ui";
+import { ErrorNotice, Field, Notice, Pagination, StatusBadge } from "@/components/ui";
 import { number, time } from "@/lib/format";
 import Link from "next/link";
 import { useDashboard } from "./use-dashboard";
@@ -138,7 +138,7 @@ export function Dashboard() {
                               {r.mode}
                             </span>
                             <small className="block">
-                              {r.status}
+                              <StatusBadge status={r.status} />
                             </small>
                           </td>
                           <td>

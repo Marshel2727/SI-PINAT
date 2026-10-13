@@ -1,0 +1,325 @@
+{
+  "version_code": "TEKOM-ACO-001",
+  "status": "DRAFT",
+  "purpose": "Usulan awal model peminatan Teknik Komputer semester I-IV.",
+  "academic_review_required": true,
+  "review_notes": [
+    "Nama/kode/SKS berasal dari master panduan ACO; bobot di bawah adalah usulan penulis kode berdasarkan topik, bukan keputusan kurikulum resmi.",
+    "Konversi A=4, B=3, C=2, D=1, E=0; skor normalisasi = poin/4*100 adalah asumsi awal. Sesuaikan nilai antara jika digunakan kampus.",
+    "Batas LOW/MEDIUM/HIGH dan konsekuen aturan menggunakan profil teknis yang sudah ada; belum dikalibrasi terhadap data mahasiswa atau penilaian dosen.",
+    "Semua mata kuliah dengan bobot positif diwajibkan untuk semester yang sudah berlaku pada sesi; bobot nol tidak memengaruhi skor.",
+    "Mata kuliah aktif di luar 32 kode diberi bobot nol dan tidak diwajibkan; setiap tambahan kurikulum perlu ditinjau ulang.",
+    "Model tidak mempublikasikan soal dan tidak diaktifkan otomatis. Soal PUBLISHED tetap dipilih berdasarkan mekanisme paket yang sudah ada.",
+    "Model baru tidak mengganti model yang terikat pada sesi asesmen lama."
+  ],
+  "weight_scale": {
+    "0": "Tidak digunakan sebagai pembeda teknis",
+    "1": "Inti",
+    "0.2": "Pendukung ringan",
+    "0.4": "Pendukung",
+    "0.6": "Relevan",
+    "0.8": "Sangat relevan"
+  },
+  "method_references": [
+    {
+      "title": "scikit-fuzzy — Fuzzy Control Systems: The Tipping Problem",
+      "url": "https://scikit-fuzzy.readthedocs.io/en/latest/auto_examples/plot_tipping_problem_newapi.html",
+      "scope": "Konsep input, himpunan keanggotaan, aturan, dan output; tidak menetapkan bobot atau batas untuk SI-PINAT."
+    },
+    {
+      "title": "scikit-fuzzy — Defuzzification / centroid",
+      "url": "https://scikit-fuzzy.readthedocs.io/en/latest/api/skfuzzy.defuzzify.html",
+      "scope": "Defuzzifikasi centroid; tidak memvalidasi parameter akademik SI-PINAT."
+    }
+  ],
+  "course_weights": [
+    {
+      "code": "21B10C101",
+      "weights": {
+        "ES-01": 1,
+        "SC-02": 0.2,
+        "JDF-03": 0.2
+      },
+      "rationale": "Rangkaian dan elektronika merupakan dasar perangkat embedded."
+    },
+    {
+      "code": "21B01C102",
+      "weights": {
+        "ES-01": 0.8,
+        "SC-02": 1,
+        "JDF-03": 0.8
+      },
+      "rationale": "Pemrograman dasar diperlukan pada ketiga jalur, terutama pengembangan algoritme."
+    },
+    {
+      "code": "21B01C103",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Mata kuliah umum; tidak membedakan kompetensi teknis antarpeminatan."
+    },
+    {
+      "code": "21B01C104",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.4
+      },
+      "rationale": "Aljabar linear mendukung perhitungan embedded serta representasi model sistem cerdas."
+    },
+    {
+      "code": "21B01C105",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Mata kuliah umum; tidak membedakan kompetensi teknis antarpeminatan."
+    },
+    {
+      "code": "21B01C106",
+      "weights": {
+        "ES-01": 0.8,
+        "SC-02": 0.6,
+        "JDF-03": 0.8
+      },
+      "rationale": "Dasar teknik komputer mendukung pemahaman hardware dan infrastruktur."
+    },
+    {
+      "code": "21B01C107",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Kemampuan bahasa pendukung; dikeluarkan dari pembeda teknis awal."
+    },
+    {
+      "code": "21B01C108",
+      "weights": {
+        "ES-01": 1,
+        "SC-02": 0.4,
+        "JDF-03": 0.4
+      },
+      "rationale": "Logika dan rangkaian digital merupakan kompetensi inti embedded."
+    },
+    {
+      "code": "21B01C201",
+      "weights": {
+        "ES-01": 1,
+        "SC-02": 0.6,
+        "JDF-03": 0.8
+      },
+      "rationale": "Arsitektur komputer relevan untuk embedded, sistem operasi, dan analisis sistem."
+    },
+    {
+      "code": "21B01C202",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.4
+      },
+      "rationale": "Aljabar lanjutan mendukung model numerik serta sistem cerdas."
+    },
+    {
+      "code": "21B01C203",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Mata kuliah umum; tidak membedakan kompetensi teknis antarpeminatan."
+    },
+    {
+      "code": "21B01C204",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.8
+      },
+      "rationale": "Struktur data mendasari algoritme pembelajaran, aplikasi jaringan, dan firmware."
+    },
+    {
+      "code": "21B01C205",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Mata kuliah umum; tidak membedakan kompetensi teknis antarpeminatan."
+    },
+    {
+      "code": "21B01C206",
+      "weights": {
+        "ES-01": 0.2,
+        "SC-02": 0.8,
+        "JDF-03": 0.8
+      },
+      "rationale": "Pengelolaan data mendukung sistem cerdas dan analisis informasi jaringan."
+    },
+    {
+      "code": "21B01C207",
+      "weights": {
+        "ES-01": 0.8,
+        "SC-02": 0.4,
+        "JDF-03": 1
+      },
+      "rationale": "Sistem operasi relevan bagi resource embedded serta administrasi dan forensik host."
+    },
+    {
+      "code": "21B01C208",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 0.4,
+        "JDF-03": 1
+      },
+      "rationale": "Jaringan merupakan inti jalur JDF dan mendukung konektivitas embedded."
+    },
+    {
+      "code": "21B01C301",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.8
+      },
+      "rationale": "Pemrograman lanjut mendukung pengembangan algoritme dan aplikasi teknis."
+    },
+    {
+      "code": "21B01C302",
+      "weights": {
+        "ES-01": 1,
+        "SC-02": 0.2,
+        "JDF-03": 0.4
+      },
+      "rationale": "Mikroprosesor dan antarmuka perangkat merupakan inti embedded."
+    },
+    {
+      "code": "21B01C303",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.8
+      },
+      "rationale": "Analisis algoritme mendukung efisiensi pengolahan data dan aplikasi."
+    },
+    {
+      "code": "21B01C304",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 0.8,
+        "JDF-03": 1
+      },
+      "rationale": "Struktur diskrit mendukung algoritme, logika, jaringan, dan kriptografi."
+    },
+    {
+      "code": "21B01C305",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Topik umum inovasi belum cukup spesifik untuk membedakan tiga jalur."
+    },
+    {
+      "code": "21B01C306",
+      "weights": {
+        "ES-01": 0.4,
+        "SC-02": 1,
+        "JDF-03": 0.4
+      },
+      "rationale": "Kecerdasan buatan merupakan kompetensi inti sistem cerdas."
+    },
+    {
+      "code": "21B01C307",
+      "weights": {
+        "ES-01": 0.2,
+        "SC-02": 0.6,
+        "JDF-03": 0.8
+      },
+      "rationale": "Aplikasi web mendukung layanan data serta pemahaman keamanan aplikasi."
+    },
+    {
+      "code": "21B01C308",
+      "weights": {
+        "ES-01": 0.2,
+        "SC-02": 0.4,
+        "JDF-03": 0.4
+      },
+      "rationale": "Antarmuka pengguna mendukung produk perangkat lunak tanpa menjadi pembeda utama."
+    },
+    {
+      "code": "21B01C401",
+      "weights": {
+        "ES-01": 0,
+        "SC-02": 0,
+        "JDF-03": 0
+      },
+      "rationale": "Etika penting bagi seluruh jalur, namun tidak menjadi pembeda kompetensi teknis awal."
+    },
+    {
+      "code": "21B01C402",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.6
+      },
+      "rationale": "Statistik mendasari pembelajaran mesin, pengukuran, dan analisis data."
+    },
+    {
+      "code": "21B01C403",
+      "weights": {
+        "ES-01": 0.8,
+        "SC-02": 1,
+        "JDF-03": 0.4
+      },
+      "rationale": "Metode numerik mendukung pemodelan sistem embedded dan sistem cerdas."
+    },
+    {
+      "code": "21B01C404",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 0.4,
+        "JDF-03": 1
+      },
+      "rationale": "Keamanan informasi merupakan kompetensi inti JDF dan mendukung perangkat terhubung."
+    },
+    {
+      "code": "21B01C405",
+      "weights": {
+        "ES-01": 1,
+        "SC-02": 0.6,
+        "JDF-03": 0.8
+      },
+      "rationale": "IoT menggabungkan perangkat embedded, konektivitas, dan pemrosesan data."
+    },
+    {
+      "code": "21B01C406",
+      "weights": {
+        "ES-01": 0.4,
+        "SC-02": 0.8,
+        "JDF-03": 0.6
+      },
+      "rationale": "Rekayasa perangkat lunak mendukung pengembangan sistem berbasis aplikasi."
+    },
+    {
+      "code": "21B01C407",
+      "weights": {
+        "ES-01": 0.4,
+        "SC-02": 0.6,
+        "JDF-03": 0.6
+      },
+      "rationale": "Aplikasi mobile mendukung antarmuka IoT serta layanan data dan jaringan."
+    },
+    {
+      "code": "21B01C408",
+      "weights": {
+        "ES-01": 0.6,
+        "SC-02": 1,
+        "JDF-03": 0.4
+      },
+      "rationale": "Logika fuzzy merupakan bagian sistem cerdas dan mendukung kendali embedded."
+    }
+  ]
+}

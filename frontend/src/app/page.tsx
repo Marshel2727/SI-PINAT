@@ -1,10 +1,12 @@
 import { StartAssessment } from "@/features/assessments/start";
+import { ResumeAssessment } from "@/features/assessments/resume";
 import { descriptions, icons, names } from "@/lib/format";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main>
+      <ResumeAssessment />
       <section className="hero" data-node-id="53:171">
         <div className="container hero-grid">
           <div>

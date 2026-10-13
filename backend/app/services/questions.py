@@ -1,8 +1,28 @@
 from app.repositories.store import rows, one, add, change, audit
 from app.services.question_options import replace, listing
 from app.core.errors import fail
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.repositories.store import table
+
+def listing(db, status=None, specialization_id=None, search=""):
+    t = table("questions")
+    query = select(t)
+    if status:
+        query = query.where(t.c.status == status)
+    if specialization_id:
+        query = query.where(t.c.specialization_id == specialization_id)
+    if search:
+        query = query.where(t.c.code.contains(search, autoescape=True) | t.c.prompt.contains(search, autoescape=True))
+    return list(db.execute(query.order_by(t.c.code, t.c.revision.desc())).mappings())
+
+def published_summary(db):
+    t = table("questions")
+    counts = dict(db.execute(select(t.c.specialization_id, func.count(func.distinct(t.c.code)))
+                             .where(t.c.status == "PUBLISHED").group_by(t.c.specialization_id)).all())
+    return [{"specialization_id": spec["id"], "code": spec["code"], "name": spec["name"],
+             "published_count": counts.get(spec["id"], 0), "required_count": 10,
+             "ready": counts.get(spec["id"], 0) >= 10}
+            for spec in rows(db, "specializations", is_active=True)]
 
 def detail(db, identifier):
     question=one(db,"questions",id=identifier)

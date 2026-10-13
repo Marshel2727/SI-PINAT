@@ -10,6 +10,7 @@ export function usePreference() {
   const [selected, setSelected] = useState(assessment.preferred_specialization_code || "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [editingSemester, setEditingSemester] = useState(false);
   const router = useRouter();
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,6 +38,6 @@ export function usePreference() {
     }
   }
   return {
-    assessment, selected, setSelected, busy, error, save
+    assessment, selected, setSelected, busy, error, save, editingSemester, setEditingSemester
   };
 }

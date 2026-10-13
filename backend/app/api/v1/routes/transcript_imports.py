@@ -12,7 +12,7 @@ def get_template(public_id:str,request:Request,format:str="csv",db=Depends(datab
     return download(*template(db,owned(db,request,public_id),format))
 
 @router.post("/assessments/{public_id}/grades/import")
-def upload(public_id:str,request:Request,file:UploadFile=File(...),confirm:bool=Form(False),db=Depends(database)):
+def upload(public_id:str,request:Request,file:UploadFile=File(...),confirm:bool=Form(False),db=Depends(database,scope="function")):
     limit(db,request,"upload",10,300,public_id)
     assessment=owned(db,request,public_id,lock=True)
     content=file.file.read(10*1024*1024+1)

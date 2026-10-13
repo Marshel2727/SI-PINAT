@@ -98,18 +98,27 @@ def check_model(db, identifier):
         errors.append("Konversi nilai kosong.")
     return config,errors
 
-def publish(db, identifier, confirmed, user):
-    model(db,identifier,draft=True,lock=True)
+def publication_readiness(db, identifier):
     config,errors = check_model(db,identifier)
+    checks = [{"key":"configuration", "label":"Konfigurasi bobot, konversi, variabel, himpunan, dan aturan",
+               "ready":not errors, "details":errors}]
     required_inputs = {(0,0),(50,50),(90,90),(100,100),(0,90),(90,0),(25,25),(70,70),(40,60),(20,80)}
     for spec in rows(db,"specializations",is_active=True):
         cases = [c for c in config["validation_cases"] if c["specialization_id"] == spec["id"]]
         inputs = {(float(c["academic_input"]),float(c["competency_input"])) for c in cases}
-        if not required_inputs.issubset(inputs) or any(not c["last_passed"] or not c["last_tested_at"] for c in cases):
-            errors.append(spec["code"] + ": sepuluh skenario batas/overlap wajib ada dan semua skenario harus lulus.")
+        passed = required_inputs.issubset(inputs) and all(c["last_passed"] and c["last_tested_at"] for c in cases)
+        checks.append({"key":"validation-"+spec["code"], "label":spec["name"]+": skenario batas/overlap lengkap dan lulus",
+                       "ready":passed, "details":[] if passed else [spec["code"]+": sepuluh skenario batas/overlap wajib ada dan semua skenario harus lulus."]})
         questions = rows(db,"questions",specialization_id=spec["id"],status="PUBLISHED")
-        if len({q["code"] for q in questions}) < 10:
-            errors.append(spec["code"] + ": minimal sepuluh soal terpublikasi.")
+        count = len({q["code"] for q in questions})
+        checks.append({"key":"questions-"+spec["code"], "label":spec["name"]+f": {count}/10 kode soal terpublikasi",
+                       "ready":count>=10, "details":[] if count>=10 else [spec["code"]+": minimal sepuluh soal terpublikasi."]})
+    return {"ready":all(check["ready"] for check in checks), "checks":checks}
+
+def publish(db, identifier, confirmed, user):
+    model(db,identifier,draft=True,lock=True)
+    readiness = publication_readiness(db, identifier)
+    errors = [message for check in readiness["checks"] for message in check["details"]]
     if not confirmed:
         errors.append("Konfirmasi peninjauan akademik sebelum publikasi.")
     if errors:

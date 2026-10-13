@@ -29,18 +29,19 @@
   grid-template-columns: 256px minmax(0,1fr);
   max-width: 1600px;
   margin: auto;
-  min-height: 80vh;
+  min-height: 100vh;
 }
 
 .admin-sidebar {
   background: var(--surface);
-  padding: 24px 12px;
+  border-right: 1px solid var(--border);
+  padding: 24px 14px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
+  top: 0;
+  height: 100vh;
 }
 
 .admin-sidebar>strong {
@@ -125,3 +126,15 @@
   font-size: 15px;
   line-height: 1.85;
 }
+.publication-checklist {
+  padding-left: 20px;
+  margin-block: 16px;
+}
+
+.publication-checklist li {
+  margin-block: 8px;
+}
+
+.check-ready { color: #165534; }
+.check-missing { color: #8f1824; }
+

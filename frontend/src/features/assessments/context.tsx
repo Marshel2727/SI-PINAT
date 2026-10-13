@@ -2,6 +2,7 @@
 
 import { ErrorNotice, Notice, Steps } from "@/components/ui";
 import { api } from "@/lib/api";
+import { rememberAssessment, type AssessmentStage } from "@/lib/assessment-session";
 import type { Assessment } from "@/types/api";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -47,9 +48,12 @@ export function AssessmentProvider({ children }: {
       : path.endsWith("/tes")
         ? 3
         : 4;
+  useEffect(() => {
+    if (assessment) rememberAssessment(assessment, (["peminatan", "nilai", "tes", "hasil"] as AssessmentStage[])[stage - 1]);
+  }, [assessment, stage]);
   return (
     <main className="container section">
-      <Steps active={stage} />
+      <Steps active={stage} publicId={publicId} locked={!assessment || ["IN_PROGRESS", "COMPLETED"].includes(assessment.status)} />
       <ErrorNotice error={error} />
       {!assessment && !error && <Notice>Memuat sesi asesmen…</Notice>}
       {assessment && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { api, send } from "@/lib/api";
-import type { Course, FuzzyModel, Specialization, ValidationResult } from "@/types/api";
+import type { Course, FuzzyModel, PublicationReadiness, Specialization, ValidationResult } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { enumOptions, type Column, type ConfigRow } from "./configuration";
@@ -18,13 +18,24 @@ export function useModelEditor({ id }: {
   const [message, setMessage] = useState("");
   const [cloneOpen, setCloneOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [readiness, setReadiness] = useState<PublicationReadiness | null>(null);
+  const [readinessError, setReadinessError] = useState<unknown>(null);
+  const [readinessLoading, setReadinessLoading] = useState(false);
   const router = useRouter();
   const base = "/admin/fuzzy-models/" + id;
   useEffect(() => {
     api<FuzzyModel>(base).then(r => setModel(r.data)).catch(setError);
     api<Course[]>("/admin/courses?page_size=100").then(r => setCourses(r.data.map((c) => ({ ...c, name: c.code + " \u00B7 " + c.name })))).catch(setError);
     api<Specialization[]>("/specializations").then(r => setSpecs(r.data)).catch(setError);
+    void refreshReadiness();
   }, [base]);
+  async function refreshReadiness() {
+    setReadinessLoading(true);
+    setReadinessError(null);
+    try { setReadiness((await api<PublicationReadiness>(base + "/readiness")).data); }
+    catch (error) { setReadinessError(error); setReadiness(null); }
+    finally { setReadinessLoading(false); }
+  }
   async function save(section: string, values: ConfigRow[]) {
     if (busy)
       return;
@@ -40,6 +51,8 @@ export function useModelEditor({ id }: {
       });
       const { data } = await send<FuzzyModel>(base + "/" + section, payload, "PUT");
       setModel(data);
+      setConfirmed(false);
+      await refreshReadiness();
       setMessage("Konfigurasi tersimpan. Jalankan ulang seluruh skenario validasi.");
     }
     catch (e) {
@@ -61,10 +74,12 @@ export function useModelEditor({ id }: {
         setMessage(data.filter(v => v.passed).length + " / " + data.length + " skenario lulus.");
       }
       else {
-        await send<FuzzyModel>(base + "/" + kind, { academic_review_confirmed: confirmed });
+        const { data } = await send<FuzzyModel>(base + "/" + kind, { academic_review_confirmed: confirmed });
+        setModel(current => current ? { ...current, ...data } : data);
         setMessage("Model berhasil dipublikasikan.");
       }
-      setModel((await api<FuzzyModel>(base)).data);
+      if (kind === "validate") setModel((await api<FuzzyModel>(base)).data);
+      await refreshReadiness();
     }
     catch (e) {
       setError(e);
@@ -141,6 +156,7 @@ export function useModelEditor({ id }: {
     ]
   };
   return {
-    model, tab, setTab, busy, error, message, cloneOpen, setCloneOpen, confirmed, setConfirmed, save, action, clone, locked, columns
+    model, tab, setTab, busy, error, message, cloneOpen, setCloneOpen, confirmed, setConfirmed, save, action, clone, locked, columns,
+    readiness, readinessError, readinessLoading, refreshReadiness
   };
 }

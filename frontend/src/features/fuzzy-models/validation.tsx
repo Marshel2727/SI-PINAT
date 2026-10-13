@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Modal, Notice } from "@/components/ui";
+import { ErrorNotice, Field, Modal, Notice, StatusBadge } from "@/components/ui";
 import { number } from "@/lib/format";
 import Link from "next/link";
 import { useValidation } from "./use-validation";
@@ -105,11 +105,11 @@ export function Validation({ initialModel = "" }: {
                             ? "\u2014" : number(c.last_actual_score, 5)}
                         </td>
                         <td>
-                          <span className="badge">
+                          <StatusBadge status={c.last_passed === null ? "Belum diuji" : c.last_passed ? "LULUS" : "GAGAL"}>
                             {c.last_passed === null
                               ? "Belum diuji" : c.last_passed
                                 ? "LULUS" : "GAGAL"}
-                          </span>
+                          </StatusBadge>
                         </td>
                         <td>
                           <button className="secondary compact" disabled={locked || busy} onClick={() => setEdit(c)}>

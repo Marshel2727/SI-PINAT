@@ -42,6 +42,32 @@
   margin: 8px 0;
   cursor: pointer;
   line-height: 1.6;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+
+.answer:hover {
+  background: var(--surface);
+  border-color: #b4c5ff;
+}
+
+.answer.selected {
+  border: 1px solid var(--primary) !important;
+  background: #f0f4ff;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.answer.selected .option-letter {
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+}
+
+.membership-plot {
+  margin: 20px 0 0;
+}
+
+.membership-plot .curve {
+  margin: 8px 0;
 }
 
 .option-letter {
@@ -81,6 +107,16 @@
 .success-button {
   background: #d8f6ee!important;
   color: #00332e!important;
+}
+
+.question-nav .pending-answer.saving {
+  background: #fff0c4;
+  color: #725000;
+}
+
+.question-nav .pending-answer.failed {
+  background: #fde3e5;
+  color: #8f1824;
 }
 
 .stack {

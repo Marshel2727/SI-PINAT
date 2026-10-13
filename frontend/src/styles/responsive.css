@@ -1,5 +1,5 @@
 @media(max-width:1100px) {
-  .header nav {
+  .desktop-nav {
     gap: 14px;
   }
   .hero {
@@ -33,17 +33,21 @@
 
 @media(max-width:767px) {
   body {
-    font-size: 13px;
+    font-size: 13.5px;
   }
   .header-inner {
     padding: 0 16px;
-    gap: 8px;
+    gap: 12px;
   }
-  .header nav {
-    display: none;
+  .desktop-nav,
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-menu-toggle {
+    display: inline-flex !important;
   }
   .brand {
-    gap: 8px;
+    gap: 10px;
   }
   .container {
     padding-inline: 16px;
@@ -62,10 +66,10 @@
     gap: 28px;
   }
   .hero h1 {
-    font-size: 30px;
+    font-size: 28px;
   }
   .hero .badge {
-    font-size: 9px;
+    font-size: 11px;
   }
   .example-card {
     max-width: 100%;
@@ -73,30 +77,33 @@
   .metrics {
     grid-template-columns: repeat(2,minmax(0,1fr));
   }
-  .three-columns,.two-columns,.test-grid {
+  .three-columns,
+  .two-columns,
+  .test-grid {
     grid-template-columns: 1fr;
   }
   .steps {
-    padding: 8px;
-    gap: 4px;
+    padding: 10px;
+    gap: 6px;
     margin-bottom: 24px;
   }
   .steps li {
     flex-direction: column;
-    padding: 7px 3px;
-    gap: 5px;
+    padding: 8px 4px;
+    gap: 6px;
     text-align: center;
-    font-size: 9px;
+    font-size: 11px;
   }
   .steps small {
     display: none;
   }
   .step-number {
-    width: 25px;
-    height: 25px;
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
   }
   .card {
-    padding: 20px;
+    padding: 20px 16px;
   }
   .title-icon {
     margin-top: 18px;
@@ -110,12 +117,13 @@
   }
   .tabs {
     max-width: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .tabs button {
     white-space: nowrap;
     font-size: 12px;
-    padding: 10px 12px;
+    padding: 10px 14px;
   }
   .spread.wrap {
     align-items: flex-start;
@@ -138,11 +146,17 @@
     padding: 0 16px;
   }
   .answer {
-    padding: 13px 10px;
-    gap: 8px;
+    padding: 14px 12px;
+    gap: 10px;
+    min-height: 48px;
   }
   .question-footer {
     padding: 16px;
+  }
+  .table-scroll {
+    -webkit-overflow-scrolling: touch;
+    margin-inline: -16px;
+    padding-inline: 16px;
   }
   .admin-layout {
     display: block;
@@ -150,37 +164,36 @@
   .admin-sidebar {
     position: static;
     height: auto;
-    padding: 12px 16px;
-    gap: 10px;
-  }
-  .admin-sidebar>small,.admin-sidebar>strong {
-    display: none;
+    padding: 14px 16px;
+    gap: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
   .admin-sidebar nav {
     flex-direction: row;
-    overflow: auto;
-    gap: 5px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
   }
   .admin-sidebar nav a {
     white-space: nowrap;
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: 8px 14px;
+    font-size: 12px;
   }
   .logout {
-    min-height: 32px;
-    padding: 6px 12px;
-    align-self: flex-end;
-    font-size: 11px;
+    min-height: 34px;
+    padding: 6px 14px;
+    font-size: 12px;
   }
   .admin-main {
     padding: 0 16px 24px;
   }
   .admin-topbar {
-    font-size: 10px;
+    font-size: 11px;
     flex-wrap: wrap;
   }
   .admin-main h1 {
-    font-size: 25px;
+    font-size: 24px;
   }
   .stats {
     gap: 10px;
@@ -189,13 +202,13 @@
     padding: 16px;
   }
   .stats .big-number {
-    font-size: 30px;
+    font-size: 28px;
   }
   .login-card {
     padding: 28px 20px;
   }
   .login-card h1 {
-    font-size: 25px;
+    font-size: 24px;
   }
   .field {
     margin: 12px 0;
@@ -204,7 +217,7 @@
     grid-template-columns: 85px minmax(0,1fr);
   }
   .recommendation-title h1 {
-    font-size: 25px;
+    font-size: 24px;
   }
   .score-tile {
     width: 100%;
@@ -213,18 +226,18 @@
     margin-top: 24px;
   }
   .dark-card {
-    padding: 24px;
+    padding: 24px 18px;
   }
   .pagination {
     justify-content: center;
     gap: 10px;
   }
   .pagination button {
-    font-size: 11px;
-    padding: 8px 12px;
+    font-size: 12px;
+    padding: 8px 14px;
   }
   .footer {
-    margin-top: 24px;
-    padding: 24px 16px;
+    margin-top: 32px;
+    padding: 28px 16px;
   }
 }

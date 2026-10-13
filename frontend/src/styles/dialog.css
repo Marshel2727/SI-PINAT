@@ -1,26 +1,51 @@
 dialog {
-  border: 0;
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 28px;
   max-width: 680px;
   width: calc(100vw - 32px);
   max-height: 90vh;
-  box-shadow: 0 20px 70px #00183533;
+  box-shadow: 0 24px 60px rgba(0, 24, 53, 0.22);
   color: var(--navy);
+  animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 dialog::backdrop {
-  background: #00183580;
-  backdrop-filter: blur(3px);
+  background: rgba(0, 24, 53, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .icon-button {
-  background: var(--soft);
-  color: var(--navy);
-  font-size: 24px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   min-height: 36px;
   width: 36px;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-button:hover {
+  background: var(--soft);
+  color: var(--navy);
+  box-shadow: none;
 }
 
 dialog .table-scroll {

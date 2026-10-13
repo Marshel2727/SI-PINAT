@@ -1,6 +1,6 @@
 "use client";
 
-import { Curve, ErrorNotice, Notice, ScoreBars } from "@/components/ui";
+import { Curve, ErrorNotice, Notice, ScoreBars, StatusBadge } from "@/components/ui";
 import { names, number, time } from "@/lib/format";
 import Link from "next/link";
 import { useAdminAssessment } from "./use-admin-assessment";
@@ -18,9 +18,9 @@ export function AdminAssessment({ id }: {
       {value && (
         <>
           <article className="card">
-            <span className="badge">
+            <StatusBadge status={value.assessment.status}>
               {value.assessment.mode} · {value.assessment.status}
-            </span>
+            </StatusBadge>
             <h2>
               {value.assessment.student?.full_name || "Peserta DEMO"}
             </h2>
@@ -102,6 +102,7 @@ export function AdminAssessment({ id }: {
                       x={trace.aggregated_curve.z}
                       y={trace.aggregated_curve.mu}
                       label="Kurva hasil asesmen tersimpan"
+                      centroid={Number(trace.score.suitability_score)}
                     />
                     <p>
                       Numerator {number(trace.centroid_numerator, 5)} /

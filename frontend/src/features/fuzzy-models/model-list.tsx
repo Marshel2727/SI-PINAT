@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Modal, Notice, Pagination } from "@/components/ui";
+import { ErrorNotice, Field, Modal, Notice, Pagination, StatusBadge } from "@/components/ui";
 import Link from "next/link";
 import { useModelList } from "./use-model-list";
 
@@ -46,9 +46,7 @@ export function ModelList() {
                       {r.sampling_step}
                     </td>
                     <td>
-                      <span className="badge">
-                        {r.status}
-                      </span>
+                      <StatusBadge status={r.status} />
                     </td>
                     <td>
                       <Link href={"/admin/model-fuzzy/" + r.id}>

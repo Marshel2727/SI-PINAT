@@ -28,10 +28,14 @@ def detail(identifier:int,db=Depends(database)):
 def clone(identifier:int,body:ModelCreate,user=Depends(admin),db=Depends(database)):
     return ok(models.clone(db,identifier,body.model_dump(),user))
 
+@router.get("/admin/fuzzy-models/{identifier}/readiness")
+def readiness(identifier:int,db=Depends(database)):
+    return ok(models.publication_readiness(db,identifier))
+
 @router.post("/admin/fuzzy-models/{identifier}/validate")
-def validate(identifier:int,user=Depends(admin),db=Depends(database)):
+def validate(identifier:int,user=Depends(admin),db=Depends(database,scope="function")):
     return ok(run_validation(db,identifier,user))
 
 @router.post("/admin/fuzzy-models/{identifier}/publish")
-def publish(identifier:int,body:Publish,user=Depends(admin),db=Depends(database)):
+def publish(identifier:int,body:Publish,user=Depends(admin),db=Depends(database,scope="function")):
     return ok(models.publish(db,identifier,body.academic_review_confirmed,user))

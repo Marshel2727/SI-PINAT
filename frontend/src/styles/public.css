@@ -41,6 +41,26 @@
   color: #00332e;
 }
 
+.badge.success {
+  background: #def5e8;
+  color: #165534;
+}
+
+.badge.warning {
+  background: #fff0c4;
+  color: #725000;
+}
+
+.badge.danger {
+  background: #fde3e5;
+  color: #8f1824;
+}
+
+.badge.neutral {
+  background: #edf0f5;
+  color: #44474e;
+}
+
 .eyebrow {
   font-size: 11px;
   font-weight: 600;

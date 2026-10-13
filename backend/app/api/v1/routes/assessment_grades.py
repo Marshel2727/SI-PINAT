@@ -14,5 +14,5 @@ def grades(public_id:str,request:Request,db=Depends(database)):
     return ok({"grades":rows(db,"assessment_grades",assessment_id=value["id"]),**readiness(db,value)})
 
 @router.put("/assessments/{public_id}/grades")
-def manual(public_id:str,body:GradePackage,request:Request,db=Depends(database)):
+def manual(public_id:str,body:GradePackage,request:Request,db=Depends(database,scope="function")):
     return ok(save(db,owned(db,request,public_id,lock=True),[v.model_dump() for v in body.grades]))

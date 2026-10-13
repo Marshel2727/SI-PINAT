@@ -16,12 +16,12 @@ def one(db, name, **filters):
 def rows(db, name, **filters):
     return list(db.execute(select(table(name)).filter_by(**filters)).mappings())
 
-def add(db, name, **values):
-    result = db.execute(insert(table(name)).values(**values))
+def add(db, table_name, **values):
+    result = db.execute(insert(table(table_name)).values(**values))
     return result.inserted_primary_key[0]
 
-def change(db, name, identifier, **values):
-    t = table(name)
+def change(db, table_name, identifier, **values):
+    t = table(table_name)
     key = list(t.primary_key.columns)[0]
     db.execute(update(t).where(key == identifier).values(**values))
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { ErrorNotice, Field, Modal, Notice } from "@/components/ui";
+import { ErrorNotice, Field, Modal, Notice, StatusBadge } from "@/components/ui";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { configRows, configLabels as labels } from "./configuration";
 import { useModelEditor } from "./use-model-editor";
 import { ConfigTable } from "./config-table";
@@ -24,8 +25,37 @@ export function ModelEditor({ id }: {
     action,
     clone,
     locked,
-    columns
+    columns, readiness, readinessError, readinessLoading, refreshReadiness
   } = useModelEditor({ id });
+  const [dirty, setDirty] = useState(false);
+  const tableValues = useMemo(() => model ? configRows(model, tab) : [], [model, tab]);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const guardLink = (event: MouseEvent) => {
+      if (event.defaultPrevented || !(event.target instanceof Element)) return;
+      const link = event.target.closest("a[href]");
+      if (link && !window.confirm("Ada perubahan belum disimpan. Tinggalkan halaman dan abaikan perubahan?")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    document.addEventListener("click", guardLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", guardLink, true);
+    };
+  }, [dirty]);
+  function changeTab(next: string) {
+    if (next === tab || busy) return;
+    if (dirty && !window.confirm("Ada perubahan belum disimpan. Pindah tab dan abaikan perubahan?")) return;
+    setDirty(false);
+    setTab(next);
+  }
   return (
     <>
       <Link href="/admin/model-fuzzy">← Daftar model</Link>
@@ -38,9 +68,9 @@ export function ModelEditor({ id }: {
       {model && (
         <>
           <div className="spread wrap">
-            <span className="badge">{model.status} · MAMDANI / CENTROID</span>
+            <StatusBadge status={model.status}>{model.status} · MAMDANI / CENTROID</StatusBadge>
             <div className="actions">
-              <button className="secondary" onClick={() => setCloneOpen(true)}>
+              <button className="secondary" disabled={dirty || busy} onClick={() => setCloneOpen(true)}>
                 Kloning ke DRAFT
               </button>
               <Link className="button secondary" href={"/admin/validasi?model=" + id}>
@@ -61,7 +91,7 @@ export function ModelEditor({ id }: {
           )}
           <div className="tabs wrap section">
             {Object.entries(labels).map(([key, label]) => (
-              <button key={key} className={tab === key ? "" : "secondary"} onClick={() => setTab(key)}>
+              <button key={key} disabled={busy} className={tab === key ? "" : "secondary"} onClick={() => changeTab(key)}>
                 {label}
               </button>
             ))}
@@ -70,19 +100,36 @@ export function ModelEditor({ id }: {
             key={tab + "-" + id}
             title={labels[tab]}
             columns={columns[tab]}
-            values={configRows(model, tab)}
+            values={tableValues}
             locked={locked}
             onSave={values => save(tab, values)}
             busy={busy}
+            onDirtyChange={setDirty}
           />
           {!locked && (
             <article className="card section">
               <h2>Validasi dan publikasi</h2>
+              <div className="spread wrap">
+                <h3>Checklist Kesiapan Publikasi</h3>
+                <button className="secondary compact" disabled={busy || dirty || readinessLoading} onClick={refreshReadiness}>
+                  {readinessLoading ? "Memeriksa…" : "Periksa ulang kesiapan"}
+                </button>
+              </div>
+              <ErrorNotice error={readinessError} />
+              {readiness && <ul className="publication-checklist">
+                {readiness.checks.map(check => <li key={check.key}>
+                  <strong className={check.ready ? "check-ready" : "check-missing"}>{check.ready ? "✓" : "×"} {check.label}</strong>
+                  {check.details.length > 0 && <ul>{check.details.map(detail => <li key={detail}>{detail}</li>)}</ul>}
+                </li>)}
+                <li className={confirmed ? "check-ready" : "check-missing"}>{confirmed ? "✓" : "×"} Peninjauan akademik dikonfirmasi pengelola.</li>
+                {dirty && <li className="check-missing">× Perubahan konfigurasi belum disimpan.</li>}
+              </ul>}
+              {dirty && <Notice>Simpan perubahan konfigurasi sebelum menjalankan validasi atau publikasi.</Notice>}
               <p>
                 Lengkapi seluruh konfigurasi, sepuluh skenario batas/overlap per
                 peminatan, serta bank soal. Semua skenario harus lulus.
               </p>
-              <button disabled={busy} onClick={() => action("validate")}>
+              <button disabled={busy || dirty} onClick={() => action("validate")}>
                 Jalankan seluruh skenario
               </button>
               <label className="checkbox section">
@@ -90,7 +137,7 @@ export function ModelEditor({ id }: {
                 Saya sudah meninjau sumber data, parameter, aturan, soal, dan
                 rentang ekspektasi untuk tujuan penggunaan model ini.
               </label>
-              <button disabled={busy || !confirmed} onClick={() => action("publish")}>
+              <button disabled={busy || dirty || !confirmed || !readiness?.ready || readinessLoading} onClick={() => action("publish")}>
                 Publikasikan versi model
               </button>
             </article>

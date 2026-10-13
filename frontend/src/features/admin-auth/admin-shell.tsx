@@ -20,8 +20,13 @@ export function AdminShell({ children }: {
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
-        <strong>SI-PINAT Admin</strong>
-        <small>MODUL EVALUASI</small>
+        <div>
+          <strong style={{ fontSize: "16px", color: "var(--navy)" }}>SI-PINAT Admin</strong>
+          <small style={{ display: "block", color: "var(--text-secondary)", marginTop: 2, fontSize: "11px" }}>
+            MODUL EVALUASI & INSTRUMEN
+          </small>
+        </div>
+
         <nav aria-label="Modul administrasi">
           {links.map(([url, title]) => (
             <Link
@@ -35,17 +40,35 @@ export function AdminShell({ children }: {
             </Link>
           ))}
         </nav>
-        <button className="logout" disabled={busy} onClick={logout}>
-          Keluar
-        </button>
+
+        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+          <Link
+            href="/"
+            style={{
+              fontSize: "12px",
+              color: "var(--primary)",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              display: "block",
+              textDecoration: "none",
+              border: "1px dashed var(--border)"
+            }}
+          >
+            ↗ Buka Portal Mahasiswa
+          </Link>
+          <button className="logout" disabled={busy} onClick={logout}>
+            Keluar dari Sesi
+          </button>
+        </div>
       </aside>
+
       <main className="admin-main">
         <div className="admin-topbar">
           <span>
             Sistem Rekomendasi › <strong>Panel Administrasi</strong>
           </span>
-          <span className="badge">
-            {user?.full_name || "Memeriksa sesi\u2026"}
+          <span className="badge" style={{ background: "#e2edff", color: "var(--primary)" }}>
+            ● {user?.full_name || "Memeriksa sesi\u2026"}
           </span>
         </div>
         <ErrorNotice error={error} />

@@ -21,6 +21,15 @@ export interface Question {
   options: QuestionOption[];
 }
 
+export interface PublishedQuestionSummary {
+  specialization_id: Id;
+  code: SpecializationCode;
+  name: string;
+  published_count: number;
+  required_count: number;
+  ready: boolean;
+}
+
 export interface QuestionEditorState extends Partial<Omit<Question, "options" | "status">> {
   status: PublicationStatus;
   options: EditableQuestionOption[];

@@ -1,0 +1,654 @@
+{
+  "version": "REF-2026-01",
+  "checked_at": "2026-10-14",
+  "purpose": "Soal orisinal berbasis referensi; DRAFT untuk peninjauan akademik sebelum publikasi.",
+  "sources": {
+    "adc": {
+      "title": "Espressif — ESP32 ADC: Conversion, Attenuation and Calibration",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html",
+      "section": "ADC Conversion; ADC Attenuation"
+    },
+    "i2c": {
+      "title": "Espressif — ESP32 Inter-Integrated Circuit (I2C)",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/i2c.html",
+      "section": "Introduction; Install I2C master bus and device"
+    },
+    "ledc": {
+      "title": "Espressif — ESP32 LED Control (LEDC)",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/ledc.html",
+      "section": "Change PWM Duty Cycle Using Software; Supported Range of Frequency and Duty Resolutions"
+    },
+    "gpio": {
+      "title": "Espressif — ESP32 GPIO & RTC GPIO",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html",
+      "section": "GPIO summary and notes: GPIO34-39"
+    },
+    "mutex": {
+      "title": "FreeRTOS — Mutexes",
+      "url": "https://freertos.org/Real-time-embedded-RTOS-mutexes.html",
+      "section": "FreeRTOS Mutexes; Simplified priority inheritance"
+    },
+    "watchdog": {
+      "title": "Espressif — ESP32 Watchdogs",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/wdts.html",
+      "section": "Overview; Task Watchdog Timer (TWDT)"
+    },
+    "pitfalls": {
+      "title": "scikit-learn — Common pitfalls and recommended practices",
+      "url": "https://scikit-learn.org/stable/common_pitfalls.html",
+      "section": "Inconsistent preprocessing; Data leakage; How to avoid data leakage"
+    },
+    "scaler": {
+      "title": "scikit-learn — StandardScaler",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html",
+      "section": "Standard score z = (x - u) / s"
+    },
+    "metrics": {
+      "title": "scikit-learn — Metrics and scoring",
+      "url": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+      "section": "Precision, recall and F-measures / Binary classification"
+    },
+    "cv": {
+      "title": "scikit-learn — Cross-validation: evaluating estimator performance",
+      "url": "https://scikit-learn.org/stable/modules/cross_validation.html",
+      "section": "K-fold; Stratified K-fold; Time series split"
+    },
+    "clustering": {
+      "title": "scikit-learn — Clustering",
+      "url": "https://scikit-learn.org/stable/modules/clustering.html",
+      "section": "K-means"
+    },
+    "tree": {
+      "title": "scikit-learn — Decision Trees",
+      "url": "https://scikit-learn.org/stable/modules/tree.html",
+      "section": "Tips on practical use"
+    },
+    "private_ip": {
+      "title": "IETF RFC 1918 — Address Allocation for Private Internets",
+      "url": "https://www.rfc-editor.org/rfc/rfc1918",
+      "section": "3. Private Address Space"
+    },
+    "tcp": {
+      "title": "IETF RFC 9293 — Transmission Control Protocol (TCP)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9293",
+      "section": "3.5. Connection Establishment; Figure 6"
+    },
+    "dns": {
+      "title": "IETF RFC 1035 — Domain names: implementation and specification",
+      "url": "https://www.rfc-editor.org/rfc/rfc1035",
+      "section": "3.2.2. TYPE values; 3.4.1. A RDATA format"
+    },
+    "tls": {
+      "title": "IETF RFC 8446 — The Transport Layer Security (TLS) Protocol Version 1.3",
+      "url": "https://www.rfc-editor.org/rfc/rfc8446",
+      "section": "Abstract; 1. Introduction"
+    },
+    "cidr": {
+      "title": "IETF RFC 4632 — Classless Inter-domain Routing (CIDR)",
+      "url": "https://www.rfc-editor.org/rfc/rfc4632",
+      "section": "3.1. Basic Concept and Prefix Notation"
+    },
+    "sqli": {
+      "title": "OWASP — SQL Injection Prevention Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+      "section": "Defense Option 1: Prepared Statements (with Parameterized Queries)"
+    },
+    "passwords": {
+      "title": "OWASP — Password Storage Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html",
+      "section": "Salting; Hashing vs Encryption"
+    },
+    "authorization": {
+      "title": "OWASP — Authorization Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "section": "Enforce Least Privileges"
+    },
+    "forensic": {
+      "title": "NIST SP 800-86 — Guide to Integrating Forensic Techniques into Incident Response",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-86.pdf",
+      "section": "4.2.2. Data File Integrity (printed pp. 4-7–4-9)"
+    }
+  },
+  "questions": [
+    {
+      "code": "REF-ES-01-001",
+      "specialization_code": "ES-01",
+      "topic": "Resolusi ADC",
+      "level": "Dasar",
+      "prompt": "Sebuah ADC dikonfigurasi pada resolusi 12 bit. Berapa banyak tingkat kuantisasi yang tersedia?",
+      "options": [
+        "1.024 tingkat",
+        "4.096 tingkat",
+        "4.095 tingkat",
+        "8.192 tingkat"
+      ],
+      "answer": "B",
+      "explanation": "Jumlah tingkat kuantisasi adalah 2^12 = 4.096; kode keluarannya bernilai 0 sampai 4.095.",
+      "source_ids": [
+        "adc"
+      ]
+    },
+    {
+      "code": "REF-ES-01-002",
+      "specialization_code": "ES-01",
+      "topic": "Kalibrasi ADC",
+      "level": "Menengah",
+      "prompt": "Dua ESP32 membaca tegangan masukan yang sama tetapi menghasilkan estimasi tegangan sedikit berbeda. Mengapa kalibrasi ADC relevan?",
+      "options": [
+        "Kalibrasi mengganti masukan analog menjadi sinyal PWM.",
+        "Kalibrasi memastikan seluruh ADC memiliki jumlah kanal yang sama.",
+        "Kalibrasi mengubah setiap GPIO menjadi masukan analog.",
+        "Kalibrasi mengompensasi variasi karakteristik, termasuk tegangan referensi chip."
+      ],
+      "answer": "D",
+      "explanation": "Tegangan referensi aktual dapat berbeda antar-chip. Kalibrasi membantu mengubah pembacaan mentah menjadi estimasi tegangan yang lebih akurat.",
+      "source_ids": [
+        "adc"
+      ]
+    },
+    {
+      "code": "REF-ES-01-003",
+      "specialization_code": "ES-01",
+      "topic": "Bus I2C",
+      "level": "Dasar",
+      "prompt": "Mengapa jalur SDA dan SCL pada bus I2C memerlukan resistor pull-up?",
+      "options": [
+        "Agar jalur open-drain dapat kembali ke logika tinggi saat dilepas.",
+        "Agar setiap perangkat selalu memperoleh alamat baru.",
+        "Agar kecepatan bus selalu tepat 1 MHz.",
+        "Agar arah komunikasi berubah menjadi full-duplex."
+      ],
+      "answer": "A",
+      "explanation": "Keluaran open-drain menarik jalur ke rendah; resistor pull-up membawa jalur kembali ke tinggi ketika tidak ditarik oleh perangkat.",
+      "source_ids": [
+        "i2c"
+      ]
+    },
+    {
+      "code": "REF-ES-01-004",
+      "specialization_code": "ES-01",
+      "topic": "Pengalamatan I2C",
+      "level": "Menengah",
+      "prompt": "Sebuah sensor memiliki alamat I2C 7 bit 0x28. Nilai apa yang diisikan ke device_address pada driver master I2C ESP-IDF?",
+      "options": [
+        "0x50, setelah alamat digeser untuk menyisipkan bit tulis.",
+        "0x51, setelah alamat digeser dan ditambahkan bit baca.",
+        "0x28, tanpa menyertakan bit baca/tulis.",
+        "0x29, agar berbeda dari alamat perangkat."
+      ],
+      "answer": "C",
+      "explanation": "device_address menerima alamat mentah perangkat, tanpa bit baca/tulis. Untuk sensor ini nilainya tetap 0x28.",
+      "source_ids": [
+        "i2c"
+      ]
+    },
+    {
+      "code": "REF-ES-01-005",
+      "specialization_code": "ES-01",
+      "topic": "Perhitungan PWM",
+      "level": "Menengah",
+      "prompt": "Sinyal PWM memiliki periode 2 ms dan waktu aktif 0,5 ms. Berapa duty cycle-nya?",
+      "options": [
+        "20%",
+        "25%",
+        "50%",
+        "75%"
+      ],
+      "answer": "B",
+      "explanation": "Duty cycle = waktu aktif / periode × 100% = 0,5 / 2 × 100% = 25%.",
+      "source_ids": [
+        "ledc"
+      ]
+    },
+    {
+      "code": "REF-ES-01-006",
+      "specialization_code": "ES-01",
+      "topic": "Pembaruan PWM",
+      "level": "Menengah",
+      "prompt": "Pada API LEDC ESP-IDF, program memanggil ledc_set_duty() untuk mengubah duty cycle. Pemanggilan apa yang mengaktifkan pembaruan tersebut?",
+      "options": [
+        "ledc_update_duty()",
+        "ledc_get_duty()",
+        "ledc_timer_pause()",
+        "ledc_fade_func_uninstall()"
+      ],
+      "answer": "A",
+      "explanation": "Pada pasangan API ini, ledc_set_duty() menyiapkan nilai baru dan ledc_update_duty() menerapkan pembaruannya.",
+      "source_ids": [
+        "ledc"
+      ]
+    },
+    {
+      "code": "REF-ES-01-007",
+      "specialization_code": "ES-01",
+      "topic": "Batas konfigurasi PWM",
+      "level": "Menengah",
+      "prompt": "Driver LEDC menolak kombinasi frekuensi dan resolusi duty karena melampaui kemampuan hardware. Tindakan mana yang sesuai?",
+      "options": [
+        "Menaikkan frekuensi dan resolusi secara bersamaan.",
+        "Memindahkan nilai duty ke luar rentang resolusinya.",
+        "Menghapus pemeriksaan error tanpa mengubah konfigurasi.",
+        "Menurunkan frekuensi atau resolusi duty hingga kombinasi didukung."
+      ],
+      "answer": "D",
+      "explanation": "Frekuensi dan resolusi duty dibatasi clock serta pembagi timer. Kombinasi yang terlalu tinggi perlu dikurangi.",
+      "source_ids": [
+        "ledc"
+      ]
+    },
+    {
+      "code": "REF-ES-01-008",
+      "specialization_code": "ES-01",
+      "topic": "Pemilihan GPIO",
+      "level": "Menengah",
+      "prompt": "Pada ESP32 klasik, tombol dihubungkan ke GPIO34 dan membutuhkan bias pull-up. Pilihan rancangan mana yang tepat?",
+      "options": [
+        "Mengaktifkan pull-up internal GPIO34 tanpa komponen eksternal.",
+        "Mengubah GPIO34 menjadi keluaran push-pull saat tombol dilepas.",
+        "Menggunakan GPIO34 sebagai input dengan resistor pull-up eksternal.",
+        "Mengaktifkan pull-down internal lalu membalik nama variabel."
+      ],
+      "answer": "C",
+      "explanation": "GPIO34-39 pada ESP32 klasik hanya mendukung input dan tidak memiliki pull-up/pull-down internal yang dapat diaktifkan melalui perangkat lunak.",
+      "source_ids": [
+        "gpio"
+      ]
+    },
+    {
+      "code": "REF-ES-01-009",
+      "specialization_code": "ES-01",
+      "topic": "Sinkronisasi RTOS",
+      "level": "Menengah",
+      "prompt": "Dua task FreeRTOS harus memakai satu periferal secara bergantian. Mekanisme mana yang paling sesuai untuk mutual exclusion sederhana?",
+      "options": [
+        "Mutex yang diambil sebelum akses dan dilepas sesudahnya.",
+        "Variabel penanda biasa yang diakses tanpa sinkronisasi.",
+        "Penundaan tetap pada kedua task tanpa penguncian.",
+        "Pemanggilan kedua task langsung dari ISR yang sama."
+      ],
+      "answer": "A",
+      "explanation": "Mutex melindungi sumber daya bersama dan memiliki priority inheritance untuk mengurangi dampak priority inversion; mutex digunakan dari task, bukan ISR.",
+      "source_ids": [
+        "mutex"
+      ]
+    },
+    {
+      "code": "REF-ES-01-010",
+      "specialization_code": "ES-01",
+      "topic": "Task watchdog",
+      "level": "Menengah",
+      "prompt": "Sebuah task ESP32 menjalankan loop panjang tanpa yielding sehingga idle task tidak mendapat waktu CPU. Mekanisme apa yang mendeteksi kondisi ini?",
+      "options": [
+        "Pengaturan alamat slave I2C.",
+        "Task Watchdog Timer yang memantau idle task.",
+        "Kalibrasi tegangan referensi ADC.",
+        "Pengaturan resolusi duty LEDC."
+      ],
+      "answer": "B",
+      "explanation": "TWDT yang memantau idle task dapat mendeteksi task yang berjalan terlalu lama tanpa yielding.",
+      "source_ids": [
+        "watchdog"
+      ]
+    },
+    {
+      "code": "REF-SC-02-001",
+      "specialization_code": "SC-02",
+      "topic": "Pencegahan data leakage",
+      "level": "Menengah",
+      "prompt": "Dataset akan dibagi menjadi data latih dan uji. Urutan penggunaan StandardScaler mana yang menghindari kebocoran data?",
+      "options": [
+        "Fit scaler pada seluruh dataset, lalu bagi data.",
+        "Fit scaler secara terpisah pada data latih dan uji.",
+        "Bagi data, fit scaler pada latih, lalu transform latih dan uji dengan scaler tersebut.",
+        "Bagi data, fit scaler pada uji, lalu transform keduanya."
+      ],
+      "answer": "C",
+      "explanation": "Statistik preprocessing dipelajari hanya dari data latih. Data uji ditransformasi dengan statistik yang sama.",
+      "source_ids": [
+        "pitfalls"
+      ]
+    },
+    {
+      "code": "REF-SC-02-002",
+      "specialization_code": "SC-02",
+      "topic": "Pipeline dan validasi",
+      "level": "Menengah",
+      "prompt": "Mengapa scaler dan estimator sebaiknya dimasukkan ke Pipeline saat cross-validation?",
+      "options": [
+        "Agar preprocessing di-fit pada bagian latih setiap fold bersama estimator.",
+        "Agar setiap fold memakai statistik seluruh dataset sebelum validasi.",
+        "Agar validasi tidak perlu memisahkan data latih dan validasi.",
+        "Agar label target otomatis dihapus dari seluruh fold."
+      ],
+      "answer": "A",
+      "explanation": "Pipeline membantu memastikan langkah preprocessing hanya dipelajari dari bagian latih pada setiap fold.",
+      "source_ids": [
+        "pitfalls"
+      ]
+    },
+    {
+      "code": "REF-SC-02-003",
+      "specialization_code": "SC-02",
+      "topic": "Standardisasi fitur",
+      "level": "Menengah",
+      "prompt": "Dengan StandardScaler default, rata-rata fitur pada data latih adalah 10 dan simpangan bakunya 2. Berapa hasil transformasi nilai 14?",
+      "options": [
+        "0,5",
+        "1",
+        "4",
+        "2"
+      ],
+      "answer": "D",
+      "explanation": "Standardisasi menggunakan z = (x - rata-rata) / simpangan baku = (14 - 10) / 2 = 2.",
+      "source_ids": [
+        "scaler"
+      ]
+    },
+    {
+      "code": "REF-SC-02-004",
+      "specialization_code": "SC-02",
+      "topic": "Precision",
+      "level": "Menengah",
+      "prompt": "Klasifikasi biner menghasilkan TP = 30, FP = 10, dan FN = 20. Berapa precision kelas positif?",
+      "options": [
+        "60%",
+        "75%",
+        "50%",
+        "80%"
+      ],
+      "answer": "B",
+      "explanation": "Precision = TP / (TP + FP) = 30 / 40 = 75%. FN digunakan untuk recall, bukan penyebut precision.",
+      "source_ids": [
+        "metrics"
+      ]
+    },
+    {
+      "code": "REF-SC-02-005",
+      "specialization_code": "SC-02",
+      "topic": "Recall",
+      "level": "Menengah",
+      "prompt": "Dari 50 sampel positif aktual, model berhasil mendeteksi 40 dan melewatkan 10. Berapa recall kelas positif?",
+      "options": [
+        "40%",
+        "50%",
+        "80%",
+        "90%"
+      ],
+      "answer": "C",
+      "explanation": "Recall = TP / (TP + FN) = 40 / (40 + 10) = 80%.",
+      "source_ids": [
+        "metrics"
+      ]
+    },
+    {
+      "code": "REF-SC-02-006",
+      "specialization_code": "SC-02",
+      "topic": "K-fold cross-validation",
+      "level": "Dasar",
+      "prompt": "Pada 5-fold cross-validation biasa, bagaimana setiap fold digunakan untuk validasi?",
+      "options": [
+        "Semua fold selalu digabung sebagai data validasi.",
+        "Satu fold dipakai terus dan empat fold lainnya diabaikan.",
+        "Setiap sampel dipakai untuk validasi lima kali pada fold yang sama.",
+        "Setiap fold menjadi bagian validasi satu kali, sedangkan empat lainnya melatih model."
+      ],
+      "answer": "D",
+      "explanation": "K-fold membagi data menjadi k bagian; setiap bagian bergiliran menjadi validasi, dengan k-1 bagian lain untuk pelatihan.",
+      "source_ids": [
+        "cv"
+      ]
+    },
+    {
+      "code": "REF-SC-02-007",
+      "specialization_code": "SC-02",
+      "topic": "Stratifikasi kelas",
+      "level": "Menengah",
+      "prompt": "Dataset klasifikasi memiliki kelas yang tidak seimbang. Apa tujuan StratifiedKFold?",
+      "options": [
+        "Mempertahankan proporsi setiap kelas secara mendekati pada tiap fold.",
+        "Menyamakan jumlah semua kelas melalui duplikasi sampel.",
+        "Membuang seluruh kelas minoritas sebelum pelatihan.",
+        "Mengubah label kelas menjadi nilai kontinu."
+      ],
+      "answer": "A",
+      "explanation": "Stratifikasi berusaha menjaga proporsi kelas pada tiap fold; prosedur ini bukan teknik penyeimbangan jumlah sampel.",
+      "source_ids": [
+        "cv"
+      ]
+    },
+    {
+      "code": "REF-SC-02-008",
+      "specialization_code": "SC-02",
+      "topic": "K-means",
+      "level": "Dasar",
+      "prompt": "Apa fungsi objektif utama yang diminimalkan K-means?",
+      "options": [
+        "Jumlah label target yang salah diprediksi.",
+        "Jumlah kuadrat jarak sampel ke centroid cluster terdekat.",
+        "Jumlah fitur yang digunakan model klasifikasi.",
+        "Jumlah seluruh pasangan sampel yang berbeda label."
+      ],
+      "answer": "B",
+      "explanation": "K-means meminimalkan inertia atau within-cluster sum of squares terhadap centroid terdekat.",
+      "source_ids": [
+        "clustering"
+      ]
+    },
+    {
+      "code": "REF-SC-02-009",
+      "specialization_code": "SC-02",
+      "topic": "Kompleksitas decision tree",
+      "level": "Menengah",
+      "prompt": "Decision tree sangat akurat pada data latih tetapi jauh lebih buruk pada validasi. Langkah mana yang dapat membantu mengendalikan overfitting?",
+      "options": [
+        "Menghapus data validasi lalu memakai skor latih saja.",
+        "Memastikan setiap daun hanya berisi satu sampel.",
+        "Membatasi max_depth dan menilai kembali kinerja validasi.",
+        "Menambah kedalaman tanpa batas sampai skor latih sempurna."
+      ],
+      "answer": "C",
+      "explanation": "Membatasi kedalaman mengendalikan kompleksitas pohon. Dampaknya tetap perlu diperiksa pada data validasi.",
+      "source_ids": [
+        "tree"
+      ]
+    },
+    {
+      "code": "REF-SC-02-010",
+      "specialization_code": "SC-02",
+      "topic": "Validasi deret waktu",
+      "level": "Menengah",
+      "prompt": "Model memprediksi nilai besok dari data historis. Pembagian validasi mana yang paling sesuai untuk menjaga urutan waktu?",
+      "options": [
+        "Mengacak seluruh tanggal sebelum membentuk setiap fold.",
+        "Melatih pada data masa depan untuk memprediksi masa lalu.",
+        "Memakai tanggal yang sama pada data latih dan validasi.",
+        "Melatih pada periode terdahulu dan memvalidasi pada periode sesudahnya."
+      ],
+      "answer": "D",
+      "explanation": "TimeSeriesSplit mempertahankan urutan temporal sehingga data masa depan tidak masuk ke pelatihan untuk mengevaluasi periode sebelumnya.",
+      "source_ids": [
+        "cv"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-001",
+      "specialization_code": "JDF-03",
+      "topic": "IPv4 privat",
+      "level": "Dasar",
+      "prompt": "Alamat IPv4 mana yang termasuk ruang alamat privat menurut RFC 1918?",
+      "options": [
+        "172.32.0.1",
+        "192.0.2.10",
+        "8.8.8.8",
+        "172.20.10.5"
+      ],
+      "answer": "D",
+      "explanation": "Rentang privat mencakup 172.16.0.0 sampai 172.31.255.255; 172.20.10.5 berada di dalamnya.",
+      "source_ids": [
+        "private_ip"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-002",
+      "specialization_code": "JDF-03",
+      "topic": "TCP handshake",
+      "level": "Dasar",
+      "prompt": "Dalam pembentukan koneksi TCP normal, klien mengirim SYN. Respons server berikutnya adalah apa?",
+      "options": [
+        "FIN",
+        "SYN dan ACK",
+        "RST dan FIN",
+        "ACK tanpa SYN"
+      ],
+      "answer": "B",
+      "explanation": "Pada three-way handshake dasar, urutannya SYN, SYN-ACK, lalu ACK.",
+      "source_ids": [
+        "tcp"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-003",
+      "specialization_code": "JDF-03",
+      "topic": "DNS record",
+      "level": "Dasar",
+      "prompt": "Jenis DNS record apa yang digunakan untuk memetakan nama host ke alamat IPv4?",
+      "options": [
+        "MX",
+        "CNAME",
+        "A",
+        "PTR"
+      ],
+      "answer": "C",
+      "explanation": "A record berisi alamat host IPv4. MX untuk mail exchanger, CNAME untuk alias, dan PTR untuk pemetaan balik.",
+      "source_ids": [
+        "dns"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-004",
+      "specialization_code": "JDF-03",
+      "topic": "Perlindungan TLS",
+      "level": "Menengah",
+      "prompt": "Apa perlindungan utama TLS untuk komunikasi aplikasi melalui jaringan?",
+      "options": [
+        "Kerahasiaan dan integritas data selama transmisi, dengan autentikasi sesuai konfigurasi.",
+        "Pencegahan seluruh kesalahan logika pada aplikasi server.",
+        "Penghapusan kebutuhan otorisasi pengguna pada aplikasi.",
+        "Jaminan semua data tersimpan di server selalu terenkripsi."
+      ],
+      "answer": "A",
+      "explanation": "TLS melindungi kanal komunikasi dari penyadapan dan perubahan pesan. Perlindungan data tersimpan serta otorisasi aplikasi memerlukan mekanisme tersendiri.",
+      "source_ids": [
+        "tls"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-005",
+      "specialization_code": "JDF-03",
+      "topic": "Subnet CIDR",
+      "level": "Menengah",
+      "prompt": "Sebuah subnet IPv4 biasa menggunakan prefix /27. Dengan alamat network dan broadcast dicadangkan, berapa alamat host yang dapat digunakan?",
+      "options": [
+        "27",
+        "32",
+        "62",
+        "30"
+      ],
+      "answer": "D",
+      "explanation": "Prefix /27 menyisakan 5 bit host: 2^5 = 32 alamat. Setelah network dan broadcast, tersedia 30 alamat host.",
+      "source_ids": [
+        "cidr"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-006",
+      "specialization_code": "JDF-03",
+      "topic": "Pencegahan SQL injection",
+      "level": "Menengah",
+      "prompt": "Aplikasi mencari akun berdasarkan input pengguna. Praktik mana yang paling tepat untuk mencegah input mengubah struktur SQL?",
+      "options": [
+        "Menggabungkan input langsung ke string query.",
+        "Menggunakan query berparameter dengan binding nilai.",
+        "Menyembunyikan pesan error tanpa mengubah query.",
+        "Membatasi tampilan form tanpa validasi server."
+      ],
+      "answer": "B",
+      "explanation": "Query berparameter memisahkan struktur SQL dari data masukan sehingga nilai pengguna tidak ditafsirkan sebagai kode SQL.",
+      "source_ids": [
+        "sqli"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-007",
+      "specialization_code": "JDF-03",
+      "topic": "Salt password",
+      "level": "Menengah",
+      "prompt": "Apa tujuan salt unik pada hashing password?",
+      "options": [
+        "Memungkinkan password dipulihkan tanpa verifikasi.",
+        "Menggantikan kebutuhan algoritma hashing password.",
+        "Membuat hash password yang sama berbeda dan menghambat tabel prahitung.",
+        "Mengurangi semua hash password menjadi satu nilai tetap."
+      ],
+      "answer": "C",
+      "explanation": "Salt unik menghambat penggunaan tabel prahitung dan membuat password identik menghasilkan hash berbeda; salt tidak perlu dirahasiakan.",
+      "source_ids": [
+        "passwords"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-008",
+      "specialization_code": "JDF-03",
+      "topic": "Integritas bukti digital",
+      "level": "Menengah",
+      "prompt": "Setelah membuat image forensik, bagaimana analis memeriksa kesesuaian integritas salinan terhadap sumber dengan hashing?",
+      "options": [
+        "Membandingkan digest sumber dan salinan menggunakan algoritma yang sama.",
+        "Membandingkan nama file saja tanpa memeriksa isinya.",
+        "Mengubah ekstensi salinan agar berbeda dari sumber.",
+        "Menghapus metadata sumber sebelum mengambil digest."
+      ],
+      "answer": "A",
+      "explanation": "Perbandingan digest membantu memeriksa integritas salinan. Kecocokan hash bukan bukti identitas pembuat atau kelengkapan chain of custody.",
+      "source_ids": [
+        "forensic"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-009",
+      "specialization_code": "JDF-03",
+      "topic": "Write blocker",
+      "level": "Menengah",
+      "prompt": "Apa fungsi utama write blocker saat mengambil image media penyimpanan untuk forensik?",
+      "options": [
+        "Menghapus file berbahaya sebelum pengambilan image.",
+        "Mencegah komputer akuisisi menulis ke media sumber.",
+        "Mengenkripsi seluruh salinan secara otomatis.",
+        "Memulihkan semua data terhapus tanpa analisis."
+      ],
+      "answer": "B",
+      "explanation": "Write blocker mencegah penulisan ke media sumber selama akuisisi untuk membantu menjaga bukti asli.",
+      "source_ids": [
+        "forensic"
+      ]
+    },
+    {
+      "code": "REF-JDF-03-010",
+      "specialization_code": "JDF-03",
+      "topic": "Least privilege",
+      "level": "Menengah",
+      "prompt": "Akun petugas hanya perlu membaca laporan. Pengaturan akses mana yang mengikuti prinsip least privilege?",
+      "options": [
+        "Memberikan izin baca pada laporan yang diperlukan tanpa izin perubahan.",
+        "Memberikan hak administrator agar semua menu tersedia.",
+        "Menggunakan akun bersama dengan hak penuh.",
+        "Memberikan izin hapus karena akun sudah memiliki izin baca."
+      ],
+      "answer": "A",
+      "explanation": "Least privilege memberikan izin minimum yang diperlukan untuk tugas pengguna, termasuk pembatasan terhadap sumber daya yang dapat diakses.",
+      "source_ids": [
+        "authorization"
+      ]
+    }
+  ]
+}

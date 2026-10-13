@@ -1,4 +1,5 @@
 import type { AssessmentMode, Id, SpecializationCode } from "./common";
+import type { MembershipShape } from "@/lib/fuzzy-curve";
 
 export interface Score {
   id: Id;
@@ -50,6 +51,7 @@ export interface RuleActivation {
 }
 
 export interface FuzzyTrace {
+  input_sets?: Record<string, MembershipShape[]>;
   mode: AssessmentMode;
   memberships: Record<string, MembershipInput>;
   rule_activations: RuleActivation[];

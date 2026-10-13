@@ -4,6 +4,10 @@ export { ActionLink } from "./ui/action-link";
 
 export { Curve } from "./ui/curve";
 
+export { MembershipPlot } from "./ui/membership-plot";
+
+export { StatusBadge } from "./ui/status-badge";
+
 export { ErrorNotice } from "./ui/error-notice";
 
 export { Field } from "./ui/field";

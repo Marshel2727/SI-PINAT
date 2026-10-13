@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Notice } from "@/components/ui";
+import { ErrorNotice, Field, Notice, StatusBadge } from "@/components/ui";
 import Link from "next/link";
 import { useQuestionEditor } from "./use-question-editor";
 
@@ -20,9 +20,7 @@ export function QuestionEditor({ id }: {
       </Notice>}
       {question ? (
         <article className="card">
-          <span className="badge">
-            {question.status}
-          </span>
+          <StatusBadge status={question.status} />
           <form onSubmit={save} key={question.id || "new"}>
             <fieldset disabled={busy || locked}>
               <div className="two-columns">

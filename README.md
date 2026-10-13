@@ -102,6 +102,60 @@ Seed membuat tiga mata kuliah contoh, 30 soal DRAFT, model DEMO-EXAMPLE-001 DRAF
 
 Untuk mencoba DEMO setelah seed, tinjau/publikasikan soal melalui admin, jalankan seluruh skenario model, lalu publikasikan secara eksplisit setelah peninjauan tujuan demonstrasi. FULL tidak memilih versi berkode DEMO atau EXAMPLE. Seed tidak menyediakan kurikulum resmi 38 mata kuliah.
 
+Master Teknik Komputer semester I-IV dari *Buku Panduan Academic Culture Orientation Volume 7*, halaman cetak 64-65 (halaman PDF 73-74), tersedia melalui impor terpisah: 32 mata kuliah, total 90 SKS. Semester V-VIII dan PTIK tidak diimpor karena master asesmen saat ini dibatasi semester 1-4. Kode dan nama mengikuti PDF, termasuk `21B10C101` untuk Rangkaian Elektronika.
+
+Setelah memperbarui image backend, jalankan:
+
+~~~powershell
+docker compose exec backend python -m app.cli.seed_courses --admin-email 'EMAIL_ADMIN_ANDA'
+~~~
+
+Impor ini dapat dijalankan ulang: data yang identik dilewati, sedangkan kode yang sama dengan metadata berbeda membatalkan seluruh transaksi tanpa menimpa master. Setiap penambahan tercatat dalam audit. Mata kuliah contoh DEMO dan bobot model tetap; mata kuliah baru tampil pada asesmen setelah dirujuk bobot model versi tersebut.
+
+### Tambahan bank soal berbasis referensi
+
+Alur peserta mendukung pemulihan sesi terakhir dari Beranda. Browser hanya menyimpan UUID sesi, mode, dan tahap; akses tetap memerlukan cookie rahasia HttpOnly dan status diperiksa ulang ke server. Sesi yang kedaluwarsa/tidak dapat diakses dihapus dari penunjuk lokal. Membuka “Mulai Baru” tidak menghapus progres server; penunjuk diganti setelah sesi baru berhasil dibuat.
+
+Pada input nilai, perubahan manual dapat disimpan sekaligus dilanjutkan ke tes setelah validasi server. DEMO memiliki pengisian nilai contoh sesuai konversi versi sesi dan selalu berlabel data contoh. Navigasi tes tetap aktif saat penyimpanan jawaban berjalan; request bersamaan dibatasi satu per soal, kegagalan dapat dicoba ulang, dan completion menunggu seluruh jawaban tersimpan. Tersedia pintasan menuju soal belum terjawab. Hasil menampilkan skor akademik/kompetensi dan tautan aturan per peminatan.
+
+Bank soal admin menyediakan pencarian kode/pertanyaan, filter peminatan/status, dan kuota kode soal unik PUBLISHED per bidang. Checklist publikasi mengambil kesiapan dari backend; endpoint publikasi memakai pemeriksaan yang sama dan tetap memerlukan konfirmasi peninjauan. API tambahan: `GET /api/v1/admin/questions/summary`, parameter `search` pada daftar soal, dan `GET /api/v1/admin/fuzzy-models/{id}/readiness`. Tidak diperlukan migrasi database untuk perubahan UX ini.
+
+`backend/app/cli/data/questions_references.json` memuat 30 soal orisinal dalam bahasa Indonesia: 10 Embedded System (`ES-01`), 10 Sistem Cerdas (`SC-02`), dan 10 Jaringan & Forensik Digital (`JDF-03`). Masing-masing memiliki empat pilihan, tepat satu kunci, pembahasan, topik, tingkat rancangan, serta referensi beserta bagian sumber. Sumber primer meliputi Espressif, FreeRTOS, scikit-learn, IETF RFC 1918/9293/1035/8446/4632, NIST SP 800-86, dan OWASP Cheat Sheet Series. Tingkat rancangan belum merupakan hasil kalibrasi psikometrik.
+
+Setelah memperbarui image backend, jalankan:
+
+~~~powershell
+docker compose exec backend python -m app.cli.seed_questions --admin-email 'EMAIL_ADMIN_ANDA'
+~~~
+
+Impor menyimpan soal ke `questions`, pilihan/kunci ke `question_options`, referensi ke `explanation`, dan penambahan ke audit dalam satu transaksi. Semua soal berstatus DRAFT; tinjau isi dan kunci melalui Bank Soal sebelum publikasi. Kode berawalan `REF-` terpisah dari soal DEMO. Jika kode sudah memiliki revisi apa pun, impor melewatinya tanpa menimpa perubahan admin. Tidak ada perubahan model atau pemublikasian otomatis. Asesmen baru mengambil soal PUBLISHED sesuai mekanisme paket yang sudah ada; menambah bank soal tidak memperbesar paket menjadi 60 soal.
+
+### Model fuzzy untuk master mata kuliah ACO
+
+`seed_fuzzy_model` membuat `TEKOM-ACO-001` berstatus DRAFT dengan 32 mata kuliah Teknik Komputer, 3 variabel domain 0-100, 9 himpunan, 27 aturan (9 per peminatan), 5 konversi nilai, serta 30 skenario teknis. Jalankan setelah `seed_courses` dan pembaruan image backend:
+
+~~~powershell
+docker compose exec backend python -m app.cli.seed_fuzzy_model --admin-email 'EMAIL_ADMIN_ANDA'
+~~~
+
+Usulan bobot beserta alasan tiap mata kuliah ada di `backend/app/cli/data/fuzzy_model_proposal.json`. Bobot 0 berarti tidak dipakai pada skor, 0,2 pendukung ringan, 0,4 pendukung, 0,6 relevan, 0,8 sangat relevan, dan 1 inti. Semua 32 master mendapat tiga bobot; mata kuliah aktif tambahan (termasuk contoh DEMO) mendapat bobot 0 dan tidak diwajibkan agar matriks tetap lengkap tanpa mengubah master/model lama. Pada usulan awal ini, 25 mata kuliah dengan bobot positif wajib diisi jika semesternya sudah berlaku pada sesi. Mata kuliah berbobot nol tetap bisa tampil pada formulir tetapi tidak memengaruhi skor.
+
+Bobot merupakan rancangan awal berdasarkan topik, bukan bobot resmi kampus. Konversi awal A/B/C/D/E adalah 4/3/2/1/0 dengan normalisasi poin × 25; tambahkan nilai antara sesuai kebijakan kampus sebelum publikasi. Nilai akademik dihitung dengan rata-rata berbobot SKS × relevansi; skor kompetensi berasal dari jawaban tes per peminatan. Preferensi awal tidak ikut dalam skor.
+
+Profil teknis mengikuti `app/fuzzy/reference.py`: LOW trapesium [0,0,20,40], MEDIUM segitiga [20,50,80], HIGH trapesium [60,80,100,100]. Konsekuen berdasarkan baris akademik LOW/MEDIUM/HIGH dan kolom kompetensi LOW/MEDIUM/HIGH adalah:
+
+| Akademik / Kompetensi | LOW | MEDIUM | HIGH |
+| --- | --- | --- | --- |
+| LOW | LOW | LOW | MEDIUM |
+| MEDIUM | LOW | MEDIUM | HIGH |
+| HIGH | MEDIUM | HIGH | HIGH |
+
+Operator AND menggunakan MIN, implikasi MIN, agregasi MAX, dan centroid dengan sampling step 0,1. Konsep variabel/aturan dan centroid dapat dibaca pada [contoh resmi scikit-fuzzy](https://scikit-fuzzy.readthedocs.io/en/latest/auto_examples/plot_tipping_problem_newapi.html) serta [dokumentasi centroid](https://scikit-fuzzy.readthedocs.io/en/latest/api/skfuzzy.defuzzify.html); sumber tersebut tidak menetapkan bobot atau batas keanggotaan akademik SI-PINAT.
+
+Skenario teknis memuat 10 pasangan input per peminatan dan rentang ±0,002 dari integral analitik independen terhadap sampling engine. Skenario diimpor tanpa `last_passed` atau hasil pengujian; jalankan melalui admin. Lulusnya uji numerik tidak membuktikan ketepatan rekomendasi akademik. Tinjau bobot, konversi, himpunan, konsekuen, ekspektasi, dan soal; publikasikan minimal 10 kode soal per peminatan, jalankan seluruh skenario, lalu konfirmasikan peninjauan sebelum publikasi model. Setelah disetujui dan PUBLISHED, versi ini dapat dipilih untuk DEMO/FULL sesuai pemilihan versi terbaru yang sudah ada. Sesi lama tetap memakai versi semula.
+
+Impor aman diulang: jika kode versi sudah ada, model dan seluruh perubahan admin dilewati tanpa ditimpa. Untuk rancangan berbeda, kloning model melalui admin. Importer tidak mempublikasikan model/soal atau mengubah pemilihan paket soal. Jika soal DEMO masih PUBLISHED, kode DEMO mendahului REF dalam urutan paket; arsipkan soal contoh melalui admin bila hendak menggantinya dengan soal referensi.
+
 ## Push Docker Hub — lakukan sendiri
 
 Pastikan DOCKER_NAMESPACE sudah memakai username Docker Hub Anda. Login secara interaktif:

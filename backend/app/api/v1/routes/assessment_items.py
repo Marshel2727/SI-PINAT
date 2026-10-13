@@ -7,7 +7,7 @@ from app.api.v1.common import ok
 router=APIRouter(tags=["assessment_items"])
 
 @router.post("/assessments/{public_id}/test/start")
-def begin(public_id:str,request:Request,db=Depends(database)):
+def begin(public_id:str,request:Request,db=Depends(database,scope="function")):
     return ok(start(db,owned(db,request,public_id,lock=True)))
 
 @router.get("/assessments/{public_id}/test/items")

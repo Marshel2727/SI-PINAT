@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MembershipPlot } from "@/components/ui";
+import type { MembershipShape } from "@/lib/fuzzy-curve";
 import { configurationPayload, type Column, type ConfigRow } from "./configuration";
 
-export function ConfigTable({ title, columns, values, locked, onSave, busy }: {
+export function ConfigTable({ title, columns, values, locked, onSave, busy, onDirtyChange }: {
   title: string;
   columns: Column[];
   values: ConfigRow[];
   locked: boolean;
   onSave: (values: ConfigRow[]) => Promise<void>;
   busy: boolean;
+  onDirtyChange: (dirty: boolean) => void;
 }) {
   const [local, setLocal] = useState<ConfigRow[]>(values);
   useEffect(() => setLocal(values), [values]);
+  const dirty = JSON.stringify(configurationPayload(local, columns)) !== JSON.stringify(configurationPayload(values, columns));
+  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
+  const isSetEditor = columns.some(column => column.key === "point_a");
   function update(index: number, key: string, value: ConfigRow[string]) {
     setLocal(rows => rows.map((r, i) => (i === index ? { ...r, [key]: value } : r)));
   }
@@ -33,7 +39,7 @@ export function ConfigTable({ title, columns, values, locked, onSave, busy }: {
   return (
     <article className="card section">
       <h2>
-        {title}
+        {title}{dirty && <span className="small muted"> * Belum disimpan</span>}
       </h2>
       <form onSubmit={e => {
         e.preventDefault();
@@ -93,7 +99,11 @@ export function ConfigTable({ title, columns, values, locked, onSave, busy }: {
                         className="secondary compact"
                         disabled={!!r.id &&
                           columns.some(c => c.key === "variable_id" || c.key === "direction")}
-                        onClick={() => setLocal(local.filter((_, index) => index !== i))}
+                        onClick={() => {
+                          if (window.confirm("Hapus baris ini dari draf? Perubahan berlaku setelah konfigurasi disimpan.")) {
+                            setLocal(rows => rows.filter((_, index) => index !== i));
+                          }
+                        }}
                       >
                         Hapus baris
                       </button>
@@ -114,6 +124,24 @@ export function ConfigTable({ title, columns, values, locked, onSave, busy }: {
           </div>
         </fieldset>
       </form>
+      {isSetEditor && <section className="section">
+        <h3>Pratinjau fungsi keanggotaan</h3>
+        <p className="small muted">Kurva mengikuti titik yang sedang diedit. Simpan konfigurasi untuk menerapkannya pada model.</p>
+        <div className="two-columns">
+          {local.map((row, index) => {
+            const set: MembershipShape = {
+              code: String(row.code) as MembershipShape["code"],
+              shape: String(row.shape) as MembershipShape["shape"],
+              point_a: row.point_a === "" ? NaN : Number(row.point_a),
+              point_b: row.point_b === "" ? NaN : Number(row.point_b),
+              point_c: row.point_c === "" ? NaN : Number(row.point_c),
+              point_d: row.point_d === null || row.point_d === "" || row.point_d === undefined ? null : Number(row.point_d),
+            };
+            const variable = columns.find(column => column.key === "variable_id")?.options?.find(option => String(option.id) === String(row.variable_id));
+            return <MembershipPlot key={row.id || "preview-" + index} sets={[set]} label={`${variable?.name || "Variabel"} · ${row.code || "Himpunan baru"}`} />;
+          })}
+        </div>
+      </section>}
     </article>
   );
 }

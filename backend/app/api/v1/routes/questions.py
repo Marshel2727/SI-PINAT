@@ -2,17 +2,19 @@ from fastapi import APIRouter, Depends, Query
 from app.db.session import database
 from app.core.security import admin
 from app.schemas.inputs import Question
-from app.repositories.store import rows
 from app.services import questions
 from app.api.v1.common import ok, page as envelope
 
 router=APIRouter(tags=["questions"],dependencies=[Depends(admin)])
 
 @router.get("/admin/questions")
-def listing(status:str|None=None,specialization_id:int|None=None,page:int=Query(1,ge=1),page_size:int=Query(20,ge=1,le=100),db=Depends(database)):
-    data=rows(db,"questions",**({"status":status} if status else {}),**({"specialization_id":specialization_id} if specialization_id else {}))
-    data.sort(key=lambda q:(q["code"],-q["revision"]))
+def listing(status:str|None=None,specialization_id:int|None=None,search:str=Query("",max_length=200),page:int=Query(1,ge=1),page_size:int=Query(20,ge=1,le=100),db=Depends(database)):
+    data=questions.listing(db,status,specialization_id,search.strip())
     return envelope(data[(page-1)*page_size:page*page_size],page,page_size,len(data))
+
+@router.get("/admin/questions/summary")
+def summary(db=Depends(database)):
+    return ok(questions.published_summary(db))
 
 @router.post("/admin/questions",status_code=201)
 def create(body:Question,user=Depends(admin),db=Depends(database)):

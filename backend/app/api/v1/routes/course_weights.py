@@ -14,5 +14,5 @@ def get(version_id:int,db=Depends(database)):
     return ok(listing(db,version_id))
 
 @router.put("/admin/fuzzy-models/{version_id}/course-weights")
-def put(version_id:int,body:list[Weight],user=Depends(admin),db=Depends(database)):
+def put(version_id:int,body:list[Weight],user=Depends(admin),db=Depends(database,scope="function")):
     return ok(save(db,version_id,[v.model_dump() for v in body],user))
