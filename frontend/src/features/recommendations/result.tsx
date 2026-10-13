@@ -1,0 +1,16 @@
+"use client";
+import {useEffect,useState} from "react";
+import Link from "next/link";
+import {api} from "@/lib/api";
+import {number,names,time} from "@/lib/format";
+import {Notice,ErrorNotice,ScoreBars} from "@/components/ui";
+import {useAssessment} from "@/features/assessments/context";
+import type {Result} from "@/types/api";
+export function Recommendation(){
+ const {assessment,base}=useAssessment();
+ const [result,setResult]=useState<Result|null>(null),[error,setError]=useState<unknown>(null);
+ useEffect(()=>{let active=true;api<Result>(base+"/result").then(r=>active&&setResult(r.data)).catch(setError);return()=>{active=false;};},[base]);
+ if(!result)return <><ErrorNotice error={error}/>{!error&&<Notice>Memuat hasil tersimpan…</Notice>}</>;
+ const best=result.scores.filter(s=>s.rank_position===1);
+ return <><div className="two-columns"><article className="card recommendation-card"><span className="badge">REKOMENDASI PEMINATAN</span><div className="recommendation-title"><div><span className="eyebrow">{result.has_tie?"HASIL TERATAS SERI":"PEMINATAN YANG DISARANKAN"}</span><h1>{best.map(s=>s.specialization_name).join(" / ")}</h1></div><div className="score-tile"><small>SKOR KESESUAIAN</small><strong>{number(best[0].suitability_score)}<small>/100</small></strong><span className="badge demo">{result.mode==="DEMO"?"DATA CONTOH":"HASIL ASESMEN"}</span></div></div>{result.has_tie&&<Notice>Skor tertinggi sama. Seluruh peminatan di atas berada pada peringkat 1.</Notice>}{best.map(s=><Notice key={s.specialization_code}><strong>Alasan {s.specialization_name}</strong><p>{s.reason}</p></Notice>)}<Link className="button" href={"/asesmen/"+assessment.public_id+"/detail-fuzzy"}>Lihat detail perhitungan →</Link></article><article className="card"><span className="eyebrow">PERBANDINGAN PEMINATAN</span><h2>Skor tiga pilihan peminatan</h2><p>Skor merupakan kesesuaian pada model ini, bukan peluang kelulusan.</p><ScoreBars scores={result.scores}/><p className="small muted">Skala 0–100 · peringkat dihitung dari skor lima desimal.</p></article><article className="card"><span className="eyebrow">PILIHAN AWAL DAN HASIL</span><h2>Pilihan awal vs rekomendasi</h2><p>Preferensi: <strong>{names[result.preferred_specialization_code]||"Belum dipilih"}</strong></p>{result.preference_comparison&&<Notice tone={result.preference_comparison.matches_top?"success":"info"}>{result.preference_comparison.matches_top?"Pilihan awal termasuk kelompok skor teratas.":"Pilihan awal berbeda dari kelompok skor teratas."} Selisih terhadap skor tertinggi: {number(result.preference_comparison.gap_to_top)} poin.</Notice>}</article><article className="card"><h2>Ringkasan asesmen</h2><p>Mode {result.mode} · model {result.model_version}</p><p>Engine {result.engine_version} · {time(result.completed_at)}</p><p>{result.answer_sources.USER} jawaban USER · {result.answer_sources.EXAMPLE} EXAMPLE</p>{result.mode==="DEMO"&&<Notice>Data contoh; gunakan untuk mengenali alur dan bahan diskusi.</Notice>}<div className="actions"><a className="button" href={"/api/v1"+base+"/result/report.pdf"}>Unduh ringkasan PDF</a><button className="secondary" onClick={()=>window.print()}>Cetak</button><Link className="button secondary" href="/">Asesmen baru</Link></div></article></div></>;
+}

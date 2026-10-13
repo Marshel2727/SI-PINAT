@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Inline Microcontroller Chip SVG Icon" clip-path="url(#clip0_0_23)">
+<path id="Vector" d="M9.33333 6.66667H22.6667C24.1384 6.66667 25.3333 7.86156 25.3333 9.33333V22.6667C25.3333 24.1384 24.1384 25.3333 22.6667 25.3333H9.33333C7.86156 25.3333 6.66667 24.1384 6.66667 22.6667V9.33333C6.66667 7.86156 7.86156 6.66667 9.33333 6.66667V6.66667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M12 12H20V12V20V20H12V20V12V12V12" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M12 1.33333V6.66667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M20 1.33333V6.66667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M12 25.3333V30.6667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_6" d="M20 25.3333V30.6667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_7" d="M1.33333 12H6.66667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_8" d="M1.33333 20H6.66667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_9" d="M25.3333 12H30.6667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_10" d="M25.3333 20H30.6667" stroke="#0051D5" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_23">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

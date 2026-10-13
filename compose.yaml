@@ -1,0 +1,91 @@
+name: ${COMPOSE_PROJECT_NAME:-sipinat}
+
+x-backend: &backend
+  image: ${DOCKER_NAMESPACE:-sipinat-local}/sipinat-backend:${IMAGE_TAG:-latest}
+  build:
+    context: ./backend
+  environment:
+    APP_ENV: ${APP_ENV:-development}
+    APP_SECRET: ${APP_SECRET:?Set APP_SECRET in .env}
+    PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:3000}
+    COOKIE_SECURE: "${COOKIE_SECURE:-false}"
+    DB_HOST: mysql
+    DB_PORT: 3306
+    DB_NAME: ${MYSQL_DATABASE:-sipinat}
+    DB_USER: ${MYSQL_USER:-sipinat}
+    DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+    UPLOAD_DIR: /app/storage/uploads
+  init: true
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-sipinat}
+      MYSQL_USER: ${MYSQL_USER:-sipinat}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --connect-timeout=2 -h 127.0.0.1 -u $$MYSQL_USER $$MYSQL_DATABASE -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    <<: *backend
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - uploads:/app/storage/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKER_NAMESPACE:-sipinat-local}/sipinat-frontend:${IMAGE_TAG:-latest}
+    build:
+      context: ./frontend
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    init: true
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  uploads:
