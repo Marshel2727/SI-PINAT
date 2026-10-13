@@ -1,2 +1,5 @@
-import {Login} from "@/features/admin-auth/auth";
-export default function Page(){return <Login/>;}
+import { Login } from "@/features/admin-auth/login";
+
+export default function Page() {
+  return <Login />;
+}

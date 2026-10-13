@@ -1,0 +1,127 @@
+.login-background {
+  padding: 40px 24px;
+  background: radial-gradient(ellipse at 0% 90%,#d9e4ff90,transparent 45%),var(--page);
+  min-height: 80vh;
+}
+
+.login-card {
+  max-width: 576px;
+  margin: auto;
+  padding: 40px;
+  text-align: center;
+}
+
+.login-logo {
+  display: block;
+  margin: 24px auto;
+}
+
+.login-card h1 {
+  font-size: 28px;
+}
+
+.login-card form {
+  margin-top: 24px;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 256px minmax(0,1fr);
+  max-width: 1600px;
+  margin: auto;
+  min-height: 80vh;
+}
+
+.admin-sidebar {
+  background: var(--surface);
+  padding: 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+
+.admin-sidebar>strong {
+  padding: 0 12px;
+}
+
+.admin-sidebar>small {
+  padding: 0 12px;
+  font-size: 10px;
+  color: #74777f;
+}
+
+.admin-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar nav a {
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.admin-sidebar nav a.active {
+  background: var(--navy-secondary);
+  color: white;
+}
+
+.logout {
+  background: transparent;
+  color: var(--danger);
+  justify-content: flex-start;
+  margin-top: auto;
+}
+
+.admin-main {
+  padding: 0 24px 32px;
+  min-width: 0;
+}
+
+.admin-topbar {
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 12px;
+}
+
+.admin-main h1 {
+  font-size: 28px;
+}
+
+.stats {
+  margin: 24px 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0,2.3fr) minmax(230px,1fr);
+  gap: 24px;
+}
+
+.option-editor {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.prose {
+  max-width: 950px;
+}
+
+.prose h2 {
+  margin-top: 32px;
+}
+
+.prose p {
+  font-size: 15px;
+  line-height: 1.85;
+}

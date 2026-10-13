@@ -1,0 +1,28 @@
+dialog {
+  border: 0;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 680px;
+  width: calc(100vw - 32px);
+  max-height: 90vh;
+  box-shadow: 0 20px 70px #00183533;
+  color: var(--navy);
+}
+
+dialog::backdrop {
+  background: #00183580;
+  backdrop-filter: blur(3px);
+}
+
+.icon-button {
+  background: var(--soft);
+  color: var(--navy);
+  font-size: 24px;
+  min-height: 36px;
+  width: 36px;
+  padding: 0;
+}
+
+dialog .table-scroll {
+  max-height: 45vh;
+}

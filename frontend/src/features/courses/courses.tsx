@@ -1,18 +1,196 @@
 "use client";
-import {useEffect,useState} from "react";
-import {api,send} from "@/lib/api";
-import {Field,Notice,ErrorNotice,Modal,Pagination} from "@/components/ui";
-import type {Row} from "@/types/api";
-export function Courses(){
- const [rows,setRows]=useState<Row[]>([]),[search,setSearch]=useState(""),[semester,setSemester]=useState(""),[sort,setSort]=useState("code");
- const [page,setPage]=useState(1),[pages,setPages]=useState(1),[total,setTotal]=useState(0),[refresh,setRefresh]=useState(0);
- const [edit,setEdit]=useState<Row|null>(null),[error,setError]=useState<unknown>(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
- useEffect(()=>{let active=true;setLoading(true);setError(null);const q=new URLSearchParams({search,sort,page:String(page)});if(semester)q.set("semester",semester);api("/admin/courses?"+q).then(r=>{if(!active)return;setRows(r.data);setPages(r.meta?.total_pages||1);setTotal(r.meta?.total||0);}).catch(e=>active&&setError(e)).finally(()=>active&&setLoading(false));return()=>{active=false;};},[search,semester,sort,page,refresh]);
- async function save(event:React.FormEvent<HTMLFormElement>){
-  event.preventDefault();if(busy||!edit)return;setBusy(true);setError(null);
-  const form=new FormData(event.currentTarget);
-  try{await send("/admin/courses"+(edit.id?"/"+edit.id:""),{code:form.get("code"),name:form.get("name"),semester:Number(form.get("semester")),credits:Number(form.get("credits")),is_active:form.get("is_active")==="on"},edit.id?"PATCH":"POST");setEdit(null);setRefresh(refresh+1);}
-  catch(e){setError(e);}finally{setBusy(false);}
- }
- return <><span className="eyebrow">MATRIKS PRASYARAT INFERENSI</span><h1>Kelola Mata Kuliah Prasyarat Peminatan</h1><p>Bobot relevansi diatur pada versi model fuzzy. Metadata yang dirujuk model terpublikasi dipertahankan.</p><div className="spread"><span className="badge">{total} mata kuliah terdaftar</span><button onClick={()=>{setError(null);setEdit({is_active:true,semester:1,credits:3});}}>+ Tambah mata kuliah</button></div><div className="filters"><Field label="Cari kode atau nama"><input value={search} onChange={e=>{setSearch(e.target.value);setPage(1);}} placeholder="Cari mata kuliah…"/></Field><Field label="Semester"><select value={semester} onChange={e=>{setSemester(e.target.value);setPage(1);}}><option value="">Semua semester</option>{[1,2,3,4].map(n=><option key={n}>{n}</option>)}</select></Field><Field label="Urutkan"><select value={sort} onChange={e=>setSort(e.target.value)}><option value="code">Kode</option><option value="name">Nama</option><option value="semester">Semester</option></select></Field></div><ErrorNotice error={error}/>{loading&&<Notice>Memuat mata kuliah…</Notice>}<article className="card">{!loading&&!rows.length?<Notice>Belum ada mata kuliah sesuai filter.</Notice>:<div className="table-scroll"><table><thead><tr><th>Kode MK</th><th>Mata kuliah</th><th>SKS</th><th>Semester</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td className="mono">{r.code}</td><td>{r.name}</td><td>{r.credits}</td><td>{r.semester}</td><td><span className="badge">{r.is_active?"Aktif":"Nonaktif"}</span></td><td><button className="secondary compact" onClick={()=>{setEdit(r);setError(null);}}>Edit / nonaktifkan</button></td></tr>)}</tbody></table></div>}<Pagination page={page} total={pages} onChange={setPage}/></article><Modal open={!!edit} title={edit?.id?"Edit mata kuliah":"Tambah mata kuliah"} onClose={()=>!busy&&setEdit(null)}>{edit&&<form onSubmit={save} key={edit.id||"new"}><Field label="Kode MK"><input name="code" defaultValue={edit.code} required maxLength={20}/></Field><Field label="Nama mata kuliah"><input name="name" defaultValue={edit.name} required maxLength={150}/></Field><div className="two-columns"><Field label="Semester"><input name="semester" type="number" min="1" max="4" defaultValue={edit.semester} required/></Field><Field label="SKS"><input name="credits" type="number" min="1" max="12" defaultValue={edit.credits} required/></Field></div><label className="checkbox"><input type="checkbox" name="is_active" defaultChecked={edit.is_active}/>Aktif</label><ErrorNotice error={error}/><button disabled={busy}>{busy?"Menyimpan…":"Simpan mata kuliah"}</button></form>}</Modal></>;
+
+import { ErrorNotice, Field, Modal, Notice, Pagination } from "@/components/ui";
+import { useCourses } from "./use-courses";
+
+export function Courses() {
+  const {
+    rows,
+    search,
+    setSearch,
+    semester,
+    setSemester,
+    sort,
+    setSort,
+    page,
+    setPage,
+    pages,
+    total,
+    edit,
+    setEdit,
+    error,
+    setError,
+    busy,
+    loading,
+    save
+  } = useCourses();
+  return (
+    <>
+      <span className="eyebrow">MATRIKS PRASYARAT INFERENSI</span>
+      <h1>Kelola Mata Kuliah Prasyarat Peminatan</h1>
+      <p>
+        Bobot relevansi diatur pada versi model fuzzy. Metadata yang dirujuk
+        model terpublikasi dipertahankan.
+      </p>
+      <div className="spread">
+        <span className="badge">{total} mata kuliah terdaftar</span>
+        <button
+          onClick={() => {
+            setError(null);
+            setEdit({ is_active: true, semester: 1, credits: 3 });
+          }}
+        >
+          + Tambah mata kuliah
+        </button>
+      </div>
+      <div className="filters">
+        <Field label="Cari kode atau nama">
+          <input
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Cari mata kuliah…"
+          />
+        </Field>
+        <Field label="Semester">
+          <select
+            value={semester}
+            onChange={e => {
+              setSemester(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">Semua semester</option>
+            {[1, 2, 3, 4].map(n => (
+              <option key={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Urutkan">
+          <select value={sort} onChange={e => setSort(e.target.value)}>
+            <option value="code">Kode</option>
+            <option value="name">Nama</option>
+            <option value="semester">Semester</option>
+          </select>
+        </Field>
+      </div>
+      <ErrorNotice error={error} />
+      {loading && <Notice>Memuat mata kuliah…</Notice>}
+      <article className="card">
+        {!loading && !rows.length ? (
+          <Notice>Belum ada mata kuliah sesuai filter.</Notice>
+        ) : (
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kode MK</th>
+                  <th>Mata kuliah</th>
+                  <th>SKS</th>
+                  <th>Semester</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(r => (
+                  <tr key={r.id}>
+                    <td className="mono">
+                      {r.code}
+                    </td>
+                    <td>
+                      {r.name}
+                    </td>
+                    <td>
+                      {r.credits}
+                    </td>
+                    <td>
+                      {r.semester}
+                    </td>
+                    <td>
+                      <span className="badge">
+                        {r.is_active ? "Aktif" : "Nonaktif"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="secondary compact"
+                        onClick={() => {
+                          setEdit(r);
+                          setError(null);
+                        }}
+                      >
+                        Edit / nonaktifkan
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <Pagination page={page} total={pages} onChange={setPage} />
+      </article>
+      <Modal
+        open={!!edit}
+        title={edit?.id ? "Edit mata kuliah" : "Tambah mata kuliah"}
+        onClose={() => !busy && setEdit(null)}
+      >
+        {edit && (
+          <form onSubmit={save} key={edit.id || "new"}>
+            <Field label="Kode MK">
+              <input
+                name="code"
+                defaultValue={edit.code}
+                required
+                maxLength={20}
+              />
+            </Field>
+            <Field label="Nama mata kuliah">
+              <input
+                name="name"
+                defaultValue={edit.name}
+                required
+                maxLength={150}
+              />
+            </Field>
+            <div className="two-columns">
+              <Field label="Semester">
+                <input
+                  name="semester"
+                  type="number"
+                  min="1"
+                  max="4"
+                  defaultValue={edit.semester}
+                  required
+                />
+              </Field>
+              <Field label="SKS">
+                <input
+                  name="credits"
+                  type="number"
+                  min="1"
+                  max="12"
+                  defaultValue={edit.credits}
+                  required
+                />
+              </Field>
+            </div>
+            <label className="checkbox">
+              <input type="checkbox" name="is_active" defaultChecked={edit.is_active} />
+              Aktif
+            </label>
+            <ErrorNotice error={error} />
+            <button disabled={busy}>
+              {busy ? "Menyimpan\u2026" : "Simpan mata kuliah"}
+            </button>
+          </form>
+        )}
+      </Modal>
+    </>
+  );
 }

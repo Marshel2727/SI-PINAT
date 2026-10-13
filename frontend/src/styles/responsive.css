@@ -1,0 +1,230 @@
+@media(max-width:1100px) {
+  .header nav {
+    gap: 14px;
+  }
+  .hero {
+    padding: 64px 0;
+  }
+  .hero h1 {
+    font-size: 32px;
+  }
+  .hero-grid {
+    grid-template-columns: 1.3fr 1fr;
+  }
+  .admin-layout {
+    grid-template-columns: 210px minmax(0,1fr);
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .recommendation-title {
+    flex-wrap: wrap;
+  }
+  .three-columns {
+    gap: 16px;
+  }
+  .four-columns {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .two-columns {
+    gap: 16px;
+  }
+}
+
+@media(max-width:767px) {
+  body {
+    font-size: 13px;
+  }
+  .header-inner {
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .header nav {
+    display: none;
+  }
+  .brand {
+    gap: 8px;
+  }
+  .container {
+    padding-inline: 16px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  .hero {
+    padding: 40px 0;
+  }
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+  .hero .badge {
+    font-size: 9px;
+  }
+  .example-card {
+    max-width: 100%;
+  }
+  .metrics {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .three-columns,.two-columns,.test-grid {
+    grid-template-columns: 1fr;
+  }
+  .steps {
+    padding: 8px;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  .steps li {
+    flex-direction: column;
+    padding: 7px 3px;
+    gap: 5px;
+    text-align: center;
+    font-size: 9px;
+  }
+  .steps small {
+    display: none;
+  }
+  .step-number {
+    width: 25px;
+    height: 25px;
+  }
+  .card {
+    padding: 20px;
+  }
+  .title-icon {
+    margin-top: 18px;
+  }
+  .specialization h2 {
+    font-size: 21px;
+  }
+  .session-meta {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .tabs {
+    max-width: 100%;
+    overflow: auto;
+  }
+  .tabs button {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  .spread.wrap {
+    align-items: flex-start;
+  }
+  .question-card {
+    padding: 0;
+  }
+  .question-header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .question-header small {
+    margin: 0;
+  }
+  .question-card h2 {
+    padding: 20px 16px 0;
+    font-size: 17px;
+  }
+  .answers {
+    padding: 0 16px;
+  }
+  .answer {
+    padding: 13px 10px;
+    gap: 8px;
+  }
+  .question-footer {
+    padding: 16px;
+  }
+  .admin-layout {
+    display: block;
+  }
+  .admin-sidebar {
+    position: static;
+    height: auto;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  .admin-sidebar>small,.admin-sidebar>strong {
+    display: none;
+  }
+  .admin-sidebar nav {
+    flex-direction: row;
+    overflow: auto;
+    gap: 5px;
+  }
+  .admin-sidebar nav a {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  .logout {
+    min-height: 32px;
+    padding: 6px 12px;
+    align-self: flex-end;
+    font-size: 11px;
+  }
+  .admin-main {
+    padding: 0 16px 24px;
+  }
+  .admin-topbar {
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+  .admin-main h1 {
+    font-size: 25px;
+  }
+  .stats {
+    gap: 10px;
+  }
+  .stats .card {
+    padding: 16px;
+  }
+  .stats .big-number {
+    font-size: 30px;
+  }
+  .login-card {
+    padding: 28px 20px;
+  }
+  .login-card h1 {
+    font-size: 25px;
+  }
+  .field {
+    margin: 12px 0;
+  }
+  .option-editor {
+    grid-template-columns: 85px minmax(0,1fr);
+  }
+  .recommendation-title h1 {
+    font-size: 25px;
+  }
+  .score-tile {
+    width: 100%;
+  }
+  .recommendation-title {
+    margin-top: 24px;
+  }
+  .dark-card {
+    padding: 24px;
+  }
+  .pagination {
+    justify-content: center;
+    gap: 10px;
+  }
+  .pagination button {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  .footer {
+    margin-top: 24px;
+    padding: 24px 16px;
+  }
+}

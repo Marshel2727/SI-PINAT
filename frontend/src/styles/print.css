@@ -1,0 +1,53 @@
+@media print {
+  .header,.footer,.admin-sidebar,button,.button,.steps {
+    display: none!important;
+  }
+  body {
+    background: white;
+    font-size: 11px;
+  }
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+  .card,.dark-card {
+    box-shadow: none;
+    break-inside: avoid;
+    border: 1px solid #ddd;
+  }
+  .section {
+    margin: 14px 0;
+  }
+  .two-columns {
+    display: block;
+  }
+  .two-columns>.card {
+    margin: 14px 0;
+  }
+  .notice {
+    background: #f5f5f5;
+  }
+  .score-tile {
+    background: #eee;
+    color: black;
+  }
+  .bar {
+    border: 1px solid #ccc;
+  }
+  .table-scroll {
+    overflow: visible;
+    max-height: none;
+  }
+  th {
+    position: static;
+  }
+  .admin-layout {
+    display: block;
+  }
+  .admin-main {
+    padding: 0;
+  }
+  .curve {
+    max-height: 220px;
+  }
+}

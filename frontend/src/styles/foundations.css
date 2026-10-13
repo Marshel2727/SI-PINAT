@@ -1,0 +1,195 @@
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/jakarta.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/mono.ttf") format("truetype");
+}
+
+:root {
+  --navy: #001835;
+  --primary: #0051d5;
+  --navy-secondary: #142d4e;
+  --text-secondary: #44474e;
+  --surface: #f2f3ff;
+  --soft: #eaedff;
+  --border: #dae2fd;
+  --teal: #2ea498;
+  --page: #faf8ff;
+  --danger: #a21c27;
+  --radius: 12px;
+  --shadow: 0 2px 5px #0018350b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--navy);
+  font-family: "Plus Jakarta Sans",Arial,sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+h1,h2,h3,p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.3;
+  letter-spacing: -.9px;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: -.4px;
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,input,select,textarea {
+  font: inherit;
+}
+
+button,.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--navy);
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s,box-shadow .15s;
+}
+
+button:hover,.button:hover {
+  background: var(--navy-secondary);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+button.secondary,.button.secondary {
+  background: var(--soft);
+  color: var(--navy);
+}
+
+button.secondary:hover,.button.secondary:hover {
+  background: var(--border);
+}
+
+.button.white {
+  background: white;
+  color: var(--navy);
+}
+
+.compact {
+  min-height: 36px;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.full {
+  width: 100%;
+}
+
+.block {
+  display: block;
+}
+
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+  outline: 3px solid #0051d56b;
+  outline-offset: 3px;
+}
+
+input:not([type=checkbox]):not([type=radio]),select,textarea {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--navy);
+  font-size: 13px;
+}
+
+input[type=checkbox],input[type=radio] {
+  accent-color: var(--primary);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+small,.small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.muted {
+  color: #74777f;
+}
+
+.mono {
+  font-family: "JetBrains Mono",monospace;
+  font-size: 12px;
+}
