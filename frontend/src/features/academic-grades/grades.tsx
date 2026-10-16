@@ -252,7 +252,7 @@ export function Grades() {
                                 {number(master.conversions.find(g => g.letter_grade === values[c.id])?.normalized_score || 0)}
                               </span>
                             ) : (
-                              <span className="muted">\u2014</span>
+                              <span className="muted">{"\u2014"}</span>
                             )}
                           </td>
                         </tr>

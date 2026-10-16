@@ -3,6 +3,7 @@
 import { Curve, ErrorNotice, Notice, ScoreBars, StatusBadge } from "@/components/ui";
 import { names, number, time } from "@/lib/format";
 import Link from "next/link";
+import { MembershipInputs, RuleActivationTable } from "@/features/recommendations/trace-sections";
 import { useAdminAssessment } from "./use-admin-assessment";
 
 export function AdminAssessment({ id }: {
@@ -88,6 +89,7 @@ export function AdminAssessment({ id }: {
                       className={key === code ? "" : "secondary"}
                       key={key}
                       onClick={() => {
+                        if (key === code) return;
                         setCode(key);
                         setTrace(null);
                       }}
@@ -96,8 +98,12 @@ export function AdminAssessment({ id }: {
                     </button>
                   ))}
                 </div>
+                {!trace && <Notice>Memuat jejak perhitungan…</Notice>}
                 {trace && (
                   <>
+                    <MembershipInputs trace={trace} />
+                    <RuleActivationTable trace={trace} />
+                    <h3 style={{ marginTop: 24 }}>Kurva agregasi &amp; centroid</h3>
                     <Curve
                       x={trace.aggregated_curve.z}
                       y={trace.aggregated_curve.mu}
@@ -107,34 +113,8 @@ export function AdminAssessment({ id }: {
                     <p>
                       Numerator {number(trace.centroid_numerator, 5)} /
                       denominator {number(trace.centroid_denominator, 5)} ={" "}
-                      {number(trace.score.suitability_score, 5)}
+                      <strong>{number(trace.score.suitability_score, 5)}</strong>
                     </p>
-                    <div className="table-scroll">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Aturan</th>
-                            <th>Alpha</th>
-                            <th>Konsekuen</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {trace.rule_activations.map(r => (
-                            <tr key={r.rule_id}>
-                              <td>
-                                {r.rule_code}
-                              </td>
-                              <td>
-                                {number(r.alpha, 5)}
-                              </td>
-                              <td>
-                                {r.output_set}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
                   </>
                 )}
               </article>

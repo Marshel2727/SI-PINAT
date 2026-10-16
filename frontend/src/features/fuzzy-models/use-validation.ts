@@ -17,7 +17,11 @@ export function useValidation({ initialModel = "" }: {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    api<FuzzyModelSummary[]>("/admin/fuzzy-models?page_size=100").then(r => setModels(r.data)).catch(setError);
+    api<FuzzyModelSummary[]>("/admin/fuzzy-models?page_size=100").then(r => {
+      setModels(r.data);
+      // Pilih otomatis: utamakan versi DRAFT (yang sedang divalidasi), lalu versi pertama.
+      setModelId(current => current || (r.data.find(m => m.status === "DRAFT") ?? r.data[0])?.id || "");
+    }).catch(setError);
     api<Specialization[]>("/specializations").then(r => setSpecs(r.data)).catch(setError);
   }, []);
   useEffect(() => {

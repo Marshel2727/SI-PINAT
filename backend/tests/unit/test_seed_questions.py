@@ -87,6 +87,31 @@ class SeedQuestionsTests(unittest.TestCase):
             for name in ("questions", "question_options", "audit_logs"):
                 self.assertEqual(db.scalar(select(func.count()).select_from(store.table(name))), 0)
 
+    def test_archive_and_republish_latest_revision(self):
+        from fastapi import HTTPException
+        from app.services import questions as question_service
+
+        with self.engine.begin() as db:
+            seed_questions.seed(db, self.user)
+            first = store.rows(db, "questions")[0]
+            published = question_service.set_status(db, first["id"], "PUBLISHED", self.user)
+            self.assertEqual(published["status"], "PUBLISHED")
+
+            archived = question_service.set_status(db, first["id"], "ARCHIVED", self.user)
+            self.assertEqual(archived["status"], "ARCHIVED")
+
+            restored = question_service.set_status(db, first["id"], "PUBLISHED", self.user)
+            self.assertEqual(restored["status"], "PUBLISHED")
+
+            newer = question_service.revision(db, first["id"], self.user)
+            question_service.set_status(db, newer["id"], "PUBLISHED", self.user)
+            self.assertEqual(store.one(db, "questions", id=first["id"])["status"], "ARCHIVED")
+
+            with self.assertRaises(HTTPException) as ctx:
+                question_service.set_status(db, first["id"], "PUBLISHED", self.user)
+            self.assertEqual(ctx.exception.status_code, 409)
+
 
 if __name__ == "__main__":
     unittest.main()
+

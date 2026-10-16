@@ -1,5 +1,5 @@
 from app.repositories.store import rows, one, add, change, audit
-from app.services.question_options import replace, listing
+from app.services.question_options import replace, listing as list_options
 from app.core.errors import fail
 from sqlalchemy import select, func
 from app.repositories.store import table
@@ -28,7 +28,7 @@ def detail(db, identifier):
     question=one(db,"questions",id=identifier)
     if not question:
         fail(404,"Soal tidak ditemukan.")
-    return {**question,"options":listing(db,identifier,True)}
+    return {**question,"options":list_options(db,identifier,True)}
 
 def save(db, body, user, identifier=None):
     body=dict(body)
@@ -61,8 +61,12 @@ def set_status(db, identifier, status, user):
     db.execute(select(table("questions")).where(table("questions").c.id==identifier).with_for_update()).first()
     question=detail(db,identifier)
     if status=="PUBLISHED":
-        if question["status"]!="DRAFT" or sum(o["is_correct"] for o in question["options"])!=1 or len(question["options"])<2:
-            fail(409,"Hanya draft dengan tepat satu kunci dapat dipublikasikan.")
+        if question["status"] not in ("DRAFT","ARCHIVED") or sum(o["is_correct"] for o in question["options"])!=1 or len(question["options"])<2:
+            fail(409,"Hanya draft atau arsip dengan tepat satu kunci dapat dipublikasikan.")
+        # Restoring an archived revision is only allowed for the newest revision of that code,
+        # so an older revision cannot silently replace a newer one.
+        if question["status"]=="ARCHIVED" and any(q["revision"]>question["revision"] for q in rows(db,"questions",code=question["code"])):
+            fail(409,"Hanya revisi terbaru yang dapat ditampilkan kembali.")
         # Archive previous published revision; existing assessment_items keep their original ID.
         for old in rows(db,"questions",code=question["code"],status="PUBLISHED"):
             change(db,"questions",old["id"],status="ARCHIVED")

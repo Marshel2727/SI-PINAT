@@ -88,9 +88,19 @@ export function QuestionEditor({ id }: {
                 <textarea name="explanation" defaultValue={question.explanation ?? ""} rows={3} />
               </Field>
               {!locked && (
-                <button disabled={busy}>
-                  {busy ? "Menyimpan\u2026" : "Simpan draf"}
-                </button>
+                <div className="spread wrap" style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+                  {id === "baru" ? (
+                    <label className="checkbox">
+                      <input type="checkbox" name="auto_publish" defaultChecked={true} />
+                      <span><strong>Langsung publikasikan</strong> (soal langsung aktif & siap digunakan)</span>
+                    </label>
+                  ) : (
+                    <span className="small muted">Simpan revisi draf sebelum mempublikasikan</span>
+                  )}
+                  <button disabled={busy}>
+                    {busy ? "Menyimpan\u2026" : (id === "baru" ? "Simpan & Proses" : "Simpan Draf")}
+                  </button>
+                </div>
               )}
             </fieldset>
           </form>
@@ -99,6 +109,11 @@ export function QuestionEditor({ id }: {
               {question.status === "DRAFT" && (
                 <button disabled={busy} onClick={() => action("publish")}>
                   Publikasikan soal
+                </button>
+              )}
+              {question.status === "ARCHIVED" && (
+                <button disabled={busy} onClick={() => action("publish")}>
+                  ↺ Tampilkan lagi di tes
                 </button>
               )}
               <button className="secondary" disabled={busy} onClick={() => action("revisions")}>

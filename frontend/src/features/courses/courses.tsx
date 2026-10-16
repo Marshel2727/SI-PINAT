@@ -20,17 +20,20 @@ export function Courses() {
     setEdit,
     error,
     setError,
+    message,
     busy,
+    busyId,
     loading,
-    save
+    save,
+    toggleActive
   } = useCourses();
+
   return (
     <>
       <span className="eyebrow">MATRIKS PRASYARAT INFERENSI</span>
       <h1>Kelola Mata Kuliah Prasyarat Peminatan</h1>
       <p>
-        Bobot relevansi diatur pada versi model fuzzy. Metadata yang dirujuk
-        model terpublikasi dipertahankan.
+        Bobot relevansi diatur pada versi model fuzzy. Klik status untuk menampilkan atau menyembunyikan mata kuliah secara cepat.
       </p>
       <div className="spread">
         <span className="badge">{total} mata kuliah terdaftar</span>
@@ -64,22 +67,31 @@ export function Courses() {
           >
             <option value="">Semua semester</option>
             {[1, 2, 3, 4].map(n => (
-              <option key={n}>
-                {n}
+              <option key={n} value={n}>
+                Semester {n}
               </option>
             ))}
           </select>
         </Field>
         <Field label="Urutkan">
-          <select value={sort} onChange={e => setSort(e.target.value)}>
-            <option value="code">Kode</option>
-            <option value="name">Nama</option>
+          <select
+            value={sort}
+            onChange={e => {
+              setSort(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="code">Kode MK</option>
+            <option value="name">Nama Mata Kuliah</option>
             <option value="semester">Semester</option>
           </select>
         </Field>
       </div>
+
       <ErrorNotice error={error} />
+      {message && <Notice tone="success">{message}</Notice>}
       {loading && <Notice>Memuat mata kuliah…</Notice>}
+
       <article className="card">
         {!loading && !rows.length ? (
           <Notice>Belum ada mata kuliah sesuai filter.</Notice>
@@ -92,7 +104,7 @@ export function Courses() {
                   <th>Mata kuliah</th>
                   <th>SKS</th>
                   <th>Semester</th>
-                  <th>Status</th>
+                  <th>Status (Klik untuk Ubah)</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -100,31 +112,52 @@ export function Courses() {
                 {rows.map(r => (
                   <tr key={r.id}>
                     <td className="mono">
-                      {r.code}
+                      <strong>{r.code}</strong>
                     </td>
                     <td>
                       {r.name}
                     </td>
                     <td>
-                      {r.credits}
+                      {r.credits} SKS
                     </td>
                     <td>
-                      {r.semester}
+                      Semester {r.semester}
                     </td>
                     <td>
-                      <span className="badge">
-                        {r.is_active ? "Aktif" : "Nonaktif"}
-                      </span>
+                      <button
+                        type="button"
+                        className="compact"
+                        style={{
+                          minHeight: 28,
+                          padding: "3px 12px",
+                          fontSize: "11px",
+                          borderRadius: "999px",
+                          background: r.is_active ? "#def5e8" : "#f1f3f8",
+                          color: r.is_active ? "#165534" : "#555862",
+                          border: r.is_active ? "1px solid #bcead0" : "1px solid #d1d5db",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5
+                        }}
+                        disabled={busy || busyId === r.id}
+                        onClick={() => toggleActive(r)}
+                        title={r.is_active ? "Klik untuk menyembunyikan / menonaktifkan" : "Klik untuk menampilkan / mengaktifkan"}
+                      >
+                        {busyId === r.id ? "…" : (r.is_active ? "● Aktif (Tampil)" : "○ Nonaktif (Sembunyi)")}
+                      </button>
                     </td>
                     <td>
                       <button
                         className="secondary compact"
+                        style={{ minHeight: 28, padding: "3px 12px", fontSize: "11.5px" }}
                         onClick={() => {
                           setEdit(r);
                           setError(null);
                         }}
                       >
-                        Edit / nonaktifkan
+                        Edit
                       </button>
                     </td>
                   </tr>
@@ -135,6 +168,7 @@ export function Courses() {
         )}
         <Pagination page={page} total={pages} onChange={setPage} />
       </article>
+
       <Modal
         open={!!edit}
         title={edit?.id ? "Edit mata kuliah" : "Tambah mata kuliah"}
@@ -182,10 +216,10 @@ export function Courses() {
             </div>
             <label className="checkbox">
               <input type="checkbox" name="is_active" defaultChecked={edit.is_active} />
-              Aktif
+              Aktif (Tampil di kurikulum asesmen)
             </label>
             <ErrorNotice error={error} />
-            <button disabled={busy}>
+            <button disabled={busy} style={{ marginTop: 12 }}>
               {busy ? "Menyimpan\u2026" : "Simpan mata kuliah"}
             </button>
           </form>

@@ -5,6 +5,35 @@ import { MembershipPlot } from "@/components/ui";
 import type { MembershipShape } from "@/lib/fuzzy-curve";
 import { configurationPayload, type Column, type ConfigRow } from "./configuration";
 
+const setOrder: Record<string, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
+
+function toPoint(value: ConfigRow[string]): number {
+  return value === "" || value === null || value === undefined ? NaN : Number(value);
+}
+
+/** Mengelompokkan baris himpunan per variabel agar kurva LOW/MEDIUM/HIGH tampil dalam satu grafik. */
+function groupSetsByVariable(rows: ConfigRow[], columns: Column[]) {
+  const options = columns.find(column => column.key === "variable_id")?.options || [];
+  const groups = new Map<string, { key: string; label: string; sets: MembershipShape[]; }>();
+  for (const row of rows) {
+    const key = String(row.variable_id ?? "");
+    const name = options.find(option => String(option.id) === key)?.name || "Variabel belum dipilih";
+    const group = groups.get(key) || { key: key || "none", label: "Variabel " + name, sets: [] };
+    group.sets.push({
+      code: String(row.code) as MembershipShape["code"],
+      shape: String(row.shape) as MembershipShape["shape"],
+      point_a: toPoint(row.point_a),
+      point_b: toPoint(row.point_b),
+      point_c: toPoint(row.point_c),
+      point_d: row.point_d === null || row.point_d === "" || row.point_d === undefined ? null : Number(row.point_d)
+    });
+    groups.set(key, group);
+  }
+  for (const group of groups.values())
+    group.sets.sort((a, b) => (setOrder[a.code] ?? 9) - (setOrder[b.code] ?? 9));
+  return [...groups.values()];
+}
+
 export function ConfigTable({ title, columns, values, locked, onSave, busy, onDirtyChange }: {
   title: string;
   columns: Column[];
@@ -126,20 +155,11 @@ export function ConfigTable({ title, columns, values, locked, onSave, busy, onDi
       </form>
       {isSetEditor && <section className="section">
         <h3>Pratinjau fungsi keanggotaan</h3>
-        <p className="small muted">Kurva mengikuti titik yang sedang diedit. Simpan konfigurasi untuk menerapkannya pada model.</p>
-        <div className="two-columns">
-          {local.map((row, index) => {
-            const set: MembershipShape = {
-              code: String(row.code) as MembershipShape["code"],
-              shape: String(row.shape) as MembershipShape["shape"],
-              point_a: row.point_a === "" ? NaN : Number(row.point_a),
-              point_b: row.point_b === "" ? NaN : Number(row.point_b),
-              point_c: row.point_c === "" ? NaN : Number(row.point_c),
-              point_d: row.point_d === null || row.point_d === "" || row.point_d === undefined ? null : Number(row.point_d),
-            };
-            const variable = columns.find(column => column.key === "variable_id")?.options?.find(option => String(option.id) === String(row.variable_id));
-            return <MembershipPlot key={row.id || "preview-" + index} sets={[set]} label={`${variable?.name || "Variabel"} · ${row.code || "Himpunan baru"}`} />;
-          })}
+        <p className="small muted">Satu grafik per variabel memperlihatkan irisan LOW, MEDIUM, dan HIGH dari titik yang sedang diedit. Simpan konfigurasi untuk menerapkannya pada model.</p>
+        <div className="stack">
+          {groupSetsByVariable(local, columns).map(group => (
+            <MembershipPlot key={group.key} sets={group.sets} label={group.label} />
+          ))}
         </div>
       </section>}
     </article>
