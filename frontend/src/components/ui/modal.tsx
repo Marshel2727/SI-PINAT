@@ -11,15 +11,21 @@ export function Modal({ open, title, onClose, children }: {
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (open)
-      ref.current?.showModal();
-    else
-      ref.current?.close();
+    const dialog = ref.current;
+    if (!dialog)
+      return;
+    if (open && !dialog.open)
+      dialog.showModal();
+    else if (!open && dialog.open)
+      dialog.close();
   }, [open]);
   return (
     <dialog
       ref={ref}
-      onCancel={onClose}
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
       onClose={onClose}
       aria-label={title}
     >
@@ -27,7 +33,7 @@ export function Modal({ open, title, onClose, children }: {
         <h2>
           {title}
         </h2>
-        <button className="icon-button" onClick={onClose} aria-label="Tutup dialog">
+        <button type="button" className="icon-button" onClick={onClose} aria-label="Tutup dialog">
           <IconClose size={18} />
         </button>
       </div>

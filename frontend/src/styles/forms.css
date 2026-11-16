@@ -36,7 +36,7 @@
   min-width: 0;
 }
 
-.field>span {
+.field > span {
   font-size: 13px;
   font-weight: 600;
 }
@@ -51,7 +51,7 @@
 
 .steps {
   display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   background: white;
   border-radius: 12px;
@@ -191,13 +191,13 @@ th {
   z-index: 1;
 }
 
-th,td {
+th, td {
   padding: 14px 12px;
   border-bottom: 1px solid #eef0fb;
   vertical-align: middle;
 }
 
-td input:not([type=checkbox]),td select {
+td input:not([type=checkbox]), td select {
   min-width: 85px;
 }
 
@@ -232,9 +232,22 @@ td:first-child {
   transition: border-color 0.2s, background-color 0.2s;
 }
 
+.upload-zone:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .upload-zone.is-dragging {
   border-color: var(--primary);
   background: var(--soft);
+}
+
+.upload-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
 }
 
 .upload-zone .field {
@@ -242,7 +255,7 @@ td:first-child {
   width: 100%;
 }
 
-.upload-zone>img {
+.upload-zone > img {
   max-height: 40px;
 }
 
@@ -298,4 +311,3 @@ tr:target {
   border-radius: 4px;
   margin-left: 6px;
 }
-

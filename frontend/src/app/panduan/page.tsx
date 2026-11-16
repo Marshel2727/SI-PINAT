@@ -5,7 +5,7 @@ export default function Guide() {
     <main className="container section prose">
       <span className="eyebrow">PANDUAN MAHASISWA</span>
       <h1>Cara menggunakan SI-PINAT</h1>
-      <p>Mulai dari beranda dan pilih DEMO untuk mengenal alurnya, atau FULL untuk mengisi asesmen lengkap. Pada FULL, isi NIM, nama, semester, serta kelas bila diperlukan. Identitas ini merupakan pernyataan peserta dan belum terhubung ke verifikasi SIAKAD.</p>
+      <p>Mulai dari beranda dan pilih DEMO untuk mengenal alurnya, atau FULL untuk mengisi asesmen lengkap. Pada FULL, isi NIM, nama, semester, serta kelas bila diperlukan. Jika menggunakan NIM yang sama untuk sesi ulang, pastikan nama lengkap dan kelas (kosongkan bila sebelumnya kosong) ditulis sama persis. Identitas ini merupakan pernyataan peserta dan belum terhubung ke verifikasi SIAKAD.</p>
       <h2>Peminatan dan nilai akademik</h2>
       <p>Pilih peminatan yang paling kamu minati. Pilihan ini hanya dibandingkan dengan hasil akhir. Unduh template dari halaman nilai, isi kolom semester, kode_mk, nama_mk, dan nilai_huruf tanpa mengubah header. Unggah CSV UTF-8 atau XLSX, periksa pratinjau, lalu konfirmasikan penggantian nilai. Kamu juga dapat mengisi nilai satu per satu.</p>
       <p>Lengkapi mata kuliah wajib dan perbaiki kesalahan yang ditampilkan. Konversi serta bobot selalu mengikuti versi model sesi. Nilai terkunci setelah jawaban tes pertama disimpan.</p>

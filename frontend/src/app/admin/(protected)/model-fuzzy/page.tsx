@@ -1,4 +1,4 @@
-import { ModelList } from "@/features/fuzzy-models/model-list";
+import { ModelList } from "@/features/admin/model-list";
 
 export default function Page() {
   return <ModelList />;

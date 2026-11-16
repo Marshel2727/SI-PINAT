@@ -1,4 +1,4 @@
-import { Validation } from "@/features/fuzzy-models/validation";
+import { Validation } from "@/features/admin/validation";
 
 export default async function Page({ searchParams }: {
   searchParams: Promise<{

@@ -9,6 +9,17 @@ const inputs = [
   ["COMPETENCY", "Skor Tes Kompetensi (X2)"]
 ] as const;
 
+const setLabels: Record<string, string> = {
+  LOW: "Rendah (LOW)",
+  MEDIUM: "Sedang (MEDIUM)",
+  HIGH: "Tinggi (HIGH)",
+};
+
+const operatorLabels: Record<string, string> = {
+  AND: "AND (MIN)",
+  OR: "OR (MAX)",
+};
+
 /** Kartu masukan crisp X1/X2 beserta derajat keanggotaan dan kurvanya. */
 export function MembershipInputs({ trace }: { trace: FuzzyTrace; }) {
   return (
@@ -37,14 +48,18 @@ export function MembershipInputs({ trace }: { trace: FuzzyTrace; }) {
                       border: value > 0 ? "1px solid var(--border)" : "none"
                     }}
                   >
-                    μ({set}): {number(value, 4)}
+                    μ({setLabels[set] || set}): {number(value, 4)}
                   </span>
                 );
               })}
             </div>
             {trace.input_sets?.[key] && (
-              <MembershipPlot sets={trace.input_sets[key]} crisp={membership.crisp}
-                degrees={membership.degrees} label={"Fungsi keanggotaan " + title} />
+              <MembershipPlot
+                sets={trace.input_sets[key]}
+                crisp={membership.crisp}
+                degrees={membership.degrees}
+                label={"Fungsi keanggotaan " + title}
+              />
             )}
           </article>
         );
@@ -62,7 +77,7 @@ export function RuleActivationTable({ trace }: { trace: FuzzyTrace; }) {
         <div>
           <h2>Aktivasi Seluruh Aturan Inferensi (IF-THEN)</h2>
           <p className="small muted" style={{ margin: "2px 0 0" }}>
-            Formula: α = min(anteseden, bobot). Baris yang memiliki nilai α &gt; 0 diberi tanda aktif.
+            Formula: α = min(anteseden, bobot), dengan AND = min(μ_akademik, μ_kompetensi) dan OR = max(μ_akademik, μ_kompetensi). Baris α &gt; 0 diberi tanda aktif.
           </p>
         </div>
         <span className="badge">
@@ -91,16 +106,16 @@ export function RuleActivationTable({ trace }: { trace: FuzzyTrace; }) {
                     <strong>{r.rule_code}</strong>
                     {isActive && <span className="badge-active">AKTIF</span>}
                   </td>
-                  <td>{r.academic_set} ({number(r.academic_degree, 3)})</td>
-                  <td>{r.competency_set} ({number(r.competency_degree, 3)})</td>
-                  <td><span className="badge">{r.operator}</span></td>
+                  <td>{setLabels[r.academic_set] || r.academic_set} ({number(r.academic_degree, 3)})</td>
+                  <td>{setLabels[r.competency_set] || r.competency_set} ({number(r.competency_degree, 3)})</td>
+                  <td><span className="badge">{operatorLabels[r.operator] || r.operator}</span></td>
                   <td className="mono">{number(r.rule_weight, 2)}</td>
                   <td className="mono">
                     <strong style={{ color: isActive ? "var(--primary)" : "inherit" }}>
                       {number(r.alpha, 4)}
                     </strong>
                   </td>
-                  <td><strong>{r.output_set}</strong></td>
+                  <td><strong>{setLabels[r.output_set] || r.output_set}</strong></td>
                 </tr>
               );
             })}

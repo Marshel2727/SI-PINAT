@@ -2,12 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconClose, IconMenu } from "./icons";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        toggleRef.current?.focus();
+      }
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      const target = event.target;
+      if (target instanceof Node && headerRef.current && !headerRef.current.contains(target)) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [mobileMenuOpen]);
 
   // Jangan render header publik di modul admin
   if (pathname.startsWith("/admin")) {
@@ -17,7 +48,7 @@ export function Header() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="header">
+    <header className="header" ref={headerRef}>
       <div className="header-inner">
         <Link href="/" className="brand" onClick={closeMenu}>
           <img
@@ -51,10 +82,12 @@ export function Header() {
 
           {/* Tombol Hamburger untuk Mobile */}
           <button
+            ref={toggleRef}
             type="button"
             className="mobile-menu-toggle"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu navigasi"}
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-drawer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <IconClose size={22} /> : <IconMenu size={22} />}
@@ -64,7 +97,13 @@ export function Header() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="mobile-drawer" role="dialog" aria-label="Menu navigasi mobile">
+        <div
+          id="mobile-nav-drawer"
+          className="mobile-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu navigasi mobile"
+        >
           <nav aria-label="Navigasi mobile">
             <Link href="/" onClick={closeMenu}>
               Beranda

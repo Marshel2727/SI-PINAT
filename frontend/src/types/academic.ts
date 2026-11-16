@@ -7,6 +7,7 @@ export interface Course {
   semester: number;
   credits: number;
   is_active: boolean;
+  is_locked_by_published?: boolean;
 }
 
 export type CourseEditorState = Partial<Course>;
@@ -70,4 +71,5 @@ export interface GradeImport extends GradeState {
   import_id: Id;
   committed: boolean;
   preview: GradeImportRow[];
+  warnings?: string[];
 }

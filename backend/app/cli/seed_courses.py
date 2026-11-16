@@ -10,7 +10,6 @@ import argparse
 from app.db.session import engine
 from app.repositories.store import add, audit, one
 
-
 COURSES = (
     ("21B10C101", "Rangkaian Elektronika", 1, 3),
     ("21B01C102", "Algoritme & Pemrograman Dasar", 1, 3),

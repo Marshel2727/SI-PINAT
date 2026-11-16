@@ -34,16 +34,36 @@ class SeedFuzzyModelTests(unittest.TestCase):
         self.addCleanup(registry.stop)
         proposal = seed_fuzzy_model.load_proposal()
         with self.engine.begin() as db:
-            admin_id = store.add(db, "admin_users", full_name="Seed Test", email="seed@example.invalid",
-                                 password_hash="unused-in-unit-test", is_active=True)
+            admin_id = store.add(
+                db,
+                "admin_users",
+                full_name="Seed Test",
+                email="seed@example.invalid",
+                password_hash="unused-in-unit-test",
+                is_active=True,
+            )
             for code in seed_fuzzy_model.SPECIALIZATIONS:
                 store.add(db, "specializations", code=code, name=code, is_active=True)
             for course in proposal["course_weights"]:
-                store.add(db, "courses", code=course["code"], name=course["code"],
-                          semester=int(course["code"][-3]), credits=3, is_active=True)
+                store.add(
+                    db,
+                    "courses",
+                    code=course["code"],
+                    name=course["code"],
+                    semester=int(course["code"][-3]),
+                    credits=3,
+                    is_active=True,
+                )
             for index in range(1, 4):
-                store.add(db, "courses", code=f"DEMO-MK-{index}", name="Contoh",
-                          semester=1, credits=3, is_active=True)
+                store.add(
+                    db,
+                    "courses",
+                    code=f"DEMO-MK-{index}",
+                    name="Contoh",
+                    semester=1,
+                    credits=3,
+                    is_active=True,
+                )
         self.user = {"id": admin_id}
 
     def test_complete_draft_including_zero_weight_demo_courses(self):
@@ -53,8 +73,14 @@ class SeedFuzzyModelTests(unittest.TestCase):
             config, errors = check_model(db, identifier)
             self.assertEqual(errors, [])
             self.assertEqual(config["status"], "DRAFT")
-            for key, count in (("variables", 3), ("sets", 9), ("rules", 27),
-                               ("validation_cases", 30), ("course_weights", 105), ("grade_conversions", 5)):
+            for key, count in (
+                ("variables", 3),
+                ("sets", 9),
+                ("rules", 27),
+                ("validation_cases", 30),
+                ("course_weights", 105),
+                ("grade_conversions", 5),
+            ):
                 self.assertEqual(len(config[key]), count)
             for case in config["validation_cases"]:
                 self.assertIsNone(case["last_passed"])
@@ -70,9 +96,15 @@ class SeedFuzzyModelTests(unittest.TestCase):
             identifier, _ = seed_fuzzy_model.seed(db, self.user)
             config = configuration(db, identifier)
             for case in config["validation_cases"]:
-                local = {**config, "rules": [rule for rule in config["rules"]
-                                             if rule["specialization_id"] == case["specialization_id"]]}
-                result = calculate(float(case["academic_input"]), float(case["competency_input"]), local)
+                local = {
+                    **config,
+                    "rules": [rule for rule in config["rules"] if rule["specialization_id"] == case["specialization_id"]],
+                }
+                result = calculate(
+                    float(case["academic_input"]),
+                    float(case["competency_input"]),
+                    local,
+                )
                 self.assertGreaterEqual(result["score"], float(case["expected_min"]))
                 self.assertLessEqual(result["score"], float(case["expected_max"]))
 
@@ -81,7 +113,10 @@ class SeedFuzzyModelTests(unittest.TestCase):
             identifier, _ = seed_fuzzy_model.seed(db, self.user)
             store.change(db, "fuzzy_model_versions", identifier, sampling_step=0.2)
             self.assertEqual(seed_fuzzy_model.seed(db, self.user), (identifier, False))
-            self.assertAlmostEqual(float(store.one(db, "fuzzy_model_versions", id=identifier)["sampling_step"]), 0.2)
+            self.assertAlmostEqual(
+                float(store.one(db, "fuzzy_model_versions", id=identifier)["sampling_step"]),
+                0.2,
+            )
             self.assertEqual(len(store.rows(db, "fuzzy_model_versions")), 1)
             self.assertEqual(len(store.rows(db, "audit_logs")), 1)
 
@@ -96,9 +131,16 @@ class SeedFuzzyModelTests(unittest.TestCase):
             self.assertEqual(store.rows(db, "course_weights"), [])
 
     def test_readiness_and_publish_share_guards_and_unique_question_quota(self):
-        questions = Table("questions", MetaData(), Column("id", Integer, primary_key=True),
-                          Column("specialization_id", Integer), Column("code", String),
-                          Column("revision", Integer), Column("status", String), Column("prompt", String))
+        questions = Table(
+            "questions",
+            MetaData(),
+            Column("id", Integer, primary_key=True),
+            Column("specialization_id", Integer),
+            Column("code", String),
+            Column("revision", Integer),
+            Column("status", String),
+            Column("prompt", String),
+        )
         questions.create(self.engine)
         with patch.dict(store.TABLES, {"questions": questions}), self.engine.begin() as db:
             identifier, _ = seed_fuzzy_model.seed(db, self.user)
@@ -108,10 +150,24 @@ class SeedFuzzyModelTests(unittest.TestCase):
             self.assertEqual(blocked.exception.status_code, 422)
             for spec in store.rows(db, "specializations"):
                 for index in range(10):
-                    store.add(db, "questions", specialization_id=spec["id"], code=f"{spec['code']}-{index}",
-                              revision=1, status="PUBLISHED", prompt="Sensor 100% ready" if index == 0 else "Sensor biasa")
-                store.add(db, "questions", specialization_id=spec["id"], code=f"{spec['code']}-0",
-                          revision=2, status="PUBLISHED", prompt="Revisi sensor")
+                    store.add(
+                        db,
+                        "questions",
+                        specialization_id=spec["id"],
+                        code=f"{spec['code']}-{index}",
+                        revision=1,
+                        status="PUBLISHED",
+                        prompt="Sensor 100% ready" if index == 0 else "Sensor biasa",
+                    )
+                store.add(
+                    db,
+                    "questions",
+                    specialization_id=spec["id"],
+                    code=f"{spec['code']}-0",
+                    revision=2,
+                    status="PUBLISHED",
+                    prompt="Revisi sensor",
+                )
             self.assertTrue(all(item["published_count"] == 10 for item in published_summary(db)))
             spec_id = store.rows(db, "specializations")[0]["id"]
             self.assertEqual(len(listing(db, "PUBLISHED", spec_id, "100%")), 1)

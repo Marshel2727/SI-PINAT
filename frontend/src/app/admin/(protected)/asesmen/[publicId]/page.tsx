@@ -1,4 +1,4 @@
-import { AdminAssessment } from "@/features/admin-dashboard/assessment";
+import { AdminAssessment } from "@/features/admin/assessment";
 
 export default async function Page({ params }: {
   params: Promise<{

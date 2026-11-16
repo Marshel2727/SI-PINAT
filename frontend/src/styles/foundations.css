@@ -44,12 +44,12 @@ body {
   margin: 0;
   background: var(--page);
   color: var(--navy);
-  font-family: "Plus Jakarta Sans",Arial,sans-serif;
+  font-family: "Plus Jakarta Sans", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.65;
 }
 
-h1,h2,h3,p {
+h1, h2, h3, p {
   margin-top: 0;
 }
 
@@ -87,11 +87,11 @@ a:hover {
   text-decoration: underline;
 }
 
-button,input,select,textarea {
+button, input, select, textarea {
   font: inherit;
 }
 
-button,.button {
+button, .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -107,10 +107,10 @@ button,.button {
   line-height: 1.4;
   cursor: pointer;
   text-decoration: none;
-  transition: background .15s,box-shadow .15s;
+  transition: background .15s, box-shadow .15s;
 }
 
-button:hover,.button:hover {
+button:hover, .button:hover {
   background: var(--navy-secondary);
   text-decoration: none;
   box-shadow: var(--shadow);
@@ -121,12 +121,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button.secondary,.button.secondary {
+button.secondary, .button.secondary {
   background: var(--soft);
   color: var(--navy);
 }
 
-button.secondary:hover,.button.secondary:hover {
+button.secondary:hover, .button.secondary:hover {
   background: var(--border);
 }
 
@@ -149,12 +149,12 @@ button.secondary:hover,.button.secondary:hover {
   display: block;
 }
 
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid #0051d56b;
   outline-offset: 3px;
 }
 
-input:not([type=checkbox]):not([type=radio]),select,textarea {
+input:not([type=checkbox]):not([type=radio]), select, textarea {
   width: 100%;
   min-height: 43px;
   padding: 10px 12px;
@@ -165,7 +165,7 @@ input:not([type=checkbox]):not([type=radio]),select,textarea {
   font-size: 13px;
 }
 
-input[type=checkbox],input[type=radio] {
+input[type=checkbox], input[type=radio] {
   accent-color: var(--primary);
   width: 18px;
   height: 18px;
@@ -182,7 +182,7 @@ fieldset {
   min-width: 0;
 }
 
-small,.small {
+small, .small {
   font-size: 12px;
   line-height: 1.5;
 }
@@ -192,6 +192,6 @@ small,.small {
 }
 
 .mono {
-  font-family: "JetBrains Mono",monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 12px;
 }

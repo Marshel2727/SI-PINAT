@@ -3,7 +3,9 @@ from sqlalchemy.dialects import mysql
 
 from app.models.metadata import metadata
 
-courses = Table("courses", metadata,
+courses = Table(
+    "courses",
+    metadata,
     Column("id", mysql.BIGINT(unsigned=True), nullable=False, primary_key=True, autoincrement=True),
     Column("code", String(20), nullable=False),
     Column("name", String(150), nullable=False),
@@ -14,5 +16,7 @@ courses = Table("courses", metadata,
     UniqueConstraint("code", name="uq_courses_1"),
     CheckConstraint("semester BETWEEN 1 AND 4", name="ck_courses_1"),
     CheckConstraint("credits BETWEEN 1 AND 12", name="ck_courses_2"),
-    mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_0900_ai_ci",
+    mysql_engine="InnoDB",
+    mysql_charset="utf8mb4",
+    mysql_collate="utf8mb4_0900_ai_ci",
 )

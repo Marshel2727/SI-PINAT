@@ -1,14 +1,14 @@
 "use client";
 
 import { ErrorNotice, Notice, ScoreBars } from "@/components/ui";
-import { IconSparkles, IconInfo } from "@/components/icons";
+import { IconSparkles } from "@/components/icons";
 import { names, number, time } from "@/lib/format";
 import { contributingRuleCodes, explainScore } from "@/lib/score-explanation";
 import Link from "next/link";
 import { useRecommendation } from "./use-recommendation";
 
 export function Recommendation() {
-  const { assessment, base, result, error } = useRecommendation();
+  const { assessment, result, error, downloadingPdf, pdfError, downloadPdf } = useRecommendation();
 
   if (!result)
     return (
@@ -19,9 +19,32 @@ export function Recommendation() {
     );
 
   const best = result.scores.filter(s => s.rank_position === 1);
+  const student = result.student ?? assessment.student;
+  const currentSemester = result.current_semester ?? assessment.current_semester;
 
   return (
     <>
+      <div className="notice" style={{ background: "#f8faff", border: "1px solid var(--border)", margin: "0 0 20px" }}>
+        <div className="spread wrap">
+          <div>
+            <span className="eyebrow" style={{ marginBottom: 4 }}>IDENTITAS PESERTA &amp; SUMBER JAWABAN</span>
+            <strong>{student ? student.full_name : "Peserta Simulasi DEMO"}</strong>
+            <p className="small muted" style={{ margin: "2px 0 0" }}>
+              {student
+                ? `NIM: ${student.nim || "\u2014"}${student.class_name ? ` \u00B7 Kelas: ${student.class_name}` : ""} \u00B7 Semester ${currentSemester}`
+                : `Mode Simulasi \u00B7 Semester ${currentSemester}`}
+            </p>
+          </div>
+          <div className="small">
+            <div>
+              Sumber jawaban tes: <strong>{result.answer_sources.USER} mandiri (USER)</strong>
+              {result.answer_sources.EXAMPLE > 0 ? <> · <strong>{result.answer_sources.EXAMPLE} contoh (EXAMPLE)</strong></> : ""}
+            </div>
+            <div className="muted">Model {result.model_version} · Selesai {time(result.completed_at)}</div>
+          </div>
+        </div>
+      </div>
+
       <div className="two-columns">
         {/* Kartu Utama Hasil Rekomendasi */}
         <article className="card recommendation-card">
@@ -70,17 +93,25 @@ export function Recommendation() {
               <p style={{ margin: "6px 0 0", color: "var(--text-secondary)" }}>
                 {explainScore(s)}
               </p>
-              <div className="actions small" style={{ marginTop: 8 }}>
-                {contributingRuleCodes(s.reason).map(rule => <Link className="badge" key={rule}
-                  href={`/asesmen/${assessment.public_id}/detail-fuzzy?specialization_code=${encodeURIComponent(s.specialization_code)}#rule-${encodeURIComponent(rule)}`}>
-                  Aturan {rule} →
-                </Link>)}
+              <div className="actions small no-print" style={{ marginTop: 8 }}>
+                {contributingRuleCodes(s.reason).map(rule => (
+                  <Link
+                    className="badge"
+                    key={rule}
+                    href={`/asesmen/${assessment.public_id}/detail-fuzzy?specialization_code=${encodeURIComponent(s.specialization_code)}#rule-${encodeURIComponent(rule)}`}
+                  >
+                    Aturan {rule} →
+                  </Link>
+                ))}
               </div>
             </div>
           ))}
 
-          <div style={{ marginTop: 20 }}>
-            <Link className="button" href={"/asesmen/" + assessment.public_id + "/detail-fuzzy"}>
+          <div className="no-print" style={{ marginTop: 20 }}>
+            <Link
+              className="button"
+              href={`/asesmen/${assessment.public_id}/detail-fuzzy?specialization_code=${encodeURIComponent(best[0].specialization_code)}`}
+            >
               Telusuri Detail Perhitungan Fuzzy Mamdani →
             </Link>
           </div>
@@ -95,7 +126,7 @@ export function Recommendation() {
           </p>
           <ScoreBars scores={result.scores} />
           <p className="small muted" style={{ marginTop: 12 }}>
-            Skala 0–100 · Peringkat menggunakan standar competition ranking (1224) dengan presisi 5 desimal.
+            Skala 0–100 · Pemeringkatan membandingkan skor hingga 5 angka desimal (peringkat sama bila bernilai persis sama).
           </p>
         </article>
 
@@ -104,7 +135,8 @@ export function Recommendation() {
           <span className="eyebrow">ANALISIS PREFERENSI AWAL</span>
           <h2>Pilihan Minat Awal vs Hasil Inferensi</h2>
           <p>
-            Preferensi yang Kamu Pilih: <strong>
+            Preferensi yang Kamu Pilih:{" "}
+            <strong>
               {names[result.preferred_specialization_code ?? ""] || "Belum ditentukan"}
             </strong>
           </p>
@@ -134,16 +166,19 @@ export function Recommendation() {
             <li><strong>Pengembangan Portofolio:</strong> Ikuti proyek praktikum atau sertifikasi kompetensi terkait peminatan yang disarankan.</li>
           </ul>
 
-          <div className="actions">
-            <a className="button" href={"/api/v1" + base + "/result/report.pdf"}>
-              Unduh Ringkasan PDF
-            </a>
-            <button className="secondary" onClick={() => window.print()}>
-              Cetak Dokumen
-            </button>
-            <Link className="button secondary" href="/?mulai=baru">
-              Mulai Asesmen Baru
-            </Link>
+          <div className="no-print">
+            <ErrorNotice error={pdfError} />
+            <div className="actions">
+              <button type="button" disabled={downloadingPdf} onClick={downloadPdf}>
+                {downloadingPdf ? "Menyiapkan PDF\u2026" : "Unduh Ringkasan PDF"}
+              </button>
+              <button type="button" className="secondary" onClick={() => window.print()}>
+                Cetak Dokumen
+              </button>
+              <Link className="button secondary" href="/?mulai=baru">
+                Mulai Asesmen Baru
+              </Link>
+            </div>
           </div>
 
           <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>

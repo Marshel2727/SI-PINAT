@@ -2,27 +2,53 @@
 
 import Link from "next/link";
 
-export function Steps({ active, publicId, locked = true }: {
+export function Steps({
+  active,
+  publicId,
+  locked = true,
+  maxReachable,
+}: {
   active: number;
   publicId?: string;
   locked?: boolean;
+  maxReachable?: number;
 }) {
+  const highestReachable = maxReachable ?? active;
+
   return (
     <ol className="steps" aria-label="Tahapan asesmen">
       {["Peminatan Awal", "Nilai Akademik", "Tes Kompetensi", "Hasil Rekomendasi"].map((text, i) => {
-        const content = <>
-          <span className="step-number">{i + 1 < active ? "✓" : i + 1}</span>
-          <div><small>Tahap {i + 1}</small><strong>{text}</strong></div>
-        </>;
-        return <li
-          className={i + 1 === active ? "current" : i + 1 < active ? "done" : ""}
-          aria-current={i + 1 === active ? "step" : undefined}
-          key={text}
-        >
-          {publicId && !locked && i + 1 < active
-            ? <Link className="step-link" href={`/asesmen/${publicId}/${["peminatan", "nilai", "tes", "hasil"][i]}`}>{content}</Link>
-            : content}
-        </li>;
+        const stepNo = i + 1;
+        const isDone = stepNo < active || (stepNo > active && stepNo <= highestReachable);
+        const canNavigate = Boolean(
+          publicId && !locked && stepNo !== active && stepNo <= highestReachable
+        );
+        const stage = ["peminatan", "nilai", "tes", "hasil"][i];
+        const content = (
+          <>
+            <span className="step-number">{stepNo < active ? "✓" : stepNo}</span>
+            <div>
+              <small>Tahap {stepNo}</small>
+              <strong>{text}</strong>
+            </div>
+          </>
+        );
+
+        return (
+          <li
+            className={stepNo === active ? "current" : isDone ? "done" : ""}
+            aria-current={stepNo === active ? "step" : undefined}
+            key={text}
+          >
+            {canNavigate ? (
+              <Link className="step-link" href={`/asesmen/${publicId}/${stage}`}>
+                {content}
+              </Link>
+            ) : (
+              content
+            )}
+          </li>
+        );
       })}
     </ol>
   );

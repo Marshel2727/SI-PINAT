@@ -7,10 +7,10 @@ import { MembershipInputs, RuleActivationTable } from "./trace-sections";
 import { useFuzzyDetail } from "./use-fuzzy-detail";
 
 export function FuzzyDetail() {
-  const { assessment, code, setCode, trace, error } = useFuzzyDetail();
+  const { assessment, code, setCode, trace, loading, error } = useFuzzyDetail();
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
+      <div className="no-print" style={{ marginBottom: 16 }}>
         <Link className="button secondary compact" href={"/asesmen/" + assessment.public_id + "/hasil"}>
           ← Kembali ke Hasil Rekomendasi
         </Link>
@@ -27,16 +27,24 @@ export function FuzzyDetail() {
         </small>
       </section>
 
-      <div className="tabs wrap">
-        {Object.entries(names).map(([key, title]) => (
-          <button
-            key={key}
-            className={code === key ? "" : "secondary"}
-            onClick={() => setCode(key)}
-          >
-            {title} ({key})
-          </button>
-        ))}
+      <div className="actions wrap no-print">
+        <div className="tabs wrap">
+          {Object.entries(names).map(([key, title]) => (
+            <button
+              type="button"
+              key={key}
+              className={code === key ? "" : "secondary"}
+              onClick={() => setCode(key)}
+            >
+              {title} ({key})
+            </button>
+          ))}
+        </div>
+        {loading && trace && (
+          <span className="badge warning" role="status">
+            Memuat {names[code]}…
+          </span>
+        )}
       </div>
 
       <ErrorNotice error={error} />

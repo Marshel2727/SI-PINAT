@@ -2,6 +2,7 @@ from functools import lru_cache
 from sqlalchemy import URL
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     app_env: str = "development"
@@ -18,9 +19,16 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self):
-        return URL.create("mysql+pymysql", username=self.db_user, password=self.db_password,
-                          host=self.db_host, port=self.db_port, database=self.db_name,
-                          query={"charset": "utf8mb4"})
+        return URL.create(
+            "mysql+pymysql",
+            username=self.db_user,
+            password=self.db_password,
+            host=self.db_host,
+            port=self.db_port,
+            database=self.db_name,
+            query={"charset": "utf8mb4"},
+        )
+
 
 @lru_cache
 def settings():

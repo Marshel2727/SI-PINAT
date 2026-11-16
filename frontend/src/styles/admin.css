@@ -1,6 +1,6 @@
 .login-background {
   padding: 40px 24px;
-  background: radial-gradient(ellipse at 0% 90%,#d9e4ff90,transparent 45%),var(--page);
+  background: radial-gradient(ellipse at 0% 90%, #d9e4ff90, transparent 45%), var(--page);
   min-height: 80vh;
 }
 
@@ -26,7 +26,7 @@
 
 .admin-layout {
   display: grid;
-  grid-template-columns: 256px minmax(0,1fr);
+  grid-template-columns: 256px minmax(0, 1fr);
   max-width: 1600px;
   margin: auto;
   min-height: 100vh;
@@ -44,11 +44,11 @@
   height: 100vh;
 }
 
-.admin-sidebar>strong {
+.admin-sidebar > strong {
   padding: 0 12px;
 }
 
-.admin-sidebar>small {
+.admin-sidebar > small {
   padding: 0 12px;
   font-size: 10px;
   color: #74777f;
@@ -103,7 +103,7 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0,2.3fr) minmax(230px,1fr);
+  grid-template-columns: minmax(0, 2.3fr) minmax(230px, 1fr);
   gap: 24px;
 }
 
@@ -126,6 +126,7 @@
   font-size: 15px;
   line-height: 1.85;
 }
+
 .publication-checklist {
   padding-left: 20px;
   margin-block: 16px;
@@ -135,6 +136,10 @@
   margin-block: 8px;
 }
 
-.check-ready { color: #165534; }
-.check-missing { color: #8f1824; }
+.check-ready {
+  color: #165534;
+}
 
+.check-missing {
+  color: #8f1824;
+}

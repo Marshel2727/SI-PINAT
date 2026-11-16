@@ -2,6 +2,7 @@
 
 import { ErrorNotice, Modal, Notice } from "@/components/ui";
 import { names } from "@/lib/format";
+import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { useEffect } from "react";
 import { useCompetencyTest } from "./use-competency-test";
 
@@ -15,7 +16,10 @@ export function CompetencyTest() {
     loading,
     error,
     pending,
-    pendingCount, savingCount, failedCount, jumpToUnanswered,
+    pendingCount,
+    savingCount,
+    failedCount,
+    jumpToUnanswered,
     saved,
     confirm,
     setConfirm,
@@ -29,24 +33,23 @@ export function CompetencyTest() {
     finish
   } = useCompetencyTest();
 
-  // Konfirmasi sebelum meninggalkan halaman jika tes sedang berjalan
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (pendingCount > 0) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [pendingCount]);
+  // Konfirmasi sebelum meninggalkan halaman atau mengklik tautan navigasi saat ada jawaban belum tersimpan
+  useUnsavedGuard(
+    pendingCount > 0,
+    "Masih ada jawaban tes yang sedang disimpan atau gagal disimpan ke server. Yakin ingin meninggalkan halaman ini?"
+  );
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if (!current || busy || confirm || loading || event.repeat
         || event.ctrlKey || event.metaKey || event.altKey) return;
       const target = event.target;
-      if (target instanceof Element && target.closest("input, select, textarea, button, a, [contenteditable]:not([contenteditable='false']), [role='dialog']")) return;
+      if (
+        target instanceof Element
+        && target.closest("textarea, select, input:not([type='radio']):not([type='checkbox']), [contenteditable]:not([contenteditable='false']), [role='dialog']")
+      ) {
+        return;
+      }
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
         setIndex(value => Math.max(0, Math.min(visible.length - 1, value + (event.key === "ArrowRight" ? 1 : -1))));
@@ -66,11 +69,27 @@ export function CompetencyTest() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [current, busy, pending, confirm, loading, visible.length, setIndex, answer]);
 
-  const progressPercent = assessment.question_count > 0
-    ? Math.round((answered / assessment.question_count) * 100)
+  const visibleAnswered = visible.filter(item => Boolean(item.answer)).length;
+  const progressTotal = assessment.mode === "DEMO" ? visible.length : assessment.question_count;
+  const progressAnswered = assessment.mode === "DEMO" ? visibleAnswered : answered;
+  const progressPercent = progressTotal > 0
+    ? Math.round((progressAnswered / progressTotal) * 100)
     : 0;
 
   const demoAllAnswered = assessment.mode === "DEMO" && visible.every(i => i.answer);
+  const failedItems = visible
+    .map((item, idx) => ({ item, idx, pendingSave: pending[item.id] }))
+    .filter((entry): entry is { item: typeof visible[number]; idx: number; pendingSave: NonNullable<typeof pending[string]> } => entry.pendingSave?.state === "failed");
+
+  const navGroups = Object.entries(names)
+    .map(([code, name]) => ({
+      code,
+      name,
+      entries: visible
+        .map((item, idx) => ({ item, idx }))
+        .filter(entry => entry.item.specialization_code === code),
+    }))
+    .filter(group => group.entries.length > 0);
 
   return (
     <>
@@ -78,10 +97,12 @@ export function CompetencyTest() {
       <h1>Tes Kompetensi Keilmuan</h1>
       <Notice>
         {assessment.mode === "DEMO"
-          ? "Mode DEMO: Jawab 3 soal perwakilan bidang keilmuan, lalu muat jawaban contoh untuk menguji kalkulasi inferensi fuzzy."
-          : "Jawab seluruh soal tes kompetensi secara mandiri. Jawaban tersimpan otomatis secara real-time pada server."}
+          ? "Mode DEMO: Jawab 3 soal perwakilan bidang keilmuan, lalu muat 27 jawaban contoh (EXAMPLE) untuk menguji kalkulasi inferensi fuzzy."
+          : "Jawab seluruh soal tes kompetensi secara mandiri. Jawaban tersimpan otomatis secara real-time pada server (sesi berlaku 24 jam)."}
       </Notice>
-      <p className="small muted">Pintasan keyboard: ← / → untuk berpindah soal; A–D atau 1–4 untuk memilih jawaban saat fokus berada di luar kontrol formulir.</p>
+      <p className="small muted">
+        Pintasan keyboard: ← / → untuk berpindah soal; A–D atau 1–4 untuk memilih jawaban.
+      </p>
       <ErrorNotice error={error} />
       {loading && <Notice>Memuat paket instrumen tes…</Notice>}
       {!loading && !items.length && (
@@ -108,9 +129,18 @@ export function CompetencyTest() {
 
             {/* Progress bar visual di atas soal */}
             <div style={{ padding: "16px 24px 0" }}>
-              <div className="spread" style={{ marginBottom: 6, fontSize: "12px" }}>
+              <div className="spread wrap" style={{ marginBottom: 6, fontSize: "12px" }}>
                 <span>
-                  Progres: <strong>{answered}</strong> dari {assessment.question_count} soal ({progressPercent}%)
+                  {assessment.mode === "DEMO" ? (
+                    <>
+                      Progres Soal Perwakilan: <strong>{progressAnswered}</strong>/{progressTotal} ({progressPercent}%)
+                      {exampleCount > 0 && <> · <strong>{exampleCount}</strong> contoh (EXAMPLE)</>}
+                    </>
+                  ) : (
+                    <>
+                      Progres: <strong>{progressAnswered}</strong> dari {progressTotal} soal ({progressPercent}%)
+                    </>
+                  )}
                 </span>
                 {saved && (
                   <span className={"badge " + (failedCount ? "danger" : savingCount ? "warning" : "success")} style={{ padding: "2px 8px" }} role="status">
@@ -122,6 +152,29 @@ export function CompetencyTest() {
                 <div style={{ width: `${progressPercent}%`, background: "var(--primary)" }} />
               </div>
             </div>
+
+            {failedItems.length > 0 && (
+              <div className="failed-save-sticky" role="alert">
+                <Notice tone="error">
+                  <strong>{failedItems.length} jawaban gagal disimpan ke server.</strong>
+                  <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                    {failedItems.map(({ item, idx, pendingSave }) => (
+                      <li key={item.id} style={{ marginBottom: 4 }}>
+                        <span>Soal #{String(idx + 1).padStart(2, "0")}: {pendingSave.message || "Gagal menyimpan."}</span>{" "}
+                        <button
+                          type="button"
+                          className="secondary compact"
+                          disabled={busy}
+                          onClick={() => answer(item.id, pendingSave.option)}
+                        >
+                          Coba Simpan Soal #{idx + 1}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </Notice>
+              </div>
+            )}
 
             <h2>{current.prompt}</h2>
 
@@ -160,6 +213,7 @@ export function CompetencyTest() {
                   Lengkapi paket dengan memuat 27 jawaban contoh berlabel EXAMPLE untuk menguji perhitungan rekomendasi fuzzy.
                 </p>
                 <button
+                  type="button"
                   className="compact"
                   disabled={busy || pendingCount > 0}
                   onClick={fill}
@@ -169,63 +223,102 @@ export function CompetencyTest() {
               </div>
             )}
 
-            {pending[current.id]?.state === "failed" && !busy && (
-              <div style={{ margin: "12px 24px" }}>
-                <button className="compact" onClick={() => answer(current.id, pending[current.id].option)}>
-                  Gagal menyimpan · Klik untuk coba simpan lagi
-                </button>
-              </div>
-            )}
-
-            <div className="spread question-footer">
+            <div className="spread wrap question-footer">
               <button
+                type="button"
                 className="secondary"
                 disabled={index === 0 || busy}
                 onClick={() => setIndex(index - 1)}
               >
                 ← Soal Sebelumnya
               </button>
-              <button
-                disabled={index >= visible.length - 1 || busy}
-                onClick={() => setIndex(index + 1)}
-              >
-                Soal Berikutnya →
-              </button>
+              {index < visible.length - 1 ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setIndex(index + 1)}
+                >
+                  Soal Berikutnya →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
+                  onClick={() => setConfirm(true)}
+                >
+                  Selesaikan &amp; Lihat Hasil →
+                </button>
+              )}
             </div>
           </article>
 
           <aside className="stack">
             <article className="card">
               <h3>Navigasi Soal</h3>
-              <div className="question-nav">
-                {visible.map((item, i) => (
-                  <button
-                    key={item.id}
-                    className={pending[item.id] ? "pending-answer " + pending[item.id].state : i === index
-                      ? ""
-                      : item.answer
-                        ? "success-button"
-                        : "secondary"}
-                    disabled={busy}
-                    aria-label={"Ke soal nomor " + (i + 1)}
-                    onClick={() => setIndex(i)}
-                  >
-                    {String(i + 1).padStart(2, "0")}{pending[item.id]?.state === "saving" ? " …" : pending[item.id]?.state === "failed" ? " !" : ""}
-                  </button>
-                ))}
+              <div className="question-nav-groups">
+                {navGroups.map(group => {
+                  const answeredInGroup = group.entries.filter(entry => Boolean(entry.item.answer)).length;
+                  const firstNo = group.entries[0].idx + 1;
+                  const lastNo = group.entries[group.entries.length - 1].idx + 1;
+                  const rangeLabel = firstNo === lastNo ? `No. ${firstNo}` : `No. ${firstNo}–${lastNo}`;
+                  return (
+                    <div key={group.code}>
+                      <div className="question-nav-label">
+                        <span>{group.name} ({rangeLabel})</span>
+                        <span>{answeredInGroup}/{group.entries.length}</span>
+                      </div>
+                      <div className="question-nav">
+                        {group.entries.map(({ item, idx }) => {
+                          const itemPending = pending[item.id];
+                          const statusLabel = itemPending?.state === "saving"
+                            ? "sedang disimpan"
+                            : itemPending?.state === "failed"
+                              ? "gagal disimpan"
+                              : item.answer
+                                ? "sudah dijawab"
+                                : "belum dijawab";
+                          const currentLabel = idx === index ? ", soal aktif" : "";
+                          return (
+                            <button
+                              type="button"
+                              key={item.id}
+                              className={
+                                itemPending
+                                  ? "pending-answer " + itemPending.state
+                                  : idx === index
+                                    ? ""
+                                    : item.answer
+                                      ? "success-button"
+                                      : "secondary"
+                              }
+                              disabled={busy}
+                              aria-current={idx === index ? "step" : undefined}
+                              aria-label={`Soal nomor ${idx + 1} (${item.specialization_name}), ${statusLabel}${currentLabel}`}
+                              onClick={() => setIndex(idx)}
+                            >
+                              {String(idx + 1).padStart(2, "0")}
+                              {itemPending?.state === "saving" ? " …" : itemPending?.state === "failed" ? " !" : ""}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <button className="secondary compact" disabled={busy || !visible.some(item => (!item.answer || pending[item.id]?.state === "failed") && pending[item.id]?.state !== "saving")} onClick={jumpToUnanswered}>
+              <button
+                type="button"
+                className="secondary compact"
+                disabled={busy || !visible.some(item => (!item.answer || pending[item.id]?.state === "failed") && pending[item.id]?.state !== "saving")}
+                onClick={jumpToUnanswered}
+              >
                 Lompat ke soal belum terjawab
               </button>
-              {Object.entries(names).map(([code, name]) => (
-                <p className="spread" key={code} style={{ fontSize: "12.5px", margin: "6px 0" }}>
-                  <small>{name}</small>
-                  <strong>
-                    {items.filter(i => i.specialization_code === code && i.answer).length}
-                    /{items.filter(i => i.specialization_code === code).length}
-                  </strong>
+              {assessment.mode === "DEMO" && (
+                <p className="small muted" style={{ margin: "10px 0 0" }}>
+                  Total paket sesi: <strong>{answered}/{assessment.question_count}</strong> ({userCount} mandiri · {exampleCount} contoh)
                 </p>
-              ))}
+              )}
             </article>
 
             <article className="card">
@@ -234,26 +327,31 @@ export function CompetencyTest() {
                 Jawaban Peserta (USER): <strong>{userCount}</strong><br />
                 Jawaban Contoh (EXAMPLE): <strong>{exampleCount}</strong>
               </p>
-              {pendingCount > 0 && <Notice tone={failedCount ? "error" : "info"}>
-                {savingCount > 0 && <p>{savingCount} jawaban sedang disimpan. Kamu tetap dapat berpindah soal.</p>}
-                {visible.filter(item => pending[item.id]?.state === "failed").map(item => <div key={item.id}>
-                  <p>Soal {visible.indexOf(item) + 1}: {pending[item.id].message}</p>
-                  <button className="secondary compact" disabled={busy} onClick={() => answer(item.id, pending[item.id].option)}>Coba simpan soal {visible.indexOf(item) + 1}</button>
-                </div>)}
-              </Notice>}
+              {savingCount > 0 && (
+                <Notice tone="info">
+                  <p>{savingCount} jawaban sedang disimpan. Kamu tetap dapat berpindah soal.</p>
+                </Notice>
+              )}
 
-              {assessment.mode === "DEMO" && (
+              {assessment.mode === "DEMO" && exampleCount === 0 && (
                 <button
+                  type="button"
                   className="secondary full"
                   disabled={busy || pendingCount > 0 || !demoAllAnswered}
                   onClick={fill}
                   style={{ marginBottom: 12 }}
                 >
-                  {exampleCount > 0 ? "Muat ulang jawaban contoh" : "Muat 27 jawaban contoh"}
+                  Muat 27 jawaban contoh
                 </button>
+              )}
+              {assessment.mode === "DEMO" && exampleCount > 0 && (
+                <p className="small" style={{ color: "#004d38", marginBottom: 12 }}>
+                  ✓ {exampleCount} jawaban contoh (EXAMPLE) sudah terisi.
+                </p>
               )}
 
               <button
+                type="button"
                 className="full"
                 disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
                 onClick={() => setConfirm(true)}
@@ -261,7 +359,7 @@ export function CompetencyTest() {
                 Selesaikan dan Lihat Hasil →
               </button>
               <p className="muted small" style={{ marginTop: 8 }}>
-                Server memvalidasi kelengkapan seluruh 30 paket soal sebelum menghitung centroid fuzzy.
+                Server memvalidasi kelengkapan seluruh {assessment.question_count} paket soal sebelum menghitung centroid fuzzy.
               </p>
             </article>
           </aside>
@@ -278,10 +376,10 @@ export function CompetencyTest() {
           <Notice tone="info">Hasil akhir sesi ini akan ditandai berlabel DEMO / DATA CONTOH.</Notice>
         )}
         <div className="actions end" style={{ marginTop: 20 }}>
-          <button className="secondary" onClick={() => setConfirm(false)} disabled={busy}>
+          <button type="button" className="secondary" onClick={() => setConfirm(false)} disabled={busy}>
             Periksa Kembali
           </button>
-          <button disabled={busy || pendingCount > 0} onClick={finish}>
+          <button type="button" disabled={busy || pendingCount > 0} onClick={finish}>
             {busy ? "Menghitung inferensi fuzzy\u2026" : "Ya, Selesaikan Asesmen"}
           </button>
         </div>

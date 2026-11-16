@@ -1,4 +1,4 @@
-import { AdminShell } from "@/features/admin-auth/admin-shell";
+import { AdminShell } from "@/features/admin/admin-shell";
 
 export default function Layout({ children }: {
   children: React.ReactNode;

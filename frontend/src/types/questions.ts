@@ -18,6 +18,7 @@ export interface Question {
   prompt: string;
   explanation: string | null;
   status: PublicationStatus;
+  is_latest_revision?: boolean;
   options: QuestionOption[];
 }
 

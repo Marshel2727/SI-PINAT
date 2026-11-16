@@ -19,6 +19,7 @@ export interface Assessment {
   student: Student | null;
   preferred_specialization_code: SpecializationCode | null;
   completed_at: string | null;
+  expires_at?: string | null;
   progress: {
     total: number;
     answered: number;

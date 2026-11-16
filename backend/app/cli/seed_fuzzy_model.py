@@ -8,7 +8,6 @@ from pathlib import Path
 from app.fuzzy.reference import CASES, CONSEQUENTS, PARAMETERS, exact_reference
 from app.repositories.store import add, audit, one, rows
 
-
 PROPOSAL_PATH = Path(__file__).with_name("data") / "fuzzy_model_proposal.json"
 SPECIALIZATIONS = ("ES-01", "SC-02", "JDF-03")
 LETTERS = (("A", 4), ("B", 3), ("C", 2), ("D", 1), ("E", 0))
@@ -21,10 +20,7 @@ def load_proposal():
         raise ValueError("Usulan harus memuat 32 kode mata kuliah unik.")
     for course in courses:
         weights = course["weights"]
-        if set(weights) != set(SPECIALIZATIONS) or any(
-            not isinstance(weight, (int, float)) or not math.isfinite(weight) or not 0 <= weight <= 1
-            for weight in weights.values()
-        ):
+        if set(weights) != set(SPECIALIZATIONS) or any(not isinstance(weight, (int, float)) or not math.isfinite(weight) or not 0 <= weight <= 1 for weight in weights.values()):
             raise ValueError(f"Bobot tidak sah untuk {course['code']}.")
     if not proposal["academic_review_required"] or proposal["status"] != "DRAFT":
         raise ValueError("Usulan awal wajib DRAFT dan memerlukan peninjauan akademik.")
@@ -47,30 +43,60 @@ def seed(db, user):
     if missing:
         raise ValueError(
             "Master mata kuliah belum lengkap/aktif: " + ", ".join(missing)
-            + ". Jalankan seed_courses atau periksa master melalui admin terlebih dahulu."
+            +". Jalankan seed_courses atau periksa master melalui admin terlebih dahulu."
         )
 
-    identifier = add(db, "fuzzy_model_versions", version_code=proposal["version_code"],
-                     method="MAMDANI", defuzzification="CENTROID", sampling_step=0.1,
-                     status="DRAFT", created_by=user["id"])
+    identifier = add(
+        db,
+        "fuzzy_model_versions",
+        version_code=proposal["version_code"],
+        method="MAMDANI",
+        defuzzification="CENTROID",
+        sampling_step=0.1,
+        status="DRAFT",
+        created_by=user["id"],
+    )
     for course in courses:
         for spec in specs:
             weight = proposed_weights.get(course["code"], {}).get(spec["code"], 0)
-            add(db, "course_weights", model_version_id=identifier, course_id=course["id"],
-                specialization_id=spec["id"], weight=weight, is_required=weight > 0)
+            add(
+                db,
+                "course_weights",
+                model_version_id=identifier,
+                course_id=course["id"],
+                specialization_id=spec["id"],
+                weight=weight,
+                is_required=weight > 0,
+            )
 
     for letter, points in LETTERS:
-        add(db, "grade_conversions", model_version_id=identifier, letter_grade=letter,
-            grade_points=points, normalized_score=points * 25)
+        add(
+            db,
+            "grade_conversions",
+            model_version_id=identifier,
+            letter_grade=letter,
+            grade_points=points,
+            normalized_score=points * 25,
+        )
 
     set_ids = {}
     for code in ("ACADEMIC", "COMPETENCY", "SUITABILITY"):
-        variable_id = add(db, "fuzzy_variables", model_version_id=identifier, code=code,
-                          direction="OUTPUT" if code == "SUITABILITY" else "INPUT",
-                          domain_min=0, domain_max=100)
+        variable_id = add(
+            db,
+            "fuzzy_variables",
+            model_version_id=identifier,
+            code=code,
+            direction="OUTPUT" if code == "SUITABILITY" else "INPUT",
+            domain_min=0,
+            domain_max=100,
+        )
         for label, (shape, points) in PARAMETERS.items():
             set_ids[(code, label)] = add(
-                db, "fuzzy_sets", variable_id=variable_id, code=label, shape=shape,
+                db,
+                "fuzzy_sets",
+                variable_id=variable_id,
+                code=label,
+                shape=shape,
                 **dict(zip(("point_a", "point_b", "point_c", "point_d"), points)),
             )
 
@@ -78,27 +104,48 @@ def seed(db, user):
     for spec in specs:
         for i, academic in enumerate(labels):
             for j, competency in enumerate(labels):
-                add(db, "fuzzy_rules", model_version_id=identifier, specialization_id=spec["id"],
-                    rule_code=f"R{i * 3 + j + 1}", academic_set_id=set_ids[("ACADEMIC", academic)],
+                add(
+                    db,
+                    "fuzzy_rules",
+                    model_version_id=identifier,
+                    specialization_id=spec["id"],
+                    rule_code=f"R{i * 3 + j + 1}",
+                    academic_set_id=set_ids[("ACADEMIC", academic)],
                     competency_set_id=set_ids[("COMPETENCY", competency)],
                     output_set_id=set_ids[("SUITABILITY", CONSEQUENTS[i][j])],
-                    operator="AND", rule_weight=1)
+                    operator="AND",
+                    rule_weight=1,
+                )
         for index, (academic, competency) in enumerate(CASES, 1):
             expected = exact_reference(academic, competency)
-            add(db, "fuzzy_validation_cases", model_version_id=identifier, specialization_id=spec["id"],
-                case_code=f"TECH-S{index:02d}", academic_input=academic, competency_input=competency,
+            add(
+                db,
+                "fuzzy_validation_cases",
+                model_version_id=identifier,
+                specialization_id=spec["id"],
+                case_code=f"TECH-S{index:02d}",
+                academic_input=academic,
+                competency_input=competency,
                 expected_min=round(max(0, expected - 0.002), 5),
-                expected_max=round(min(100, expected + 0.002), 5))
+                expected_max=round(min(100, expected + 0.002), 5),
+            )
 
     extra_codes = sorted(set(by_code) - set(proposed_weights))
-    audit(db, user, "SEED_FUZZY_MODEL", "fuzzy_model_versions", identifier, after={
-        "proposal": proposal,
-        "extra_active_courses_zero_weight": extra_codes,
-        "parameters": {code: {"shape": shape, "points": points} for code, (shape, points) in PARAMETERS.items()},
-        "consequents": CONSEQUENTS,
-        "technical_cases": len(CASES) * len(specs),
-        "academic_review_confirmed": False,
-    })
+    audit(
+        db,
+        user,
+        "SEED_FUZZY_MODEL",
+        "fuzzy_model_versions",
+        identifier,
+        after={
+            "proposal": proposal,
+            "extra_active_courses_zero_weight": extra_codes,
+            "parameters": {code: {"shape": shape, "points": points} for code, (shape, points) in PARAMETERS.items()},
+            "consequents": CONSEQUENTS,
+            "technical_cases": len(CASES) * len(specs),
+            "academic_review_confirmed": False,
+        },
+    )
     return identifier, True
 
 

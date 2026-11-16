@@ -1,4 +1,4 @@
-import { QuestionEditor } from "@/features/question-bank/question-editor";
+import { QuestionEditor } from "@/features/admin/question-editor";
 
 export default async function Page({ params }: {
   params: Promise<{

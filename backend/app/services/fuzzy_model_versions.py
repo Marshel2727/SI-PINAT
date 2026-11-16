@@ -3,6 +3,8 @@ from sqlalchemy import select, update
 from app.repositories.store import one, rows, add, change, remove_where, table, audit, now
 from app.core.errors import fail
 from app.fuzzy.engine import membership, calculate
+from app.fuzzy.reference import PARAMETERS, CONSEQUENTS
+
 
 def model(db, identifier, draft=False, lock=False):
     query = select(table("fuzzy_model_versions")).where(table("fuzzy_model_versions").c.id == identifier)
@@ -10,119 +12,306 @@ def model(db, identifier, draft=False, lock=False):
         query = query.with_for_update()
     value = db.execute(query).mappings().first()
     if not value:
-        fail(404,"Versi model tidak ditemukan.","NOT_FOUND")
+        fail(404, "Versi model tidak ditemukan.", "NOT_FOUND")
     if draft and value["status"] != "DRAFT":
-        fail(409,"Model terpublikasi terkunci. Kloning menjadi draft baru.","IMMUTABLE_MODEL")
+        fail(409, "Model terpublikasi terkunci. Kloning menjadi draft baru.", "IMMUTABLE_MODEL")
     return value
+
 
 def configuration(db, identifier, specialization_id=None):
-    value = dict(model(db,identifier))
-    value["variables"] = rows(db,"fuzzy_variables",model_version_id=identifier)
+    value = dict(model(db, identifier))
+    value["variables"] = rows(db, "fuzzy_variables", model_version_id=identifier)
     ids = [v["id"] for v in value["variables"]]
     value["sets"] = list(db.execute(select(table("fuzzy_sets")).where(table("fuzzy_sets").c.variable_id.in_(ids))).mappings())
-    value["rules"] = rows(db,"fuzzy_rules",model_version_id=identifier,**({"specialization_id":specialization_id} if specialization_id else {}))
-    value["course_weights"] = rows(db,"course_weights",model_version_id=identifier)
-    value["grade_conversions"] = rows(db,"grade_conversions",model_version_id=identifier)
-    value["validation_cases"] = rows(db,"fuzzy_validation_cases",model_version_id=identifier)
+    value["rules"] = rows(
+        db,
+        "fuzzy_rules",
+        model_version_id=identifier,
+        **({"specialization_id": specialization_id} if specialization_id else {}),
+    )
+    value["course_weights"] = rows(db, "course_weights", model_version_id=identifier)
+    value["grade_conversions"] = rows(db, "grade_conversions", model_version_id=identifier)
+    value["validation_cases"] = rows(db, "fuzzy_validation_cases", model_version_id=identifier)
     return value
 
+
 def invalidate(db, identifier):
-    db.execute(update(table("fuzzy_validation_cases")).where(table("fuzzy_validation_cases").c.model_version_id == identifier)
-               .values(last_passed=None,last_actual_score=None,last_tested_at=None))
+    db.execute(update(table("fuzzy_validation_cases")).where(table("fuzzy_validation_cases").c.model_version_id == identifier) .values(
+        last_passed=None,
+        last_actual_score=None,
+        last_tested_at=None,
+    ))
+
 
 def clone(db, identifier, body, user):
-    old = configuration(db,identifier)
-    new = add(db,"fuzzy_model_versions",**body,method="MAMDANI",defuzzification="CENTROID",status="DRAFT",created_by=user["id"])
-    for section,name in [("course_weights","course_weights"),("grade_conversions","grade_conversions")]:
+    old = configuration(db, identifier)
+    new = add(
+        db,
+        "fuzzy_model_versions",
+        **body,
+        method="MAMDANI",
+        defuzzification="CENTROID",
+        status="DRAFT",
+        created_by=user["id"],
+    )
+    for section, name in [
+        ("course_weights", "course_weights"),
+        ("grade_conversions", "grade_conversions"),
+    ]:
         for row in old[section]:
-            add(db,name,model_version_id=new,**{k:v for k,v in row.items() if k not in {"id","model_version_id"}})
+            add(
+                db,
+                name,
+                model_version_id=new,
+                **{k: v for k, v in row.items() if k not in {"id", "model_version_id"}},
+            )
     variable_ids, set_ids = {}, {}
     for row in old["variables"]:
-        variable_ids[row["id"]] = add(db,"fuzzy_variables",model_version_id=new,**{k:v for k,v in row.items() if k not in {"id","model_version_id"}})
+        variable_ids[row["id"]] = add(
+            db,
+            "fuzzy_variables",
+            model_version_id=new,
+            **{k: v for k, v in row.items() if k not in {"id", "model_version_id"}},
+        )
     for row in old["sets"]:
-        set_ids[row["id"]] = add(db,"fuzzy_sets",variable_id=variable_ids[row["variable_id"]],**{k:v for k,v in row.items() if k not in {"id","variable_id"}})
+        set_ids[row["id"]] = add(
+            db,
+            "fuzzy_sets",
+            variable_id=variable_ids[row["variable_id"]],
+            **{k: v for k, v in row.items() if k not in {"id", "variable_id"}},
+        )
     for row in old["rules"]:
-        value = {k:v for k,v in row.items() if k not in {"id","model_version_id"}}
-        for field in ["academic_set_id","competency_set_id","output_set_id"]:
+        value = {k: v for k, v in row.items() if k not in {"id", "model_version_id"}}
+        for field in ["academic_set_id", "competency_set_id", "output_set_id"]:
             value[field] = set_ids[value[field]]
-        add(db,"fuzzy_rules",model_version_id=new,**value)
+        add(db, "fuzzy_rules", model_version_id=new, **value)
     for row in old["validation_cases"]:
-        add(db,"fuzzy_validation_cases",model_version_id=new,**{k:v for k,v in row.items() if k not in {"id","model_version_id","last_actual_score","last_passed","last_tested_at"}})
-    audit(db,user,"CLONE","fuzzy_model_versions",new,after={"source_id":identifier})
-    return configuration(db,new)
+        add(
+            db,
+            "fuzzy_validation_cases",
+            model_version_id=new,
+            **{k: v for k, v in row.items() if k not in {
+                "id",
+                "model_version_id",
+                "last_actual_score",
+                "last_passed",
+                "last_tested_at",
+            }},
+        )
+    audit(db, user, "CLONE", "fuzzy_model_versions", new, after={"source_id": identifier})
+    return configuration(db, new)
+
 
 def check_model(db, identifier):
-    config = configuration(db,identifier)
+    config = configuration(db, identifier)
     errors = []
-    variables = {v["code"]:v for v in config["variables"]}
-    if set(variables) != {"ACADEMIC","COMPETENCY","SUITABILITY"}:
+    variables = {v["code"]: v for v in config["variables"]}
+    if set(variables) != {"ACADEMIC", "COMPETENCY", "SUITABILITY"}:
         errors.append("Lengkapi tiga variabel.")
-    for code,v in variables.items():
+    for code, v in variables.items():
         group = [s for s in config["sets"] if s["variable_id"] == v["id"]]
-        if {s["code"] for s in group} != {"LOW","MEDIUM","HIGH"} or len(group) != 3:
+        if {s["code"] for s in group} != {"LOW", "MEDIUM", "HIGH"} or len(group) != 3:
             errors.append(code + ": wajib LOW, MEDIUM, HIGH.")
             continue
         if float(v["domain_min"]) != 0 or float(v["domain_max"]) != 100:
             errors.append(code + ": domain skor wajib mencakup 0-100.")
-        knots = sorted({float(v["domain_min"]),float(v["domain_max"])} | {float(s[k]) for s in group for k in ["point_a","point_b","point_c","point_d"] if s[k] is not None})
-        samples = knots + [(a+b)/2 for a,b in zip(knots,knots[1:])]
+        knots = sorted({float(v["domain_min"]), float(v["domain_max"])} | {float(s[k]) for s in group for k in ["point_a", "point_b", "point_c", "point_d"] if s[k] is not None})
+        samples = knots + [(a + b) / 2 for a, b in zip(knots, knots[1:])]
         try:
-            if any(max(membership(x,s) for s in group) <= 0 for x in samples if float(v["domain_min"]) <= x <= float(v["domain_max"])):
+            if any(max(membership(x, s) for s in group) <= 0 for x in samples if float(v["domain_min"]) <= x <= float(v["domain_max"])):
                 errors.append(code + ": domain memiliki celah keanggotaan.")
         except ValueError as exc:
             errors.append(str(exc))
-    specs = rows(db,"specializations",is_active=True)
-    set_ids = {s["id"]:s for s in config["sets"]}
+    specs = rows(db, "specializations", is_active=True)
+    set_ids = {s["id"]: s for s in config["sets"]}
     for spec in specs:
         relevant = [r for r in config["rules"] if r["specialization_id"] == spec["id"]]
         combos = set()
         for r in relevant:
             try:
-                for key,role in [("academic_set_id","ACADEMIC"),("competency_set_id","COMPETENCY"),("output_set_id","SUITABILITY")]:
+                for key, role in [
+                    ("academic_set_id", "ACADEMIC"),
+                    ("competency_set_id", "COMPETENCY"),
+                    ("output_set_id", "SUITABILITY"),
+                ]:
                     if set_ids[r[key]]["variable_id"] != variables[role]["id"]:
                         raise KeyError(role)
                 if float(r["rule_weight"]) > 0:
-                    combos.add((set_ids[r["academic_set_id"]]["code"],set_ids[r["competency_set_id"]]["code"]))
+                    combos.add((
+                        set_ids[r["academic_set_id"]]["code"],
+                        set_ids[r["competency_set_id"]]["code"],
+                    ))
             except KeyError:
                 errors.append(spec["code"] + ": peran/versi set aturan salah.")
-        if combos != set(product(["LOW","MEDIUM","HIGH"],repeat=2)):
+        if combos != set(product(["LOW", "MEDIUM", "HIGH"], repeat=2)):
             errors.append(spec["code"] + ": sembilan kombinasi aturan positif wajib lengkap.")
         weights = [w for w in config["course_weights"] if w["specialization_id"] == spec["id"]]
         if not weights or sum(float(w["weight"]) for w in weights) <= 0:
             errors.append(spec["code"] + ": bobot akademik belum lengkap.")
-    active_courses = rows(db,"courses",is_active=True)
-    matrix = {(w["course_id"],w["specialization_id"]) for w in config["course_weights"]}
-    if not active_courses or any((c["id"],s["id"]) not in matrix for c in active_courses for s in specs):
+    active_courses = rows(db, "courses", is_active=True)
+    matrix = {(w["course_id"], w["specialization_id"]) for w in config["course_weights"]}
+    if not active_courses or any((c["id"], s["id"]) not in matrix for c in active_courses for s in specs):
         errors.append("Matriks bobot setiap mata kuliah aktif / tiga peminatan wajib lengkap.")
     if not config["grade_conversions"]:
         errors.append("Konversi nilai kosong.")
-    return config,errors
+    return config, errors
+
 
 def publication_readiness(db, identifier):
-    config,errors = check_model(db,identifier)
-    checks = [{"key":"configuration", "label":"Konfigurasi bobot, konversi, variabel, himpunan, dan aturan",
-               "ready":not errors, "details":errors}]
-    required_inputs = {(0,0),(50,50),(90,90),(100,100),(0,90),(90,0),(25,25),(70,70),(40,60),(20,80)}
-    for spec in rows(db,"specializations",is_active=True):
+    config, errors = check_model(db, identifier)
+    checks = [{
+        "key": "configuration",
+        "label": "Konfigurasi bobot, konversi, variabel, himpunan, dan aturan",
+        "ready": not errors,
+        "details": errors,
+    }]
+    required_inputs = {
+        (0, 0),
+        (50, 50),
+        (90, 90),
+        (100, 100),
+        (0, 90),
+        (90, 0),
+        (25, 25),
+        (70, 70),
+        (40, 60),
+        (20, 80),
+    }
+    for spec in rows(db, "specializations", is_active=True):
         cases = [c for c in config["validation_cases"] if c["specialization_id"] == spec["id"]]
-        inputs = {(float(c["academic_input"]),float(c["competency_input"])) for c in cases}
+        inputs = {(float(c["academic_input"]), float(c["competency_input"])) for c in cases}
         passed = required_inputs.issubset(inputs) and all(c["last_passed"] and c["last_tested_at"] for c in cases)
-        checks.append({"key":"validation-"+spec["code"], "label":spec["name"]+": skenario batas/overlap lengkap dan lulus",
-                       "ready":passed, "details":[] if passed else [spec["code"]+": sepuluh skenario batas/overlap wajib ada dan semua skenario harus lulus."]})
-        questions = rows(db,"questions",specialization_id=spec["id"],status="PUBLISHED")
+        checks.append({
+            "key": "validation-" + spec["code"],
+            "label": spec["name"] + ": skenario batas/overlap lengkap dan lulus",
+            "ready": passed,
+            "details": [] if passed else [spec["code"] + ": sepuluh skenario batas/overlap wajib ada dan semua skenario harus lulus."],
+        })
+        questions = rows(db, "questions", specialization_id=spec["id"], status="PUBLISHED")
         count = len({q["code"] for q in questions})
-        checks.append({"key":"questions-"+spec["code"], "label":spec["name"]+f": {count}/10 kode soal terpublikasi",
-                       "ready":count>=10, "details":[] if count>=10 else [spec["code"]+": minimal sepuluh soal terpublikasi."]})
-    return {"ready":all(check["ready"] for check in checks), "checks":checks}
+        checks.append({
+            "key": "questions-" + spec["code"],
+            "label": spec["name"] + f": {count}/10 kode soal terpublikasi",
+            "ready": count >= 10,
+            "details": [] if count >= 10 else [spec["code"] + ": minimal sepuluh soal terpublikasi."],
+        })
+    return {"ready": all(check["ready"] for check in checks), "checks": checks}
+
 
 def publish(db, identifier, confirmed, user):
-    model(db,identifier,draft=True,lock=True)
+    model(db, identifier, draft=True, lock=True)
     readiness = publication_readiness(db, identifier)
     errors = [message for check in readiness["checks"] for message in check["details"]]
     if not confirmed:
         errors.append("Konfirmasi peninjauan akademik sebelum publikasi.")
     if errors:
-        fail(422,"Model belum dapat dipublikasikan.","PUBLISH_BLOCKED",errors)
-    change(db,"fuzzy_model_versions",identifier,status="PUBLISHED",published_at=now())
-    audit(db,user,"PUBLISH","fuzzy_model_versions",identifier,after={"academic_review_confirmed":True})
-    return model(db,identifier)
+        fail(422, "Model belum dapat dipublikasikan.", "PUBLISH_BLOCKED", errors)
+    change(db, "fuzzy_model_versions", identifier, status="PUBLISHED", published_at=now())
+    audit(
+        db,
+        user,
+        "PUBLISH",
+        "fuzzy_model_versions",
+        identifier,
+        after={"academic_review_confirmed": True},
+    )
+    return model(db, identifier)
+
+
+def scaffold_defaults(db, identifier, user):
+    model(db, identifier, draft=True, lock=True)
+    before = configuration(db, identifier)
+    specs = rows(db, "specializations", is_active=True)
+
+    if not before["grade_conversions"]:
+        for letter, points in (("A", 4), ("B", 3), ("C", 2), ("D", 1), ("E", 0)):
+            add(
+                db,
+                "grade_conversions",
+                model_version_id=identifier,
+                letter_grade=letter,
+                grade_points=points,
+                normalized_score=points * 25,
+            )
+
+    if not before["course_weights"]:
+        active_courses = rows(db, "courses", is_active=True)
+        for course in active_courses:
+            for spec in specs:
+                add(
+                    db,
+                    "course_weights",
+                    model_version_id=identifier,
+                    course_id=course["id"],
+                    specialization_id=spec["id"],
+                    weight=0,
+                    is_required=False,
+                )
+
+    if not before["variables"]:
+        for code in ("ACADEMIC", "COMPETENCY", "SUITABILITY"):
+            add(
+                db,
+                "fuzzy_variables",
+                model_version_id=identifier,
+                code=code,
+                direction="OUTPUT" if code == "SUITABILITY" else "INPUT",
+                domain_min=0,
+                domain_max=100,
+            )
+
+    variables = rows(db, "fuzzy_variables", model_version_id=identifier)
+    var_by_code = {v["code"]: v for v in variables}
+
+    if not before["sets"] and {"ACADEMIC", "COMPETENCY", "SUITABILITY"}.issubset(var_by_code):
+        for code in ("ACADEMIC", "COMPETENCY", "SUITABILITY"):
+            variable_id = var_by_code[code]["id"]
+            for label, (shape, points) in PARAMETERS.items():
+                add(
+                    db,
+                    "fuzzy_sets",
+                    variable_id=variable_id,
+                    code=label,
+                    shape=shape,
+                    **dict(zip(("point_a", "point_b", "point_c", "point_d"), points)),
+                )
+
+    if not before["rules"] and {"ACADEMIC", "COMPETENCY", "SUITABILITY"}.issubset(var_by_code):
+        var_code_by_id = {v["id"]: v["code"] for v in variables}
+        all_sets = list(db.execute(select(table("fuzzy_sets")).where(table("fuzzy_sets").c.variable_id.in_(list(var_code_by_id)))).mappings())
+        set_ids = {(var_code_by_id[s["variable_id"]], s["code"]): s["id"] for s in all_sets if s["variable_id"] in var_code_by_id}
+        labels = ("LOW", "MEDIUM", "HIGH")
+        if all((vc, sc) in set_ids for vc in ("ACADEMIC", "COMPETENCY", "SUITABILITY") for sc in labels):
+            for spec in specs:
+                for i, academic in enumerate(labels):
+                    for j, competency in enumerate(labels):
+                        add(
+                            db,
+                            "fuzzy_rules",
+                            model_version_id=identifier,
+                            specialization_id=spec["id"],
+                            rule_code=f"R{i * 3 + j + 1}",
+                            academic_set_id=set_ids[("ACADEMIC", academic)],
+                            competency_set_id=set_ids[("COMPETENCY", competency)],
+                            output_set_id=set_ids[("SUITABILITY", CONSEQUENTS[i][j])],
+                            operator="AND",
+                            rule_weight=1,
+                        )
+
+    invalidate(db, identifier)
+    updated = configuration(db, identifier)
+    audit(
+        db,
+        user,
+        "SCAFFOLD_DEFAULTS",
+        "fuzzy_model_versions",
+        identifier,
+        after={k: len(updated[k]) for k in (
+            "grade_conversions",
+            "course_weights",
+            "variables",
+            "sets",
+            "rules",
+        )},
+    )
+    return updated

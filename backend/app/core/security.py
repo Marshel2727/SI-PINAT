@@ -14,17 +14,28 @@ from app.repositories.store import one, table, add, now
 
 passwords = PasswordHasher()
 
+
 def digest(value):
     return hashlib.sha256(value.encode()).hexdigest()
 
+
 def cookie(response, name, value, path="/", hours=8, http_only=True):
-    response.set_cookie(name, value, max_age=hours * 3600, httponly=http_only,
-                        secure=settings().cookie_secure, samesite="lax", path=path)
+    response.set_cookie(
+        name,
+        value,
+        max_age=hours * 3600,
+        httponly=http_only,
+        secure=settings().cookie_secure,
+        samesite="lax",
+        path=path,
+    )
+
 
 def issue_csrf():
     value = str(int(time.time())) + "." + secrets.token_urlsafe(24)
     signature = hmac.new(settings().app_secret.encode(), value.encode(), hashlib.sha256).hexdigest()
     return value + "." + signature
+
 
 def csrf(request: Request):
     if request.method in {"GET", "HEAD", "OPTIONS"}:
@@ -38,12 +49,17 @@ def csrf(request: Request):
     try:
         timestamp, nonce, signature = token.split(".")
         payload = timestamp + "." + nonce
-        expected = hmac.new(settings().app_secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        expected = hmac.new(
+            settings().app_secret.encode(),
+            payload.encode(),
+            hashlib.sha256,
+        ).hexdigest()
         valid = 0 <= time.time() - int(timestamp) <= 7200 and hmac.compare_digest(signature, expected)
     except (ValueError, TypeError):
         valid = False
     if not valid:
         fail(403, "Token keamanan kedaluwarsa. Muat ulang halaman.", "CSRF")
+
 
 def admin(request: Request, db=Depends(database)):
     session = one(db, "admin_sessions", token_hash=digest(request.cookies.get("sipinat_admin", "")))
@@ -53,6 +69,7 @@ def admin(request: Request, db=Depends(database)):
     if not user or not user["is_active"]:
         fail(401, "Akun tidak aktif.", "UNAUTHENTICATED")
     return user
+
 
 def owned(db, request, public_id, lock=False):
     t = table("assessments")
@@ -67,9 +84,10 @@ def owned(db, request, public_id, lock=False):
         fail(401, "Sesi asesmen sudah kedaluwarsa. Mulai sesi baru.", "SESSION_EXPIRED")
     return assessment
 
+
 def limit(db, request, action, maximum, window=60, subject=""):
 
-    # MySQL advisory lock + shared database counter, also safe across workers.
+# MySQL advisory lock + shared database counter, also safe across workers.
     peer = request.client.host if request.client else "unknown"
     bucket = str(int(time.time()) // window)
     key = action + ":" + digest(peer + bucket + subject)[:40]

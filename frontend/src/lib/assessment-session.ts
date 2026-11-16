@@ -7,12 +7,33 @@ export interface RememberedAssessment {
   publicId: string;
   stage: AssessmentStage;
   mode: AssessmentMode;
+  expiresAt?: string | null;
+  studentName?: string | null;
+  studentNim?: string | null;
+  currentSemester?: number;
+  modelVersion?: string;
+  answeredCount?: number;
+  questionCount?: number;
 }
 
-export function rememberAssessment(assessment: Assessment, stage: AssessmentStage): void {
+export function rememberAssessment(assessment: Assessment, stage: AssessmentStage, notify = true): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ publicId: assessment.public_id, stage, mode: assessment.mode }));
-    window.dispatchEvent(new Event("sipinat-session-change"));
+    const payload: RememberedAssessment = {
+      publicId: assessment.public_id,
+      stage,
+      mode: assessment.mode,
+      expiresAt: assessment.expires_at ?? null,
+      studentName: assessment.student?.full_name ?? null,
+      studentNim: assessment.student?.nim ?? null,
+      currentSemester: assessment.current_semester,
+      modelVersion: assessment.model_version,
+      answeredCount: assessment.progress?.answered ?? 0,
+      questionCount: assessment.question_count,
+    };
+    localStorage.setItem(KEY, JSON.stringify(payload));
+    if (notify) {
+      window.dispatchEvent(new Event("sipinat-session-change"));
+    }
   } catch { /* Storage may be unavailable in private browsing; server sessions still work. */ }
 }
 

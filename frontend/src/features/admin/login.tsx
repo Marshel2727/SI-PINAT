@@ -1,13 +1,16 @@
 "use client";
 
-import { ErrorNotice, Field } from "@/components/ui";
+import { ErrorNotice, Field, Notice } from "@/components/ui";
 import { IconEye, IconEyeOff } from "@/components/icons";
 import Link from "next/link";
 import { useState } from "react";
 import { useLogin } from "./use-login";
 
-export function Login() {
-  const { busy, error, submit } = useLogin();
+export function Login({ nextPath, expired = false }: {
+  nextPath?: string;
+  expired?: boolean;
+} = {}) {
+  const { busy, checkingSession, error, submit } = useLogin(nextPath);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -25,6 +28,15 @@ export function Login() {
         <p>
           Kelola mata kuliah kurikulum, bank instrumen kompetensi, dan konfigurasi versi model fuzzy SI-PINAT.
         </p>
+
+        {expired && (
+          <Notice>
+            Sesi administrator Anda telah berakhir atau belum terautentikasi. Silakan masuk kembali untuk melanjutkan.
+          </Notice>
+        )}
+        {checkingSession && (
+          <p className="small muted">Memeriksa sesi administrator aktif…</p>
+        )}
 
         <form onSubmit={submit}>
           <Field label="Email administrator">
@@ -67,7 +79,7 @@ export function Login() {
         </form>
 
         <p className="small muted" style={{ marginTop: 20 }}>
-          Gunakan akun terdaftar yang dibuat oleh koordinator sistem.
+          Gunakan akun terdaftar yang dibuat oleh koordinator sistem. Batas keamanan login: maksimal 10 percobaan per 5 menit.
         </p>
         <Link href="/">← Kembali ke Portal Mahasiswa</Link>
       </article>

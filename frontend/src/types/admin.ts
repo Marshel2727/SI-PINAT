@@ -36,3 +36,16 @@ export interface AdminAssessmentDetail {
   grades: AssessmentGrade[];
   result: Result | null;
 }
+
+export interface AuditLogRow {
+  id: string;
+  admin_id: string | null;
+  admin_name?: string | null;
+  admin_email?: string | null;
+  action: string;
+  entity_table: string;
+  entity_id: string | null;
+  before_data: unknown;
+  after_data: unknown;
+  created_at: string;
+}

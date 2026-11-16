@@ -14,23 +14,57 @@ export function useFuzzyDetail() {
   const [code, setCode] = useState(requested in names ? requested : "ES-01");
   useEffect(() => setCode(requested in names ? requested : "ES-01"), [requested]);
   const [trace, setTrace] = useState<FuzzyTrace | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
+
+  function selectCode(nextCode: string) {
+    if (typeof window !== "undefined" && window.location.hash.startsWith("#rule-")) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+    setCode(nextCode in names ? nextCode : "ES-01");
+  }
+
   useEffect(() => {
     let active = true;
-    setTrace(null);
+    setLoading(true);
     setError(null);
-    api<FuzzyTrace>(base + "/result/trace?specialization_code=" + encodeURIComponent(code)).then(r => active && setTrace(r.data)).catch(e => active && setError(e));
+    api<FuzzyTrace>(base + "/result/trace?specialization_code=" + encodeURIComponent(code))
+      .then(r => {
+        if (active) setTrace(r.data);
+      })
+      .catch(e => {
+        if (active) setError(e);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
   }, [base, code]);
+
   useEffect(() => {
-    if (trace && window.location.hash.startsWith("#rule-")) {
-      try { document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView({ block: "center" }); }
-      catch { /* Malformed anchors do not affect the trace. */ }
+    if (
+      trace &&
+      !loading &&
+      trace.score.specialization_code === code &&
+      window.location.hash.startsWith("#rule-")
+    ) {
+      try {
+        const elementId = decodeURIComponent(window.location.hash.slice(1));
+        document.getElementById(elementId)?.scrollIntoView({ block: "center" });
+      } catch {
+        /* Malformed anchors do not affect the trace. */
+      }
     }
-  }, [trace]);
+  }, [trace, loading, code]);
+
   return {
-    assessment, code, setCode, trace, error
+    assessment,
+    code,
+    setCode: selectCode,
+    trace,
+    loading,
+    error,
   };
 }

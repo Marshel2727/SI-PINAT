@@ -25,7 +25,7 @@ from app.api.v1.routes import specializations
 from app.api.v1.routes import students
 from app.api.v1.routes import transcript_imports
 
-router=APIRouter(prefix="/api/v1",dependencies=[Depends(csrf)])
+router = APIRouter(prefix="/api/v1", dependencies=[Depends(csrf)])
 router.include_router(admin_sessions.router)
 router.include_router(admin_users.router)
 router.include_router(assessments.router)

@@ -276,10 +276,7 @@ sipinat/
 │   │   │   ├── academic-grades/
 │   │   │   ├── competency-test/
 │   │   │   ├── recommendations/
-│   │   │   ├── admin-auth/
-│   │   │   ├── courses/
-│   │   │   ├── question-bank/
-│   │   │   └── fuzzy-models/
+│   │   │   └── admin/ (autentikasi, dashboard, mata kuliah, bank soal, model fuzzy, validasi)
 │   │   ├── lib/
 │   │   │   ├── api/{client,server}.ts
 │   │   │   ├── env.ts

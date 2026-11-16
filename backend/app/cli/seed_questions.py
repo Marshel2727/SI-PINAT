@@ -8,7 +8,6 @@ from urllib.parse import urlsplit
 
 from app.repositories.store import add, audit, one, rows
 
-
 BANK_PATH = Path(__file__).with_name("data") / "questions_references.json"
 SPECIALIZATIONS = ("ES-01", "SC-02", "JDF-03")
 
@@ -71,7 +70,7 @@ def seed(db, user):
 
     created = skipped = 0
     for question in bank["questions"]:
-        # Any existing revision belongs to the administrator; never overwrite it.
+    # Any existing revision belongs to the administrator; never overwrite it.
         if rows(db, "questions", code=question["code"]):
             skipped += 1
             continue
@@ -85,8 +84,14 @@ def seed(db, user):
         }
         identifier = add(db, "questions", **values)
         for label, option_text in zip("ABCD", question["options"]):
-            add(db, "question_options", question_id=identifier, label=label,
-                option_text=option_text, is_correct=label == question["answer"])
+            add(
+                db,
+                "question_options",
+                question_id=identifier,
+                label=label,
+                option_text=option_text,
+                is_correct=label == question["answer"],
+            )
         audit(db, user, "CREATE", "questions", identifier, after=values)
         created += 1
     return created, skipped

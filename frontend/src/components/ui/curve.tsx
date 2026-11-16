@@ -1,5 +1,6 @@
 "use client";
 
+import { number } from "@/lib/format";
 import { useId } from "react";
 
 export function Curve({ x, y, label, centroid }: {
@@ -66,9 +67,9 @@ export function Curve({ x, y, label, centroid }: {
       ))}
 
       {/* Label Nilai Sumbu Y */}
-      <text x="16" y="34" fontSize="11" fill="#525660" textAnchor="end">1.0</text>
-      <text x="16" y="104" fontSize="11" fill="#525660" textAnchor="end">0.5</text>
-      <text x="16" y="174" fontSize="11" fill="#525660" textAnchor="end">0.0</text>
+      <text x="16" y="34" fontSize="11" fill="#525660" textAnchor="end">1,0</text>
+      <text x="16" y="104" fontSize="11" fill="#525660" textAnchor="end">0,5</text>
+      <text x="16" y="174" fontSize="11" fill="#525660" textAnchor="end">0,0</text>
 
       {/* Label Sumbu Kategori */}
       <text x="5" y="16" fontSize="11" fill="#001835" fontWeight="bold">μ(z)</text>
@@ -90,22 +91,22 @@ export function Curve({ x, y, label, centroid }: {
           />
           <circle cx={centroidX} cy="170" r="4" fill="#A21C27" />
           <rect
-            x={Math.min(Math.max(centroidX - 44, 30), 480)}
+            x={Math.min(Math.max(centroidX - 48, 30), 474)}
             y="6"
-            width="88"
+            width="96"
             height="20"
             rx="4"
             fill="#A21C27"
           />
           <text
-            x={Math.min(Math.max(centroidX, 74), 524)}
+            x={Math.min(Math.max(centroidX, 78), 522)}
             y="20"
             fill="white"
             fontSize="11"
             fontWeight="bold"
             textAnchor="middle"
           >
-            z* = {centroid.toFixed(2)}
+            z* = {number(centroid)}
           </text>
         </g>
       )}

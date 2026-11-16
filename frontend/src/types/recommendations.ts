@@ -1,3 +1,4 @@
+import type { Student } from "./assessments";
 import type { AssessmentMode, Id, SpecializationCode } from "./common";
 import type { MembershipShape } from "@/lib/fuzzy-curve";
 
@@ -30,6 +31,8 @@ export interface Result {
     gap_to_top: number;
   } | null;
   completed_at: string | null;
+  student?: Student | null;
+  current_semester?: number;
 }
 
 export interface MembershipInput {

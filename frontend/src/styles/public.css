@@ -1,6 +1,6 @@
 .hero {
   padding: 96px 0;
-  background: radial-gradient(ellipse at 95% 0%,#316bf325,transparent 45%),radial-gradient(ellipse at 12% 90%,#6bd8cb35,transparent 38%),var(--surface);
+  background: radial-gradient(ellipse at 95% 0%, #316bf325, transparent 45%), radial-gradient(ellipse at 12% 90%, #6bd8cb35, transparent 38%), var(--surface);
 }
 
 .hero-grid {
@@ -83,12 +83,12 @@
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(105px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
   gap: 8px;
   margin-top: 24px;
 }
 
-.metrics>div {
+.metrics > div {
   background: white;
   padding: 12px;
   border-radius: 8px;
@@ -120,7 +120,7 @@
   gap: 16px;
 }
 
-.example-card>.spread {
+.example-card > .spread {
   padding: 0 0 14px;
   border-bottom: 1px solid var(--surface);
 }
@@ -149,7 +149,7 @@
   overflow: hidden;
 }
 
-.bar>div {
+.bar > div {
   height: 100%;
   background: var(--primary);
   border-radius: inherit;
@@ -168,19 +168,19 @@
 
 .three-columns {
   display: grid;
-  grid-template-columns: repeat(3,minmax(0,1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
 .four-columns {
   display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
 .two-columns {
   display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -199,7 +199,7 @@
   margin: 24px 0 16px;
 }
 
-.title-icon h2,.title-icon h3 {
+.title-icon h2, .title-icon h3 {
   margin: 0;
 }
 

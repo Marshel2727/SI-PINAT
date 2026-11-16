@@ -1,52 +1,83 @@
 @media print {
-  .header,.footer,.admin-sidebar,button,.button,.steps {
+  .header, .footer, .admin-sidebar, button, .button, .steps, .no-print {
     display: none!important;
   }
+
   body {
     background: white;
+    color: #001835;
     font-size: 11px;
   }
+
   .container {
     max-width: none;
     padding: 0;
   }
-  .card,.dark-card {
+
+  .card, .dark-card {
     box-shadow: none;
     break-inside: avoid;
     border: 1px solid #ddd;
   }
+
+  .dark-card {
+    background: #f5f7ff!important;
+    color: #001835!important;
+  }
+
+  .dark-card p, .dark-card .eyebrow, .dark-card small {
+    color: #353842!important;
+  }
+
   .section {
     margin: 14px 0;
   }
+
   .two-columns {
     display: block;
   }
-  .two-columns>.card {
+
+  .two-columns > .card {
     margin: 14px 0;
   }
+
   .notice {
     background: #f5f5f5;
   }
+
   .score-tile {
     background: #eee;
     color: black;
   }
+
   .bar {
     border: 1px solid #ccc;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
+
+  .bar > div, .badge {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
   .table-scroll {
     overflow: visible;
     max-height: none;
   }
+
   th {
     position: static;
   }
+
   .admin-layout {
     display: block;
   }
+
   .admin-main {
     padding: 0;
   }
+
   .curve {
     max-height: 220px;
   }

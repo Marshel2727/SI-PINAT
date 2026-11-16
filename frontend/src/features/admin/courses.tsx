@@ -1,6 +1,7 @@
 "use client";
 
 import { ErrorNotice, Field, Modal, Notice, Pagination } from "@/components/ui";
+import Link from "next/link";
 import { useCourses } from "./use-courses";
 
 export function Courses() {
@@ -10,6 +11,8 @@ export function Courses() {
     setSearch,
     semester,
     setSemester,
+    isActive,
+    setIsActive,
     sort,
     setSort,
     page,
@@ -17,9 +20,10 @@ export function Courses() {
     pages,
     total,
     edit,
-    setEdit,
+    openModal,
+    closeModal,
     error,
-    setError,
+    modalError,
     message,
     busy,
     busyId,
@@ -28,24 +32,32 @@ export function Courses() {
     toggleActive
   } = useCourses();
 
+  const isEditLocked = Boolean(edit?.id && edit.is_locked_by_published);
+
   return (
     <>
       <span className="eyebrow">MATRIKS PRASYARAT INFERENSI</span>
       <h1>Kelola Mata Kuliah Prasyarat Peminatan</h1>
       <p>
-        Bobot relevansi diatur pada versi model fuzzy. Klik status untuk menampilkan atau menyembunyikan mata kuliah secara cepat.
+        Bobot relevansi diatur pada{" "}
+        <Link href="/admin/model-fuzzy">Konfigurasi Model Fuzzy</Link>.
+        Klik status untuk menampilkan atau menyembunyikan mata kuliah secara cepat.
       </p>
-      <div className="spread">
-        <span className="badge">{total} mata kuliah terdaftar</span>
-        <button
-          onClick={() => {
-            setError(null);
-            setEdit({ is_active: true, semester: 1, credits: 3 });
-          }}
-        >
-          + Tambah mata kuliah
-        </button>
+      <div className="spread wrap">
+        <span className="badge">{total} mata kuliah ditemukan</span>
+        <div className="actions">
+          <Link className="button secondary" href="/admin/model-fuzzy">
+            Atur Bobot di Model Fuzzy →
+          </Link>
+          <button
+            type="button"
+            onClick={() => openModal({ is_active: true, semester: 1, credits: 3 })}
+          >
+            + Tambah mata kuliah
+          </button>
+        </div>
       </div>
+
       <div className="filters">
         <Field label="Cari kode atau nama">
           <input
@@ -71,6 +83,19 @@ export function Courses() {
                 Semester {n}
               </option>
             ))}
+          </select>
+        </Field>
+        <Field label="Status">
+          <select
+            value={isActive}
+            onChange={e => {
+              setIsActive(e.target.value as "" | "true" | "false");
+              setPage(1);
+            }}
+          >
+            <option value="">Semua status</option>
+            <option value="true">Aktif (Tampil)</option>
+            <option value="false">Nonaktif (Sembunyi)</option>
           </select>
         </Field>
         <Field label="Urutkan">
@@ -113,6 +138,11 @@ export function Courses() {
                   <tr key={r.id}>
                     <td className="mono">
                       <strong>{r.code}</strong>
+                      {r.is_locked_by_published && (
+                        <small className="block muted" title="Dirujuk oleh model fuzzy terpublikasi">
+                          Terkunci di model aktif
+                        </small>
+                      )}
                     </td>
                     <td>
                       {r.name}
@@ -141,7 +171,7 @@ export function Courses() {
                           alignItems: "center",
                           gap: 5
                         }}
-                        disabled={busy || busyId === r.id}
+                        disabled={busy || busyId !== null}
                         onClick={() => toggleActive(r)}
                         title={r.is_active ? "Klik untuk menyembunyikan / menonaktifkan" : "Klik untuk menampilkan / mengaktifkan"}
                       >
@@ -150,12 +180,10 @@ export function Courses() {
                     </td>
                     <td>
                       <button
+                        type="button"
                         className="secondary compact"
                         style={{ minHeight: 28, padding: "3px 12px", fontSize: "11.5px" }}
-                        onClick={() => {
-                          setEdit(r);
-                          setError(null);
-                        }}
+                        onClick={() => openModal(r)}
                       >
                         Edit
                       </button>
@@ -166,22 +194,28 @@ export function Courses() {
             </table>
           </div>
         )}
-        <Pagination page={page} total={pages} onChange={setPage} />
+        <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
 
       <Modal
         open={!!edit}
         title={edit?.id ? "Edit mata kuliah" : "Tambah mata kuliah"}
-        onClose={() => !busy && setEdit(null)}
+        onClose={closeModal}
       >
         {edit && (
           <form onSubmit={save} key={edit.id || "new"}>
+            {isEditLocked && (
+              <Notice>
+                Metadata mata kuliah (Kode, Nama, Semester, SKS) dikunci karena dirujuk oleh model fuzzy terpublikasi. Anda tetap dapat mengubah status aktif/nonaktif, atau tambahkan mata kuliah baru bila diperlukan perubahan metadata.
+              </Notice>
+            )}
             <Field label="Kode MK">
               <input
                 name="code"
                 defaultValue={edit.code}
                 required
                 maxLength={20}
+                disabled={isEditLocked}
               />
             </Field>
             <Field label="Nama mata kuliah">
@@ -190,6 +224,7 @@ export function Courses() {
                 defaultValue={edit.name}
                 required
                 maxLength={150}
+                disabled={isEditLocked}
               />
             </Field>
             <div className="two-columns">
@@ -201,6 +236,7 @@ export function Courses() {
                   max="4"
                   defaultValue={edit.semester}
                   required
+                  disabled={isEditLocked}
                 />
               </Field>
               <Field label="SKS">
@@ -211,6 +247,7 @@ export function Courses() {
                   max="12"
                   defaultValue={edit.credits}
                   required
+                  disabled={isEditLocked}
                 />
               </Field>
             </div>
@@ -218,7 +255,7 @@ export function Courses() {
               <input type="checkbox" name="is_active" defaultChecked={edit.is_active} />
               Aktif (Tampil di kurikulum asesmen)
             </label>
-            <ErrorNotice error={error} />
+            <ErrorNotice error={modalError} />
             <button disabled={busy} style={{ marginTop: 12 }}>
               {busy ? "Menyimpan\u2026" : "Simpan mata kuliah"}
             </button>
