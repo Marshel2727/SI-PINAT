@@ -54,7 +54,8 @@ main.section {
   background: rgba(250, 248, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 1px 4px rgba(0, 24, 53, 0.06);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 24, 53, 0.04);
   z-index: 40;
 }
 
@@ -97,23 +98,46 @@ main.section {
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 8px;
 }
 
 .desktop-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   font-size: 13.5px;
   color: var(--text-secondary);
   font-weight: 500;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
   transition: color 0.15s, background-color 0.15s;
 }
 
-.desktop-nav a:hover,
-.desktop-nav a.nav-active {
+.desktop-nav a:hover {
   color: var(--primary);
   text-decoration: none;
   background: var(--soft);
+}
+
+.desktop-nav a[aria-current="page"],
+.desktop-nav a.nav-active {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--soft);
+}
+
+.desktop-nav a[aria-current="page"]::after,
+.desktop-nav a.nav-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
 }
 
 .header-actions {
@@ -149,19 +173,24 @@ main.section {
   border-bottom: 1px solid var(--border);
   box-shadow: 0 12px 28px rgba(0, 24, 53, 0.12);
   padding: 16px 20px 24px;
-  animation: slideDown 0.2s ease-out;
   z-index: 35;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-drawer {
+    animation: slideDown 0.2s ease-out;
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -172,17 +201,47 @@ main.section {
 }
 
 .mobile-drawer nav a:not(.button) {
+  display: flex;
+  align-items: center;
   padding: 12px 14px;
   border-radius: 8px;
+  border-left: 3px solid transparent;
   font-size: 14px;
   font-weight: 500;
   color: var(--navy);
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .mobile-drawer nav a:not(.button):hover {
   background: var(--surface);
   text-decoration: none;
+}
+
+.mobile-drawer nav a[aria-current="page"],
+.mobile-drawer nav a[aria-current="page"]:hover {
+  background: var(--soft);
+  color: var(--primary);
+  font-weight: 600;
+  border-left: 3px solid var(--primary);
+  text-decoration: none;
+}
+
+@media (forced-colors: active) {
+  .desktop-nav a[aria-current="page"],
+  .desktop-nav a.nav-active {
+    border-bottom: 2px solid Highlight;
+    border-radius: 0;
+  }
+
+  .desktop-nav a[aria-current="page"]::after,
+  .desktop-nav a.nav-active::after {
+    display: none;
+  }
+
+  .mobile-drawer nav a[aria-current="page"] {
+    border-left-color: Highlight;
+    outline: 1px solid Highlight;
+  }
 }
 
 .drawer-divider {
@@ -223,12 +282,27 @@ main.section {
 }
 
 .footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(max-content, 1fr));
+  gap: 10px 28px;
+  align-items: center;
+  padding-top: 2px;
 }
 
 .footer-links a {
   font-weight: 500;
   font-size: 13px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+  .mobile-menu-toggle {
+    min-height: 44px;
+    width: 44px;
+  }
+
+  .footer-links {
+    gap: 4px 24px;
+  }
 }

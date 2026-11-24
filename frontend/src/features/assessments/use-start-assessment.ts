@@ -6,9 +6,9 @@ import type { Assessment } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function useStartAssessment() {
+export function useStartAssessment(options?: { listenGlobal?: boolean }) {
+  const listenGlobal = options?.listenGlobal ?? true;
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState("DEMO");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [unfinishedSession, setUnfinishedSession] = useState<RememberedAssessment | null>(null);
@@ -27,17 +27,22 @@ export function useStartAssessment() {
     };
 
     syncRemembered();
-    if (new URLSearchParams(window.location.search).get("mulai") === "baru") {
-      openNew();
+    window.addEventListener("sipinat-session-change", syncRemembered);
+
+    if (listenGlobal) {
+      if (new URLSearchParams(window.location.search).get("mulai") === "baru") {
+        openNew();
+      }
+      window.addEventListener("sipinat-start-new", openNew);
     }
 
-    window.addEventListener("sipinat-start-new", openNew);
-    window.addEventListener("sipinat-session-change", syncRemembered);
     return () => {
-      window.removeEventListener("sipinat-start-new", openNew);
       window.removeEventListener("sipinat-session-change", syncRemembered);
+      if (listenGlobal) {
+        window.removeEventListener("sipinat-start-new", openNew);
+      }
     };
-  }, []);
+  }, [listenGlobal]);
 
   async function start(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,11 +56,11 @@ export function useStartAssessment() {
 
     try {
       const { data } = await send<Assessment>("/assessments", {
-        mode,
+        mode: "FULL",
         semester: Number(form.get("semester")),
-        nim: mode === "FULL" ? form.get("nim") : null,
-        full_name: mode === "FULL" ? form.get("full_name") : null,
-        class_name: mode === "FULL" ? form.get("class_name") || null : null,
+        nim: form.get("nim"),
+        full_name: form.get("full_name"),
+        class_name: form.get("class_name") || null,
       });
       rememberAssessment(data, "peminatan");
       router.push("/asesmen/" + data.public_id + "/peminatan");
@@ -69,8 +74,6 @@ export function useStartAssessment() {
   return {
     open,
     setOpen,
-    mode,
-    setMode,
     busy,
     error,
     start,

@@ -28,17 +28,16 @@ export function Recommendation() {
         <div className="spread wrap">
           <div>
             <span className="eyebrow" style={{ marginBottom: 4 }}>IDENTITAS PESERTA &amp; SUMBER JAWABAN</span>
-            <strong>{student ? student.full_name : "Peserta Simulasi DEMO"}</strong>
+            <strong>{student ? student.full_name : "Peserta Asesmen"}</strong>
             <p className="small muted" style={{ margin: "2px 0 0" }}>
               {student
-                ? `NIM: ${student.nim || "\u2014"}${student.class_name ? ` \u00B7 Kelas: ${student.class_name}` : ""} \u00B7 Semester ${currentSemester}`
-                : `Mode Simulasi \u00B7 Semester ${currentSemester}`}
+                ? `NIM: ${student.nim || "—"}${student.class_name ? ` · Kelas: ${student.class_name}` : ""} · Semester ${currentSemester}`
+                : `Semester ${currentSemester}`}
             </p>
           </div>
           <div className="small">
             <div>
-              Sumber jawaban tes: <strong>{result.answer_sources.USER} mandiri (USER)</strong>
-              {result.answer_sources.EXAMPLE > 0 ? <> · <strong>{result.answer_sources.EXAMPLE} contoh (EXAMPLE)</strong></> : ""}
+              Sumber jawaban tes: <strong>{result.answer_sources.USER} soal terjawab</strong>
             </div>
             <div className="muted">Model {result.model_version} · Selesai {time(result.completed_at)}</div>
           </div>
@@ -53,9 +52,7 @@ export function Recommendation() {
               <IconSparkles size={14} style={{ marginRight: 4 }} />
               HASIL REKOMENDASI PEMINATAN
             </span>
-            <span className="badge demo">
-              {result.mode === "DEMO" ? "SIMULASI DEMO" : "ASESMEN FULL"}
-            </span>
+            <span className="badge accent">METODE FUZZY MAMDANI</span>
           </div>
 
           <div className="recommendation-title">
@@ -112,7 +109,7 @@ export function Recommendation() {
               className="button"
               href={`/asesmen/${assessment.public_id}/detail-fuzzy?specialization_code=${encodeURIComponent(best[0].specialization_code)}`}
             >
-              Telusuri Detail Perhitungan Fuzzy Mamdani →
+              Telusuri Rincian Perhitungan Fuzzy →
             </Link>
           </div>
         </article>
@@ -170,20 +167,20 @@ export function Recommendation() {
             <ErrorNotice error={pdfError} />
             <div className="actions">
               <button type="button" disabled={downloadingPdf} onClick={downloadPdf}>
-                {downloadingPdf ? "Menyiapkan PDF\u2026" : "Unduh Ringkasan PDF"}
+                {downloadingPdf ? "Menyiapkan PDF…" : "Unduh Laporan PDF"}
               </button>
               <button type="button" className="secondary" onClick={() => window.print()}>
-                Cetak Dokumen
+                Cetak Ringkasan
               </button>
               <Link className="button secondary" href="/?mulai=baru">
-                Mulai Asesmen Baru
+                Ulangi Penentuan Peminatan
               </Link>
             </div>
           </div>
 
           <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
             <p className="small muted" style={{ margin: 0 }}>
-              Sesi: Mode {result.mode} · Model {result.model_version} · Engine {result.engine_version} · {time(result.completed_at)}
+              Model {result.model_version} · Engine {result.engine_version} · {time(result.completed_at)}
             </p>
           </div>
         </article>

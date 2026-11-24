@@ -26,10 +26,7 @@ export function CompetencyTest() {
     visible,
     current,
     answered,
-    userCount,
-    exampleCount,
     answer,
-    fill,
     finish
   } = useCompetencyTest();
 
@@ -69,14 +66,10 @@ export function CompetencyTest() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [current, busy, pending, confirm, loading, visible.length, setIndex, answer]);
 
-  const visibleAnswered = visible.filter(item => Boolean(item.answer)).length;
-  const progressTotal = assessment.mode === "DEMO" ? visible.length : assessment.question_count;
-  const progressAnswered = assessment.mode === "DEMO" ? visibleAnswered : answered;
-  const progressPercent = progressTotal > 0
-    ? Math.round((progressAnswered / progressTotal) * 100)
+  const progressPercent = assessment.question_count > 0
+    ? Math.round((answered / assessment.question_count) * 100)
     : 0;
 
-  const demoAllAnswered = assessment.mode === "DEMO" && visible.every(i => i.answer);
   const failedItems = visible
     .map((item, idx) => ({ item, idx, pendingSave: pending[item.id] }))
     .filter((entry): entry is { item: typeof visible[number]; idx: number; pendingSave: NonNullable<typeof pending[string]> } => entry.pendingSave?.state === "failed");
@@ -96,9 +89,7 @@ export function CompetencyTest() {
       <span className="eyebrow">TAHAP 3 DARI 4</span>
       <h1>Tes Kompetensi Keilmuan</h1>
       <Notice>
-        {assessment.mode === "DEMO"
-          ? "Mode DEMO: Jawab 3 soal perwakilan bidang keilmuan, lalu muat 27 jawaban contoh (EXAMPLE) untuk menguji kalkulasi inferensi fuzzy."
-          : "Jawab seluruh soal tes kompetensi secara mandiri. Jawaban tersimpan otomatis secara real-time pada server (sesi berlaku 24 jam)."}
+        Jawab seluruh soal tes kompetensi secara mandiri. Jawaban tersimpan otomatis secara real-time pada server (sesi berlaku 24 jam).
       </Notice>
       <p className="small muted">
         Pintasan keyboard: ← / → untuk berpindah soal; A–D atau 1–4 untuk memilih jawaban.
@@ -122,25 +113,13 @@ export function CompetencyTest() {
               <span className="badge">
                 {current.specialization_name}
               </span>
-              {assessment.mode === "DEMO" && (
-                <small className="mono">Soal Perwakilan · DEMO</small>
-              )}
             </div>
 
             {/* Progress bar visual di atas soal */}
             <div style={{ padding: "16px 24px 0" }}>
               <div className="spread wrap" style={{ marginBottom: 6, fontSize: "12px" }}>
                 <span>
-                  {assessment.mode === "DEMO" ? (
-                    <>
-                      Progres Soal Perwakilan: <strong>{progressAnswered}</strong>/{progressTotal} ({progressPercent}%)
-                      {exampleCount > 0 && <> · <strong>{exampleCount}</strong> contoh (EXAMPLE)</>}
-                    </>
-                  ) : (
-                    <>
-                      Progres: <strong>{progressAnswered}</strong> dari {progressTotal} soal ({progressPercent}%)
-                    </>
-                  )}
+                  Progres: <strong>{answered}</strong> dari {assessment.question_count} soal ({progressPercent}%)
                 </span>
                 {saved && (
                   <span className={"badge " + (failedCount ? "danger" : savingCount ? "warning" : "success")} style={{ padding: "2px 8px" }} role="status">
@@ -205,24 +184,6 @@ export function CompetencyTest() {
               })}
             </div>
 
-            {/* Banner Khusus Mode DEMO jika 3 soal sudah dijawab */}
-            {assessment.mode === "DEMO" && demoAllAnswered && exampleCount === 0 && (
-              <div className="notice success" style={{ margin: "16px 24px" }}>
-                <strong>✓ Tiga soal perwakilan telah selesai dijawab!</strong>
-                <p style={{ margin: "6px 0 12px" }}>
-                  Lengkapi paket dengan memuat 27 jawaban contoh berlabel EXAMPLE untuk menguji perhitungan rekomendasi fuzzy.
-                </p>
-                <button
-                  type="button"
-                  className="compact"
-                  disabled={busy || pendingCount > 0}
-                  onClick={fill}
-                >
-                  {busy ? "Memuat data contoh\u2026" : "⚡ Muat 27 Jawaban Contoh Sekarang"}
-                </button>
-              </div>
-            )}
-
             <div className="spread wrap question-footer">
               <button
                 type="button"
@@ -246,7 +207,7 @@ export function CompetencyTest() {
                   disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
                   onClick={() => setConfirm(true)}
                 >
-                  Selesaikan &amp; Lihat Hasil →
+                  Selesaikan Tes &amp; Lihat Rekomendasi →
                 </button>
               )}
             </div>
@@ -314,40 +275,17 @@ export function CompetencyTest() {
               >
                 Lompat ke soal belum terjawab
               </button>
-              {assessment.mode === "DEMO" && (
-                <p className="small muted" style={{ margin: "10px 0 0" }}>
-                  Total paket sesi: <strong>{answered}/{assessment.question_count}</strong> ({userCount} mandiri · {exampleCount} contoh)
-                </p>
-              )}
             </article>
 
             <article className="card">
               <h3>Ringkasan Jawaban</h3>
               <p className="small muted">
-                Jawaban Peserta (USER): <strong>{userCount}</strong><br />
-                Jawaban Contoh (EXAMPLE): <strong>{exampleCount}</strong>
+                Terjawab: <strong>{answered}</strong> dari {assessment.question_count} soal
               </p>
               {savingCount > 0 && (
                 <Notice tone="info">
                   <p>{savingCount} jawaban sedang disimpan. Kamu tetap dapat berpindah soal.</p>
                 </Notice>
-              )}
-
-              {assessment.mode === "DEMO" && exampleCount === 0 && (
-                <button
-                  type="button"
-                  className="secondary full"
-                  disabled={busy || pendingCount > 0 || !demoAllAnswered}
-                  onClick={fill}
-                  style={{ marginBottom: 12 }}
-                >
-                  Muat 27 jawaban contoh
-                </button>
-              )}
-              {assessment.mode === "DEMO" && exampleCount > 0 && (
-                <p className="small" style={{ color: "#004d38", marginBottom: 12 }}>
-                  ✓ {exampleCount} jawaban contoh (EXAMPLE) sudah terisi.
-                </p>
               )}
 
               <button
@@ -356,7 +294,7 @@ export function CompetencyTest() {
                 disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
                 onClick={() => setConfirm(true)}
               >
-                Selesaikan dan Lihat Hasil →
+                Selesaikan Tes &amp; Lihat Rekomendasi →
               </button>
               <p className="muted small" style={{ marginTop: 8 }}>
                 Server memvalidasi kelengkapan seluruh {assessment.question_count} paket soal sebelum menghitung centroid fuzzy.
@@ -366,21 +304,17 @@ export function CompetencyTest() {
         </div>
       )}
 
-      <Modal open={confirm} title="Selesaikan Asesmen?" onClose={() => !busy && setConfirm(false)}>
+      <Modal open={confirm} title="Selesaikan Asesmen?" dismissible={!busy} onClose={() => !busy && setConfirm(false)}>
         <p>
-          Anda telah menjawab <strong>{userCount}</strong> soal secara mandiri{" "}
-          {exampleCount > 0 && <>dan <strong>{exampleCount}</strong> soal contoh</>}.
+          Anda telah menjawab <strong>{answered}</strong> dari {assessment.question_count} soal secara mandiri.
           Setelah dikonfirmasi, jawaban akan dikunci dan sistem akan menghitung inferensi Mamdani secara permanen.
         </p>
-        {exampleCount > 0 && (
-          <Notice tone="info">Hasil akhir sesi ini akan ditandai berlabel DEMO / DATA CONTOH.</Notice>
-        )}
         <div className="actions end" style={{ marginTop: 20 }}>
           <button type="button" className="secondary" onClick={() => setConfirm(false)} disabled={busy}>
             Periksa Kembali
           </button>
           <button type="button" disabled={busy || pendingCount > 0} onClick={finish}>
-            {busy ? "Menghitung inferensi fuzzy\u2026" : "Ya, Selesaikan Asesmen"}
+            {busy ? "Menghitung inferensi fuzzy…" : "Ya, Hitung Rekomendasi Sekarang"}
           </button>
         </div>
       </Modal>

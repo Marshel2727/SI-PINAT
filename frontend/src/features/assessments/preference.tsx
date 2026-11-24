@@ -52,7 +52,7 @@ export function Preference() {
               </div>
               <p>{descriptions[code]}</p>
               {selected === code ? (
-                <span className="badge demo">✓ Terpilih sebagai preferensi awal</span>
+                <span className="badge success">✓ Terpilih sebagai preferensi awal</span>
               ) : (
                 <small className="muted">Klik untuk memilih</small>
               )}
@@ -69,12 +69,12 @@ export function Preference() {
             <div>
               <span className="eyebrow">DATA PESERTA ASESMEN</span>
               <strong>
-                {assessment.student ? assessment.student.full_name : "Peserta Sesi DEMO"}
+                {assessment.student ? assessment.student.full_name : "Peserta Asesmen"}
               </strong>
               <p className="small muted" style={{ margin: "2px 0 0" }}>
                 {assessment.student
                   ? `NIM: ${assessment.student.nim} ${assessment.student.class_name ? `· Kelas: ${assessment.student.class_name}` : ""}`
-                  : "Mode eksplorasi terpandu"}
+                  : "Sesi asesmen aktif"}
               </p>
             </div>
             {editingSemester ? (
@@ -115,7 +115,7 @@ export function Preference() {
         <ErrorNotice error={error} />
         <div className="actions end">
           <button type="submit" disabled={busy}>
-            {busy ? "Menyimpan preferensi\u2026" : "Simpan dan lanjut ke input nilai \u2192"}
+            {busy ? "Menyimpan minat awal…" : "Simpan Minat Awal & Lanjut Input Nilai →"}
           </button>
         </div>
       </form>

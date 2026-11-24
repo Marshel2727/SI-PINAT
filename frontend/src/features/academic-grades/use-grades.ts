@@ -16,7 +16,7 @@ export function useGrades() {
   const [error, setError] = useState<unknown>(null);
   const [modalError, setModalError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
-  const [tab, setTab] = useState(assessment.mode === "DEMO" ? "manual" : "import");
+  const [tab, setTab] = useState("import");
   const [semester, setSemester] = useState("");
   const [busy, setBusy] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState<"csv" | "xlsx" | null>(null);
@@ -194,33 +194,6 @@ export function useGrades() {
     }
   }
 
-  async function fillExamples() {
-    if (assessment.mode !== "DEMO" || !master || busy || locked) return;
-
-    const options = master.conversions.filter(grade => ["A", "B", "C"].includes(grade.letter_grade));
-    const available = options.length ? options : master.conversions;
-    if (!available.length) {
-      setError(new Error("Konversi nilai pada model belum tersedia."));
-      return;
-    }
-
-    setBusy(true);
-    setError(null);
-    setTab("manual");
-    try {
-      const examples = Object.fromEntries(
-        master.courses.map((course, index) => [course.id, available[index % available.length].letter_grade])
-      );
-      await persist(examples);
-      setMessage(
-        "Nilai contoh DEMO sudah diisi dan disimpan. Nilai ini merupakan simulasi, bukan transkrip peserta."
-      );
-    } catch (error) {
-      setError(error);
-    } finally {
-      setBusy(false);
-    }
-  }
   return {
     assessment,
     base,
@@ -252,6 +225,5 @@ export function useGrades() {
     canContinue,
     hasPositiveScores,
     missingRequired,
-    fillExamples,
   };
 }

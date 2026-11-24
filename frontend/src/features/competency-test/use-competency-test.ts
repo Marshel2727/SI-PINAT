@@ -40,11 +40,10 @@ export function useCompetencyTest() {
     };
   }, [base]);
 
-  const visible = assessment.mode === "DEMO" ? items.filter(i => i.is_representative) : items;
+  const visible = items;
   const current = visible[index];
   const answered = items.filter(i => i.answer).length;
   const userCount = items.filter(i => i.answer?.answer_source === "USER").length;
-  const exampleCount = answered - userCount;
   const pendingCount = Object.keys(pending).length;
   const savingCount = Object.values(pending).filter(value => value.state === "saving").length;
   const failedCount = pendingCount - savingCount;
@@ -90,25 +89,6 @@ export function useCompetencyTest() {
     } catch (e) {
       setError(e);
       updatePending(item, { option, state: "failed", message: prettyError(e) });
-    }
-  }
-
-  async function fill() {
-    if (operationRef.current || Object.keys(pendingRef.current).length) return;
-
-    operationRef.current = true;
-    setBusy(true);
-    setError(null);
-    try {
-      const r = await send<AssessmentItem[]>(base + "/demo/fill-examples");
-      setItems(r.data);
-      await reload();
-      setNotice("Jawaban contoh dimuat dan diberi label EXAMPLE.");
-    } catch (e) {
-      setError(e);
-    } finally {
-      operationRef.current = false;
-      setBusy(false);
     }
   }
 
@@ -164,9 +144,7 @@ export function useCompetencyTest() {
     current,
     answered,
     userCount,
-    exampleCount,
     answer,
-    fill,
     finish,
     jumpToUnanswered,
   };

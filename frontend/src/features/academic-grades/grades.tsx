@@ -38,7 +38,6 @@ export function Grades() {
     canContinue,
     hasPositiveScores,
     missingRequired,
-    fillExamples,
   } = useGrades();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -82,25 +81,6 @@ export function Grades() {
       </p>
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
-      {assessment.mode === "DEMO" && !locked && (
-        <Notice>
-          <div className="spread wrap">
-            <div>
-              <strong>Percepat simulasi DEMO</strong>
-              <p className="small">
-                Isi nilai contoh sesuai konversi model. Hasil tetap ditandai sebagai data contoh.
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={busy || !master}
-              onClick={fillExamples}
-            >
-              Isi Contoh Nilai Otomatis (DEMO)
-            </button>
-          </div>
-        </Notice>
-      )}
       {dirty && (
         <Notice>
           Ada perubahan nilai manual yang belum disimpan. Tombol “Simpan &amp; Lanjut” akan menyimpan dan memvalidasi nilai terlebih dahulu.
@@ -221,7 +201,7 @@ export function Grades() {
 
             {file && (
               <div className="upload-file-row">
-                <div className="badge demo" style={{ padding: "6px 14px", fontSize: "12px" }}>
+                <div className="badge success" style={{ padding: "6px 14px", fontSize: "12px" }}>
                   ✓ Berkas terpilih: {file.name} ({(file.size / 1024).toFixed(1)} KB)
                 </div>
                 <button
@@ -390,7 +370,7 @@ export function Grades() {
           ← Kembali ke Peminatan Awal
         </Link>
         <button type="button" disabled={busy || !canContinue} onClick={next}>
-          {busy ? "Menyimpan dan menyiapkan tes…" : dirty ? "Simpan & Lanjut ke Tes Kompetensi →" : "Lanjut ke Tes Kompetensi →"}
+          {busy ? "Menyimpan & menyiapkan tes…" : dirty ? "Simpan & Mulai Tes Kompetensi →" : "Mulai Tes Kompetensi →"}
         </button>
       </div>
       {!locked && missingRequired.length > 0 && (
@@ -407,7 +387,7 @@ export function Grades() {
         </p>
       )}
 
-      <Modal open={!!preview} title="Pratinjau Impor Nilai Transkrip" onClose={() => !busy && closePreview()}>
+      <Modal open={!!preview} title="Pratinjau Impor Nilai Transkrip" dismissible={!busy} onClose={() => !busy && closePreview()}>
         <ErrorNotice error={modalError} />
         {preview && (
           <>

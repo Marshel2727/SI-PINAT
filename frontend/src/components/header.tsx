@@ -5,6 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { IconClose, IconMenu } from "./icons";
 
+const PUBLIC_NAV_LINKS = [
+  { href: "/", label: "Beranda" },
+  { href: "/panduan", label: "Alur & Panduan" },
+  { href: "/tentang", label: "Tentang & Metode" },
+] as const;
+
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,20 +70,25 @@ export function Header() {
         </Link>
 
         {/* Navigasi Desktop */}
-        <nav className="desktop-nav" aria-label="Navigasi utama">
-          <Link href="/" className={pathname === "/" ? "nav-active" : ""}>
-            Beranda
-          </Link>
-          <Link href="/#alur">Alur Asesmen</Link>
-          <Link href="/#tentang">Tentang SI-PINAT</Link>
-          <Link href="/panduan" className={pathname === "/panduan" ? "nav-active" : ""}>
-            Panduan
-          </Link>
+        <nav className="desktop-nav" aria-label="Utama">
+          {PUBLIC_NAV_LINKS.map(({ href, label }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={active ? "nav-active" : undefined}
+                aria-current={active ? "page" : undefined}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="header-actions">
           <Link className="button secondary compact desktop-only" href="/admin/login">
-            Akses Admin
+            Portal Admin
           </Link>
 
           {/* Tombol Hamburger untuk Mobile */}
@@ -85,7 +96,7 @@ export function Header() {
             ref={toggleRef}
             type="button"
             className="mobile-menu-toggle"
-            aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu navigasi"}
+            aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu"}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav-drawer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -97,29 +108,25 @@ export function Header() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div
-          id="mobile-nav-drawer"
-          className="mobile-drawer"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu navigasi mobile"
-        >
-          <nav aria-label="Navigasi mobile">
-            <Link href="/" onClick={closeMenu}>
-              Beranda
-            </Link>
-            <Link href="/#alur" onClick={closeMenu}>
-              Alur Asesmen
-            </Link>
-            <Link href="/#tentang" onClick={closeMenu}>
-              Tentang SI-PINAT
-            </Link>
-            <Link href="/panduan" onClick={closeMenu}>
-              Panduan Penggunaan
-            </Link>
+        <div id="mobile-nav-drawer" className="mobile-drawer">
+          <nav aria-label="Utama mobile">
+            {PUBLIC_NAV_LINKS.map(({ href, label }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={active ? "nav-active" : undefined}
+                  aria-current={active ? "page" : undefined}
+                  onClick={closeMenu}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             <hr className="drawer-divider" />
             <Link className="button secondary compact full" href="/admin/login" onClick={closeMenu}>
-              Akses Admin Portal
+              Portal Admin
             </Link>
           </nav>
         </div>
@@ -145,8 +152,10 @@ export function Footer() {
           <small>Rekomendasi bersifat sebagai bahan konsultasi dan telaah akademik bersama Dosen Pembimbing Akademik (PA).</small>
         </div>
         <div className="footer-links">
-          <Link href="/panduan">Panduan Asesmen</Link>
-          <Link href="/admin/login">Portal Administrator</Link>
+          <Link href="/">Beranda</Link>
+          <Link href="/panduan">Alur &amp; Panduan</Link>
+          <Link href="/tentang">Tentang &amp; Metode</Link>
+          <Link href="/admin/login">Portal Admin</Link>
         </div>
       </div>
     </footer>

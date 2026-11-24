@@ -85,7 +85,7 @@ export function AssessmentProvider({
     : stage;
 
   return (
-    <main className="container section">
+    <main id="main-content" className="container section">
       <Steps
         active={stage}
         publicId={publicId}
@@ -104,7 +104,7 @@ export function AssessmentProvider({
               Kembali ke Beranda
             </Link>
             <Link className="button secondary" href="/?mulai=baru">
-              Mulai Asesmen Baru
+              Mulai Penentuan Peminatan Baru
             </Link>
             <button
               type="button"
@@ -123,9 +123,7 @@ export function AssessmentProvider({
       {assessment && (
         <Context.Provider value={{ assessment, reload, base }}>
           <div className="session-meta wrap">
-            <span className={"badge " + (assessment.mode === "DEMO" ? "demo" : "")}>
-              {assessment.mode === "DEMO" ? "DEMO \u00B7 DATA CONTOH" : "ASESMEN FULL"}
-            </span>
+            <span className="badge">ASESMEN PEMINATAN</span>
             <small title={assessment.expires_at ? `Berlaku hingga ${time(assessment.expires_at)}` : undefined}>
               Model {assessment.model_version}
               {remaining && assessment.status !== "COMPLETED" ? ` · Sisa waktu sesi: ${remaining}` : ""}

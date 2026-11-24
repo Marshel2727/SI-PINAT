@@ -17,7 +17,7 @@ export function FuzzyDetail() {
       </div>
 
       <section className="dark-card section">
-        <span className="badge demo">TRANSPARANSI ALGORITMA PAKAR</span>
+        <span className="badge accent">TRANSPARANSI ALGORITMA PAKAR</span>
         <h1>Detail Perhitungan Fuzzy Logic Mamdani</h1>
         <p>
           Penelusuran jejak numerik matematis mencakup fuzzifikasi derajat keanggotaan, implikasi MIN, agregasi MAX, dan defuzzifikasi titik berat (centroid).

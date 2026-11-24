@@ -109,7 +109,7 @@ export function ResumeAssessment() {
                 : "Kamu memiliki sesi asesmen yang belum selesai"}
             </strong>
             <p className="small" style={{ margin: "4px 0 0" }}>
-              Mode {session.mode}
+              Sesi Asesmen
               {studentName ? ` · ${studentName}${studentNim ? ` (${studentNim})` : ""}` : ""}
               {semester ? ` · Semester ${semester}` : ""}
               {modelVersion ? ` · Model ${modelVersion}` : ""}
@@ -126,10 +126,10 @@ export function ResumeAssessment() {
           </div>
           <div className="actions">
             <Link className="button" href={`/asesmen/${session.publicId}/${session.stage}`}>
-              {completed ? "Buka Hasil" : "Lanjutkan Sesi"}
+              {completed ? "Lihat Hasil Rekomendasi →" : "Lanjutkan Penentuan Peminatan →"}
             </Link>
             <button type="button" className="secondary" onClick={handleStartNew}>
-              Mulai Baru
+              Mulai Asesmen Baru
             </button>
           </div>
         </div>

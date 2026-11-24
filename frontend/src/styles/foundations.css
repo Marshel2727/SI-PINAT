@@ -40,6 +40,39 @@ html {
   scroll-padding-top: 84px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 100;
+  background: var(--navy);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
 body {
   margin: 0;
   background: var(--page);
@@ -194,4 +227,21 @@ small, .small {
 .mono {
   font-family: "JetBrains Mono", monospace;
   font-size: 12px;
+}
+
+@media (pointer: coarse) {
+  input:not([type=checkbox]):not([type=radio]), select, textarea {
+    font-size: max(1rem, 1em);
+    min-height: 44px;
+  }
+
+  button, .button, .compact, .answer, nav a, .step-link {
+    min-height: 44px;
+  }
+
+  .footer-links a, .card > a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }

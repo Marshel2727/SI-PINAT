@@ -42,7 +42,7 @@ export function readRememberedAssessment(): RememberedAssessment | null {
     const value = JSON.parse(localStorage.getItem(KEY) || "null");
     return value && typeof value.publicId === "string"
       && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.publicId)
-      && stages.includes(value.stage) && ["DEMO", "FULL"].includes(value.mode)
+      && stages.includes(value.stage) && value.mode === "FULL"
       ? value : null;
   } catch { return null; }
 }
