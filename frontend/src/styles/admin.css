@@ -1,10 +1,48 @@
 .login-background {
+  position: relative;
+  overflow: hidden;
   padding: 40px 24px;
   background: radial-gradient(ellipse at 0% 90%, #d9e4ff90, transparent 45%), var(--page);
   min-height: 80vh;
 }
 
+.login-background::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 24%, rgba(0, 81, 213, 0.09), transparent 44%),
+    radial-gradient(circle at 78% 76%, rgba(31, 138, 127, 0.08), transparent 46%);
+  translate: 0 0;
+  scale: 1;
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-background::before {
+    animation: loginAuroraDrift 18s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes loginAuroraDrift {
+  0% {
+    translate: -2% -1.5%;
+    scale: 1;
+  }
+  100% {
+    translate: 2% 1.5%;
+    scale: 1.05;
+  }
+}
+
+html[data-bg-motion="paused"] .login-background::before {
+  animation-play-state: paused;
+}
+
 .login-card {
+  position: relative;
+  z-index: 1;
   max-width: 576px;
   margin: auto;
   padding: 40px;
@@ -66,6 +104,32 @@
   border-radius: 8px;
   border-inline-start: 3px solid transparent;
   font-size: 13px;
+}
+
+.admin-sidebar nav a:not(.active):not([aria-current="page"]) {
+  translate: 0 0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .admin-sidebar nav a:not(.active):not([aria-current="page"]) {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, translate 0.18s ease-out;
+  }
+}
+
+@media (hover: hover) {
+  .admin-sidebar nav a:not(.active):not([aria-current="page"]):hover {
+    background: var(--soft);
+    color: var(--primary);
+    text-decoration: none;
+    border-inline-start-color: #9cb6ff;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .admin-sidebar nav a:not(.active):not([aria-current="page"]):hover {
+    translate: 2px 0;
+  }
 }
 
 .admin-sidebar nav a.active,
@@ -187,11 +251,40 @@
   flex-direction: column;
   gap: 8px;
   justify-content: space-between;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .setup-step.is-done {
   border-color: #bcead0;
   background: #fafdfb;
+}
+
+.stats .card,
+.setup-step {
+  translate: 0 0;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stats .card,
+  .setup-step {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, translate 0.2s ease-out;
+  }
+}
+
+@media (hover: hover) {
+  .stats .card:hover,
+  .setup-step:hover {
+    border-color: #b8caff;
+    box-shadow: var(--shadow-hover, 0 12px 28px -6px rgba(0, 24, 53, 0.13));
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .stats .card:hover,
+  .setup-step:hover {
+    translate: 0 -3px;
+  }
 }
 
 .preset-toolbar {

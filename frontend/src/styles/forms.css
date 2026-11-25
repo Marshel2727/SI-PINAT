@@ -82,6 +82,14 @@
   color: inherit;
   width: 100%;
   border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .step-link:hover {
+    background: var(--surface);
+    text-decoration: none;
+  }
 }
 
 .required-badge {
@@ -117,6 +125,19 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .step-number {
+    transition: scale 0.18s ease-out;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .step-link:hover .step-number {
+    scale: 1.06;
+  }
 }
 
 .current .step-number {
@@ -181,6 +202,24 @@
 .tablist-scroll button.secondary {
   background: transparent;
   color: var(--navy);
+}
+
+@media (hover: hover) {
+  .tabs button.secondary:hover,
+  .tablist-scroll [role="tab"].secondary:hover,
+  .tablist-scroll button.secondary:hover {
+    background: rgba(0, 81, 213, 0.08);
+    color: var(--primary);
+    box-shadow: none;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tabs button:hover,
+  .tablist-scroll [role="tab"]:hover,
+  .tablist-scroll button:hover {
+    translate: 0 0;
+  }
 }
 
 .tablist-scroll [role="tab"][aria-selected="true"]::after {
@@ -248,6 +287,16 @@ th, td {
   vertical-align: middle;
 }
 
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  tbody tr:not(.rule-active-row):hover {
+    background-color: rgba(0, 81, 213, 0.03);
+  }
+}
+
 td input:not([type=checkbox]), td select {
   min-width: 85px;
 }
@@ -280,16 +329,40 @@ td:first-child {
   justify-content: center;
   text-align: center;
   padding: 24px;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .upload-zone:not([aria-disabled="true"]) {
   cursor: pointer;
 }
 
+@media (hover: hover) {
+  .upload-zone:not([aria-disabled="true"]):hover {
+    border-color: #8aa8ff;
+    background: #f4f6ff;
+    box-shadow: 0 10px 24px -8px rgba(0, 81, 213, 0.14);
+  }
+}
+
 .upload-zone.is-dragging {
   border-color: var(--primary);
   background: var(--soft);
+}
+
+.upload-zone > svg {
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .upload-zone > svg {
+    transition: translate 0.2s ease-out;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .upload-zone:not([aria-disabled="true"]):hover > svg {
+    translate: 0 -3px;
+  }
 }
 
 .upload-file-row {

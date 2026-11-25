@@ -83,6 +83,22 @@ main.section {
   text-decoration: none;
 }
 
+.brand img {
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand img {
+    transition: scale 0.22s ease-out;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .brand:hover img {
+    scale: 1.07;
+  }
+}
+
 .brand strong {
   font-size: 17px;
   letter-spacing: -0.3px;
@@ -115,9 +131,7 @@ main.section {
 }
 
 .desktop-nav a:hover {
-  color: var(--primary);
   text-decoration: none;
-  background: var(--soft);
 }
 
 .desktop-nav a[aria-current="page"],
@@ -128,8 +142,7 @@ main.section {
   background: var(--soft);
 }
 
-.desktop-nav a[aria-current="page"]::after,
-.desktop-nav a.nav-active::after {
+.desktop-nav a::after {
   content: "";
   position: absolute;
   left: 12px;
@@ -138,6 +151,32 @@ main.section {
   height: 2px;
   border-radius: 999px;
   background: currentColor;
+  scale: 0 1;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .desktop-nav a::after {
+    transition: scale 0.22s ease-out;
+  }
+}
+
+.desktop-nav a:focus-visible::after,
+.desktop-nav a[aria-current="page"]::after,
+.desktop-nav a.nav-active::after {
+  scale: 1 1;
+}
+
+@media (hover: hover) {
+  .desktop-nav a:hover {
+    color: var(--primary);
+    text-decoration: none;
+    background: var(--soft);
+  }
+
+  .desktop-nav a:hover::after {
+    scale: 1 1;
+  }
 }
 
 .header-actions {
@@ -233,6 +272,7 @@ main.section {
     border-radius: 0;
   }
 
+  .desktop-nav a::after,
   .desktop-nav a[aria-current="page"]::after,
   .desktop-nav a.nav-active::after {
     display: none;
@@ -294,6 +334,27 @@ main.section {
   font-size: 13px;
   line-height: 1.5;
   white-space: nowrap;
+  translate: 0 0;
+  transition: color 0.15s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .footer-links a {
+    transition: color 0.15s ease, translate 0.18s ease-out;
+  }
+}
+
+@media (hover: hover) {
+  .footer-links a:hover {
+    color: var(--primary);
+    text-decoration: none;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .footer-links a:hover {
+    translate: 2px 0;
+  }
 }
 
 @media (pointer: coarse) {

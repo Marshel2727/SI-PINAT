@@ -29,6 +29,8 @@
   --warning-bg: #fff5e6;
   --radius: 12px;
   --shadow: 0 4px 14px rgba(0, 24, 53, 0.08), 0 1px 3px rgba(0, 24, 53, 0.04);
+  --shadow-hover: 0 12px 28px -6px rgba(0, 24, 53, 0.13), 0 4px 10px -3px rgba(0, 24, 53, 0.05);
+  --shadow-button-hover: 0 8px 18px -4px rgba(0, 24, 53, 0.22), 0 2px 5px -1px rgba(0, 24, 53, 0.08);
 }
 
 * {
@@ -140,13 +142,28 @@ button, .button {
   line-height: 1.4;
   cursor: pointer;
   text-decoration: none;
-  transition: background .15s, box-shadow .15s;
+  translate: 0 0;
+  scale: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease;
 }
 
-button:hover, .button:hover {
-  background: var(--navy-secondary);
+button:where(:not(.icon-button):not(.password-toggle-btn):not(.mobile-menu-toggle)) > svg:last-child,
+.button > svg:last-child {
+  translate: 0 0;
+}
+
+button:where(:not(:disabled)):hover,
+.button:where(:not(:disabled)):hover {
   text-decoration: none;
-  box-shadow: var(--shadow);
+}
+
+@media (hover: hover) {
+  button:where(:not(:disabled):not(.password-toggle-btn)):hover,
+  .button:where(:not(:disabled)):hover {
+    background: var(--navy-secondary);
+    text-decoration: none;
+    box-shadow: var(--shadow-button-hover);
+  }
 }
 
 button:disabled {
@@ -159,13 +176,52 @@ button.secondary, .button.secondary {
   color: var(--navy);
 }
 
-button.secondary:hover, .button.secondary:hover {
-  background: var(--border);
-}
-
 .button.white {
   background: white;
   color: var(--navy);
+}
+
+@media (hover: hover) {
+  button.secondary:where(:not(:disabled)):hover,
+  .button.secondary:where(:not(:disabled)):hover {
+    background: var(--border);
+    box-shadow: 0 6px 16px -4px rgba(0, 24, 53, 0.12);
+  }
+
+  .button.white:where(:not(:disabled)):hover {
+    background: #f4f7ff;
+    box-shadow: 0 6px 16px -4px rgba(0, 24, 53, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button, .button {
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease, translate 0.22s ease-out, scale 0.22s ease-out;
+    transition-timing-function: ease, ease, ease, ease, linear(0, 0.6 22%, 1.05 58%, 0.99 82%, 1), ease-out;
+  }
+
+  button:where(:not(.icon-button):not(.password-toggle-btn):not(.mobile-menu-toggle)) > svg:last-child,
+  .button > svg:last-child {
+    transition: translate 0.2s ease-out;
+  }
+
+  button:where(:not(:disabled):not(.password-toggle-btn)):active,
+  .button:where(:not(:disabled)):active {
+    scale: 0.98;
+    translate: 0 0;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  button:where(:not(:disabled):not(.password-toggle-btn)):hover,
+  .button:where(:not(:disabled)):hover {
+    translate: 0 -1.5px;
+  }
+
+  button:where(:not(:disabled):not(.password-toggle-btn):not(.icon-button):not(.mobile-menu-toggle)):hover > svg:last-child,
+  .button:where(:not(:disabled)):hover > svg:last-child {
+    translate: 3px 0;
+  }
 }
 
 .compact {
@@ -182,7 +238,7 @@ button.secondary:hover, .button.secondary:hover {
   display: block;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible, .button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid #0051d56b;
   outline-offset: 3px;
 }
@@ -196,6 +252,16 @@ input:not([type=checkbox]):not([type=radio]), select, textarea {
   border-radius: 8px;
   color: var(--navy);
   font-size: 13px;
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+@media (hover: hover) {
+  input:not([type=checkbox]):not([type=radio]):not(:disabled):hover,
+  select:not(:disabled):hover,
+  textarea:not(:disabled):hover {
+    border-color: #b4c5ff;
+    background-color: #f7f8ff;
+  }
 }
 
 input[type=checkbox], input[type=radio] {

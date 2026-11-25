@@ -1,3 +1,4 @@
+import { AmbientBackground } from "@/components/ambient-background";
 import { Footer, Header } from "@/components/header";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -21,6 +22,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link visually-hidden">
           Lewati ke konten utama
         </a>
+        <AmbientBackground />
         <Header />
         {children}
         <Footer />

@@ -51,13 +51,30 @@ dialog::backdrop {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  scale: 1;
+  translate: 0 0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.icon-button:hover {
-  background: var(--soft);
-  color: var(--navy);
-  box-shadow: none;
+@media (prefers-reduced-motion: no-preference) {
+  .icon-button {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, scale 0.15s ease-out;
+  }
+
+  .icon-button:not(:disabled):active {
+    scale: 0.94;
+    translate: 0 0;
+  }
+}
+
+@media (hover: hover) {
+  .icon-button:not(:disabled):hover {
+    background: var(--soft);
+    color: var(--navy);
+    border-color: #b8caff;
+    box-shadow: none;
+    translate: 0 0;
+  }
 }
 
 dialog .table-scroll {

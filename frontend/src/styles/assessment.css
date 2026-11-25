@@ -55,15 +55,21 @@
   margin: 8px 0;
   cursor: pointer;
   line-height: 1.6;
-  transition: background .15s, border-color .15s, box-shadow .15s;
+  translate: 0 0;
+  scale: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.answer:hover {
-  background: var(--surface);
-  border-color: #b4c5ff;
+@media (hover: hover) {
+  .answer:hover {
+    background: var(--surface);
+    border-color: #9cb8ff;
+    box-shadow: 0 6px 16px -4px rgba(0, 24, 53, 0.08);
+  }
 }
 
-.answer.selected {
+.answer.selected,
+.answer.selected:hover {
   border: 1px solid var(--primary) !important;
   background: #f0f4ff;
   box-shadow: 0 0 0 1px var(--primary);
@@ -93,6 +99,40 @@
   justify-content: center;
   flex-shrink: 0;
   font-size: 12px;
+  scale: 1;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .answer:not(.selected):hover .option-letter {
+    background: #dfe6ff;
+    color: var(--primary);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .answer {
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, translate 0.18s ease-out, scale 0.15s ease-out;
+  }
+
+  .answer:active {
+    scale: 0.992;
+    translate: 0 0;
+  }
+
+  .option-letter {
+    transition: background-color 0.15s ease, color 0.15s ease, scale 0.18s ease-out;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .answer:hover {
+    translate: 0 -1px;
+  }
+
+  .answer:not(.selected):hover .option-letter {
+    scale: 1.06;
+  }
 }
 
 .question-card > p, .question-card > button {
@@ -137,6 +177,25 @@
   min-height: 38px;
   padding: 8px;
   font-family: monospace;
+  translate: 0 0;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .question-nav button {
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, translate 0.15s ease-out, scale 0.15s ease-out;
+  }
+
+  .question-nav button:active {
+    scale: 0.95;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .question-nav button:hover {
+    scale: 1.05;
+    translate: 0 0;
+  }
 }
 
 .success-button {
@@ -184,6 +243,22 @@
   padding: 16px;
   text-align: center;
   flex-shrink: 0;
+  translate: 0 0;
+  scale: 1;
+  transition: box-shadow 0.2s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .score-tile {
+    transition: translate 0.2s ease-out, box-shadow 0.2s ease;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .score-tile:hover {
+    translate: 0 -2px;
+    box-shadow: 0 12px 26px -6px rgba(0, 24, 53, 0.24);
+  }
 }
 
 .score-tile > small {

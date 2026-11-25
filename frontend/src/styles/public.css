@@ -1,13 +1,102 @@
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 24, 53, 0.075) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 55%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 55%, transparent 100%);
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  translate: 0 0;
+  scale: 1;
+  will-change: transform;
+}
+
+.orb-primary {
+  top: -12%;
+  right: -6%;
+  width: min(560px, 55vw);
+  height: min(560px, 55vw);
+  background: rgba(0, 81, 213, 0.11);
+}
+
+.orb-teal {
+  bottom: -14%;
+  left: -8%;
+  width: min(520px, 50vw);
+  height: min(520px, 50vw);
+  background: rgba(31, 138, 127, 0.10);
+}
+
+.orb-indigo {
+  top: 32%;
+  left: 28%;
+  width: min(440px, 44vw);
+  height: min(440px, 44vw);
+  background: rgba(99, 102, 241, 0.09);
+}
+
+.bg-motion-toggle {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.bg-motion-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+html[data-bg-motion="paused"] .bg-motion-dot {
+  background: var(--text-secondary);
+  opacity: 0.55;
+}
+
 .hero {
+  position: relative;
+  overflow: hidden;
   padding: 64px 0 56px;
   background:
-    radial-gradient(ellipse at 92% 0%, rgba(49, 107, 243, 0.08), transparent 52%),
+    radial-gradient(ellipse at 92% 0%, rgba(49, 107, 243, 0.09), transparent 52%),
     radial-gradient(ellipse at 10% 92%, rgba(31, 138, 127, 0.09), transparent 46%),
-    var(--surface);
+    linear-gradient(180deg, rgba(242, 243, 255, 0.84) 0%, rgba(250, 248, 255, 0.72) 100%);
   border-bottom: 1px solid var(--border);
 }
 
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  left: 48%;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 81, 213, 0.10) 0%, rgba(31, 138, 127, 0.05) 45%, transparent 72%);
+  filter: blur(48px);
+  translate: 0 0;
+  scale: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 7fr 5fr;
   align-items: center;
@@ -96,6 +185,7 @@
   background: white;
   padding: 12px;
   border-radius: 8px;
+  border: 1px solid var(--border);
 }
 
 .metrics strong {
@@ -315,4 +405,156 @@
 
 .step-card p {
   margin: 0;
+}
+
+.specialization,
+.step-card,
+.example-card,
+.metrics > div,
+.cta-band {
+  translate: 0 0;
+  scale: 1;
+  transition: border-color 0.2s ease, box-shadow 0.22s ease, background-color 0.2s ease;
+}
+
+.specialization .icon-box,
+.step-card .step-number {
+  scale: 1;
+  transition: background-color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orb-primary {
+    animation: ambientDriftPrimary 22s ease-in-out infinite alternate;
+  }
+
+  .orb-teal {
+    animation: ambientDriftTeal 26s ease-in-out infinite alternate;
+  }
+
+  .orb-indigo {
+    animation: ambientDriftIndigo 24s ease-in-out infinite alternate;
+  }
+
+  .hero::before {
+    animation: heroGlowFloat 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes ambientDriftPrimary {
+    0% {
+      translate: 0 0;
+      scale: 1;
+    }
+    50% {
+      translate: -4vw 3vh;
+      scale: 1.07;
+    }
+    100% {
+      translate: -7vw 6vh;
+      scale: 0.96;
+    }
+  }
+
+  @keyframes ambientDriftTeal {
+    0% {
+      translate: 0 0;
+      scale: 1;
+    }
+    50% {
+      translate: 5vw -4vh;
+      scale: 1.08;
+    }
+    100% {
+      translate: 8vw -2vh;
+      scale: 0.95;
+    }
+  }
+
+  @keyframes ambientDriftIndigo {
+    0% {
+      translate: 0 0;
+      scale: 1;
+    }
+    50% {
+      translate: -3vw -5vh;
+      scale: 1.06;
+    }
+    100% {
+      translate: 4vw 4vh;
+      scale: 0.97;
+    }
+  }
+
+  @keyframes heroGlowFloat {
+    0% {
+      translate: 0 0;
+      scale: 1;
+    }
+    100% {
+      translate: -40px 24px;
+      scale: 1.08;
+    }
+  }
+
+  .specialization,
+  .step-card,
+  .example-card,
+  .metrics > div,
+  .cta-band {
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.24s ease,
+      background-color 0.2s ease,
+      translate 0.28s ease-out;
+    transition-timing-function: ease, ease, ease, linear(0, 0.55 20%, 1.04 55%, 0.99 80%, 1);
+  }
+
+  .specialization .icon-box,
+  .step-card .step-number {
+    transition: background-color 0.2s ease, scale 0.26s ease-out;
+    transition-timing-function: ease, linear(0, 0.55 20%, 1.04 55%, 0.99 80%, 1);
+  }
+}
+
+html[data-bg-motion="paused"] .ambient-orb,
+html[data-bg-motion="paused"] .hero::before {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) {
+  .specialization:hover,
+  .step-card:hover,
+  .example-card:hover,
+  .metrics > div:hover,
+  .cta-band:hover {
+    border-color: #b8caff;
+    box-shadow: var(--shadow-hover, 0 14px 30px -6px rgba(0, 24, 53, 0.12), 0 4px 10px -3px rgba(0, 24, 53, 0.05));
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .specialization:hover,
+  .step-card:hover,
+  .example-card:hover {
+    translate: 0 -4px;
+    border-color: #b8caff;
+    box-shadow: var(--shadow-hover, 0 14px 30px -6px rgba(0, 24, 53, 0.12), 0 4px 10px -3px rgba(0, 24, 53, 0.05));
+  }
+
+  .metrics > div:hover,
+  .cta-band:hover {
+    translate: 0 -2px;
+    border-color: #b8caff;
+    box-shadow: var(--shadow-hover, 0 14px 30px -6px rgba(0, 24, 53, 0.12), 0 4px 10px -3px rgba(0, 24, 53, 0.05));
+  }
+
+  .specialization:hover .icon-box {
+    scale: 1.06;
+    background: #dfe6ff;
+  }
+
+  .step-card:hover .step-number {
+    scale: 1.08;
+    background: #dfe6ff;
+  }
 }

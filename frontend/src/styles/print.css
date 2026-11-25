@@ -1,5 +1,5 @@
 @media print {
-  .header, .footer, .admin-sidebar, button, .button, .steps, .no-print {
+  .header, .footer, .admin-sidebar, button, .button, .steps, .no-print, .ambient-bg, .bg-motion-toggle {
     display: none!important;
   }
 

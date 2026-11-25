@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { BgMotionToggle } from "./ambient-background";
 import { IconClose, IconMenu } from "./icons";
 
 const PUBLIC_NAV_LINKS = [
@@ -149,6 +150,7 @@ export function Footer() {
         <div>
           <strong>SI-PINAT UNM</strong>
           <p>Teknik Komputer — Universitas Negeri Makassar.</p>
+          <BgMotionToggle />
         </div>
         <div className="footer-links">
           <Link href="/">Beranda</Link>
