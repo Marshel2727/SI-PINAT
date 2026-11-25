@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Query
 from app.db.session import database
 from app.core.security import admin
-from app.schemas.inputs import ModelCreate, Publish
+from app.schemas.inputs import BoundarySeed, ModelCreate, Publish
 from app.repositories.store import rows, add, audit
 from app.services import fuzzy_model_versions as models
 from app.api.v1.common import ok, page as envelope
-from app.services.fuzzy_validation_cases import validate as run_validation
+from app.services.fuzzy_validation_cases import seed_boundary_cases, validate as run_validation
 
 router = APIRouter(tags=["fuzzy_model_versions"], dependencies=[Depends(admin)])
 
@@ -60,6 +60,24 @@ def readiness(identifier: int, db=Depends(database)):
 @router.post("/admin/fuzzy-models/{identifier}/validate")
 def validate(identifier: int, user=Depends(admin), db=Depends(database, scope="function")):
     return ok(run_validation(db, identifier, user))
+
+
+@router.post("/admin/fuzzy-models/{identifier}/seed-boundary-cases")
+def seed_boundary(
+    identifier: int,
+    body: BoundarySeed | None = None,
+    user=Depends(admin),
+    db=Depends(database, scope="function"),
+):
+    payload = body or BoundarySeed()
+    return ok(seed_boundary_cases(
+        db,
+        identifier,
+        user,
+        specialization_id=payload.specialization_id,
+        tolerance=payload.tolerance,
+        recalculate_existing=payload.recalculate_existing,
+    ))
 
 
 @router.post("/admin/fuzzy-models/{identifier}/publish")

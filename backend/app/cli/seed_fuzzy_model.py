@@ -7,10 +7,10 @@ from pathlib import Path
 
 from app.fuzzy.reference import CASES, CONSEQUENTS, PARAMETERS, exact_reference
 from app.repositories.store import add, audit, one, rows
+from app.services.grade_conversions import UNM_GRADE_CONVERSIONS
 
 PROPOSAL_PATH = Path(__file__).with_name("data") / "fuzzy_model_proposal.json"
 SPECIALIZATIONS = ("ES-01", "SC-02", "JDF-03")
-LETTERS = (("A", 4), ("B", 3), ("C", 2), ("D", 1), ("E", 0))
 
 
 def load_proposal():
@@ -69,14 +69,14 @@ def seed(db, user):
                 is_required=weight > 0,
             )
 
-    for letter, points in LETTERS:
+    for letter, points, normalized in UNM_GRADE_CONVERSIONS:
         add(
             db,
             "grade_conversions",
             model_version_id=identifier,
             letter_grade=letter,
             grade_points=points,
-            normalized_score=points * 25,
+            normalized_score=normalized,
         )
 
     set_ids = {}
@@ -167,7 +167,7 @@ def main():
         print(f"Model TEKOM-ACO-001 (ID {identifier}) sudah ada; konfigurasi tidak ditimpa.")
         return
     print(f"Model TEKOM-ACO-001 DRAFT dibuat (ID {identifier}).")
-    print("32 mata kuliah ACO; 3 variabel; 9 himpunan; 27 aturan; 5 konversi; 30 skenario teknis.")
+    print("32 mata kuliah ACO; 3 variabel; 9 himpunan; 27 aturan; 12 konversi UNM; 30 skenario teknis.")
     print("Bobot/konversi/batas fuzzy merupakan usulan awal, belum disahkan secara akademik.")
     print("Tinjau konfigurasi dan soal, jalankan skenario melalui admin, lalu publikasikan setelah persetujuan.")
 

@@ -143,6 +143,33 @@ export function useModelEditor({ id }: {
     }
   }
 
+  async function seedAndValidateBoundaryCases() {
+    if (busy || !model || model.status !== "DRAFT")
+      return;
+    setBusy(true);
+    setError(null);
+    setMessage("");
+    try {
+      const seedRes = await send<{ created_count: number; updated_count: number }>(
+        base + "/seed-boundary-cases",
+        { recalculate_existing: true, tolerance: 0.5 },
+        "POST"
+      );
+      const { data } = await send<ValidationResult[]>(base + "/validate");
+      setModel((await api<FuzzyModel>(base)).data);
+      await refreshReadiness();
+      setMessage(
+        `30 skenario batas disiapkan (${seedRes.data.created_count} baru, ${seedRes.data.updated_count} diperbarui) — ${data.filter(v => v.passed).length} / ${data.length} skenario lulus.`
+      );
+    }
+    catch (e) {
+      setError(e);
+    }
+    finally {
+      setBusy(false);
+    }
+  }
+
   async function action(kind: string) {
     if (busy)
       return;
@@ -285,6 +312,7 @@ export function useModelEditor({ id }: {
     save,
     scaffoldDefaults,
     hasEmptyScaffoldSection,
+    seedAndValidateBoundaryCases,
     action,
     clone,
     locked,

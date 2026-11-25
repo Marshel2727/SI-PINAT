@@ -111,11 +111,42 @@ def remove(db, identifier, user):
     return {"deleted": True, "id": identifier}
 
 
+def publish_all_drafts(db, user):
+    drafts = [q for q in listing(db, status="DRAFT") if q["is_latest_revision"]]
+    published_count = 0
+    failed = []
+    for q in drafts:
+        try:
+            set_status(db, q["id"], "PUBLISHED", user)
+            published_count += 1
+        except HTTPException as exc:
+            detail_msg = exc.detail.get("message") if isinstance(exc.detail, dict) else str(exc.detail)
+            failed.append({"id": str(q["id"]), "code": q["code"], "message": detail_msg})
+    return {"published_count": published_count, "failed": failed}
+
+
 def bulk_import(db, items, publish, user):
     created = []
     published_count = 0
     errors = []
-    for index, item in enumerate(items):
+    specs_by_code = {
+        s["code"].strip().upper(): s["id"]
+        for s in rows(db, "specializations", is_active=True)
+    }
+    for index, raw_item in enumerate(items):
+        item = dict(raw_item)
+        spec_code = item.pop("specialization_code", None)
+        if item.get("specialization_id") is None:
+            code_key = str(spec_code or "").strip().upper()
+            spec_id = specs_by_code.get(code_key)
+            if spec_id is None:
+                errors.append({
+                    "index": index,
+                    "code": item.get("code"),
+                    "message": "Peminatan tidak dikenal.",
+                })
+                continue
+            item["specialization_id"] = spec_id
         try:
             saved = save(db, item, user)
             if publish:

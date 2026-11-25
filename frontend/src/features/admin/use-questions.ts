@@ -1,6 +1,6 @@
 "use client";
 
-import { api, prettyError, send } from "@/lib/api";
+import { api, send } from "@/lib/api";
 import type { PublishedQuestionSummary, Question, Specialization } from "@/types/api";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -16,6 +16,11 @@ export interface BulkImportResult {
   errors: BulkImportErrorItem[];
 }
 
+export interface BulkPublishDraftsResult {
+  published_count: number;
+  failed: { id: string; code: string; message: string }[];
+}
+
 export function useQuestions() {
   const [rows, setRows] = useState<Question[]>([]);
   const [status, setStatus] = useState("");
@@ -24,6 +29,7 @@ export function useQuestions() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [specs, setSpecs] = useState<Specialization[]>([]);
   const [summary, setSummary] = useState<PublishedQuestionSummary[]>([]);
+  const [totalDraftCount, setTotalDraftCount] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -34,6 +40,7 @@ export function useQuestions() {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const [importOpen, setImportOpen] = useState(false);
+  const [templateSpecCode, setTemplateSpecCode] = useState("ES-01");
   const [importJson, setImportJson] = useState("");
   const [importPublish, setImportPublish] = useState(false);
   const [importBusy, setImportBusy] = useState(false);
@@ -48,13 +55,27 @@ export function useQuestions() {
       .catch(() => {});
   }, []);
 
+  const refreshDraftCount = useCallback(() => {
+    api<Question[]>("/admin/questions?status=DRAFT&page_size=1")
+      .then(r => setTotalDraftCount(r.meta?.total ?? r.data.length))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     let active = true;
-    Promise.all([api<Specialization[]>("/specializations"), api<PublishedQuestionSummary[]>("/admin/questions/summary")])
-      .then(([a, b]) => {
+    Promise.all([
+      api<Specialization[]>("/specializations"),
+      api<PublishedQuestionSummary[]>("/admin/questions/summary"),
+      api<Question[]>("/admin/questions?status=DRAFT&page_size=1")
+    ])
+      .then(([a, b, c]) => {
         if (active) {
           setSpecs(a.data);
           setSummary(b.data);
+          setTotalDraftCount(c.meta?.total ?? c.data.length);
+          if (a.data.length > 0 && !a.data.some(s => s.code === "ES-01")) {
+            setTemplateSpecCode(a.data[0].code);
+          }
         }
       })
       .catch(err => active && setError(err));
@@ -131,6 +152,7 @@ export function useQuestions() {
       const { data } = await send<Question>("/admin/questions/" + id + "/publish");
       applyStatus(data);
       refreshSummary();
+      refreshDraftCount();
       setMessage(`Soal ${data.code} berhasil dipublikasikan dan tampil di tes.`);
     }
     catch (e) {
@@ -151,6 +173,7 @@ export function useQuestions() {
       const { data } = await send<Question>("/admin/questions/" + id + "/archive");
       applyStatus(data);
       refreshSummary();
+      refreshDraftCount();
       setMessage(`Soal ${data.code} disembunyikan. Klik "Tampilkan Lagi" untuk mengaktifkannya kembali.`);
     }
     catch (e) {
@@ -173,6 +196,7 @@ export function useQuestions() {
       await send("/admin/questions/" + question.id, undefined, "DELETE");
       await loadQuestions();
       refreshSummary();
+      refreshDraftCount();
       setMessage(`Draf soal ${question.code} (r${question.revision}) berhasil dihapus.`);
     }
     catch (e) {
@@ -183,36 +207,31 @@ export function useQuestions() {
     }
   }
 
-  const publishableDrafts = rows.filter(r => r.status === "DRAFT" && isLatest(r));
-
   async function publishAllDrafts() {
-    const drafts = publishableDrafts;
-    if (!drafts.length || bulkBusy || busyId !== null)
+    if (!totalDraftCount || bulkBusy || busyId !== null)
       return;
-    if (!window.confirm(`Publikasikan ${drafts.length} butir draf pada halaman ini ke instrumen tes?`))
+    if (!window.confirm(`Publikasikan seluruh ${totalDraftCount} butir draf revisi terbaru ke instrumen tes?`))
       return;
     setBulkBusy(true);
     setError(null);
     setMessage("");
-    let successCount = 0;
-    const failed: string[] = [];
     try {
-      for (const draft of drafts) {
-        try {
-          await send<Question>("/admin/questions/" + draft.id + "/publish");
-          successCount++;
-        }
-        catch (err) {
-          failed.push(`${draft.code} (r${draft.revision}): ${prettyError(err)}`);
-        }
-      }
+      const { data } = await send<BulkPublishDraftsResult>("/admin/questions/publish-all-drafts", {}, "POST");
       await loadQuestions();
       refreshSummary();
-      if (successCount > 0) {
-        setMessage(`${successCount} dari ${drafts.length} butir draf berhasil dipublikasikan.`);
+      refreshDraftCount();
+      if (data.published_count > 0) {
+        setMessage(`${data.published_count} butir draf berhasil dipublikasikan.`);
       }
-      if (failed.length > 0) {
-        setError(new Error(`${failed.length} draf gagal dipublikasikan: ${failed.join("; ")}`));
+      else if (!data.failed?.length) {
+        setMessage("Tidak ada draf revisi terbaru yang perlu dipublikasikan.");
+      }
+      if (data.failed && data.failed.length > 0) {
+        setError(
+          new Error(
+            `${data.failed.length} draf gagal dipublikasikan: ${data.failed.map(f => `${f.code}: ${f.message}`).join("; ")}`
+          )
+        );
       }
     }
     catch (e) {
@@ -223,14 +242,14 @@ export function useQuestions() {
     }
   }
 
-  function buildTemplateJson(): string {
-    const defaultSpecId = specs[0]?.id ? Number(specs[0].id) : 1;
+  function buildTemplateJson(specCode = templateSpecCode): string {
+    const chosenCode = specCode || specs[0]?.code || "ES-01";
     return JSON.stringify(
       {
         questions: [
           {
-            specialization_id: defaultSpecId,
-            code: "ES-NEW-01",
+            specialization_code: chosenCode,
+            code: `${chosenCode}-NEW-01`,
             prompt: "Contoh pertanyaan: komponen apa yang mengatur sinkronisasi clock pada mikrokontroler?",
             explanation: "Oscillator menghasilkan sinyal clock utama.",
             options: [
@@ -252,7 +271,7 @@ export function useQuestions() {
     setImportError(null);
     setImportPartialErrors([]);
     if (!importJson.trim()) {
-      setImportJson(buildTemplateJson());
+      setImportJson(buildTemplateJson(templateSpecCode));
     }
     setImportOpen(true);
   }
@@ -265,10 +284,10 @@ export function useQuestions() {
     setImportOpen(false);
   }
 
-  function loadTemplate() {
+  function loadTemplate(specCode?: string) {
     setImportError(null);
     setImportPartialErrors([]);
-    setImportJson(buildTemplateJson());
+    setImportJson(buildTemplateJson(specCode ?? templateSpecCode));
   }
 
   async function submitImport(event: React.FormEvent<HTMLFormElement>) {
@@ -314,6 +333,7 @@ export function useQuestions() {
       if (data.created.length > 0) {
         await loadQuestions();
         refreshSummary();
+        refreshDraftCount();
       }
       if (data.errors.length > 0) {
         setImportPartialErrors(data.errors);
@@ -340,8 +360,6 @@ export function useQuestions() {
     }
   }
 
-  const draftCount = publishableDrafts.length;
-
   return {
     rows,
     status,
@@ -365,11 +383,13 @@ export function useQuestions() {
     publishAllDrafts,
     busyId,
     bulkBusy,
-    draftCount,
+    totalDraftCount,
     isLatest,
     importOpen,
     openImportModal,
     closeImportModal,
+    templateSpecCode,
+    setTemplateSpecCode,
     importJson,
     setImportJson,
     importPublish,

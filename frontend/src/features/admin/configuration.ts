@@ -30,6 +30,48 @@ export const configLabels: Record<string, string> = {
   rules: "Basis Aturan",
 };
 
+export const UNM_GRADE_PRESET: ReadonlyArray<{
+  letter_grade: string;
+  grade_points: number;
+  normalized_score: number;
+}> = [
+  { letter_grade: "A", grade_points: 4, normalized_score: 100 },
+  { letter_grade: "A-", grade_points: 3.75, normalized_score: 93.75 },
+  { letter_grade: "B+", grade_points: 3.25, normalized_score: 81.25 },
+  { letter_grade: "B", grade_points: 3, normalized_score: 75 },
+  { letter_grade: "B-", grade_points: 2.75, normalized_score: 68.75 },
+  { letter_grade: "C+", grade_points: 2.25, normalized_score: 56.25 },
+  { letter_grade: "C", grade_points: 2, normalized_score: 50 },
+  { letter_grade: "C-", grade_points: 1.75, normalized_score: 43.75 },
+  { letter_grade: "D+", grade_points: 1.25, normalized_score: 31.25 },
+  { letter_grade: "D", grade_points: 1, normalized_score: 25 },
+  { letter_grade: "D-", grade_points: 0.75, normalized_score: 18.75 },
+  { letter_grade: "E", grade_points: 0, normalized_score: 0 },
+];
+
+export const WEIGHT_PRESETS: ReadonlyArray<number> = [0, 0.2, 0.4, 0.6, 0.8, 1];
+
+export const STANDARD_CONSEQUENTS_3X3 = [
+  ["LOW", "LOW", "MEDIUM"],
+  ["LOW", "MEDIUM", "HIGH"],
+  ["MEDIUM", "HIGH", "HIGH"],
+] as const;
+
+export const STANDARD_SET_POINTS: Record<
+  "LOW" | "MEDIUM" | "HIGH",
+  {
+    shape: "TRIANGLE" | "TRAPEZOID";
+    point_a: number;
+    point_b: number;
+    point_c: number;
+    point_d: number | null;
+  }
+> = {
+  LOW: { shape: "TRAPEZOID", point_a: 0, point_b: 0, point_c: 20, point_d: 40 },
+  MEDIUM: { shape: "TRIANGLE", point_a: 20, point_b: 50, point_c: 80, point_d: null },
+  HIGH: { shape: "TRAPEZOID", point_a: 60, point_b: 80, point_c: 100, point_d: 100 },
+};
+
 export const enumOptions = (values: string[]): ConfigOption[] => values.map((value) => ({ id: value, name: value }));
 
 export function configRows(model: FuzzyModel, section: string): ConfigRow[] {

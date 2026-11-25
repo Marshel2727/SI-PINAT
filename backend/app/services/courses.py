@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from app.repositories.store import rows, one, add, change, table, audit, now
+from app.services.grade_conversions import sort_conversions
 from app.core.errors import fail
 
 
@@ -61,5 +62,5 @@ def for_assessment(db, value):
     return {
         "courses": sorted(courses, key=lambda c: (c["semester"], c["code"])),
         "weights": weights,
-        "conversions": rows(db, "grade_conversions", model_version_id=value["model_version_id"]),
+        "conversions": sort_conversions(rows(db, "grade_conversions", model_version_id=value["model_version_id"])),
     }

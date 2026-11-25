@@ -56,6 +56,9 @@ export function AdminShell({ children }: {
 
   return (
     <div className="admin-layout">
+      <a href="#admin-main-content" className="skip-link visually-hidden">
+        Lewati ke konten utama admin
+      </a>
       <aside className="admin-sidebar">
         <div className="spread">
           <div>

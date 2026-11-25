@@ -19,7 +19,7 @@ from sqlalchemy.sql.sqltypes import Integer as IntegerType
 
 from app.core.config import settings
 from app.repositories import store
-from app.schemas.inputs import Profile, QuestionImport
+from app.schemas.inputs import BoundarySeed, Profile, QuestionImport
 
 
 def _install_optional_stubs():
@@ -130,6 +130,7 @@ class BackendFixesUnitTests(unittest.TestCase):
         self.courses = importlib.import_module("app.services.courses")
         self.fuzzy_model_versions = importlib.import_module("app.services.fuzzy_model_versions")
         self.fuzzy_validation_cases = importlib.import_module("app.services.fuzzy_validation_cases")
+        self.grade_conversions = importlib.import_module("app.services.grade_conversions")
         self.questions = importlib.import_module("app.services.questions")
         self.recommendation_scores = importlib.import_module("app.services.recommendation_scores")
         self.students = importlib.import_module("app.services.students")
@@ -696,7 +697,11 @@ class BackendFixesUnitTests(unittest.TestCase):
         with self.engine.begin() as db:
         # Scaffold on DRAFT model populates defaults cleanly.
             scaffolded = self.fuzzy_model_versions.scaffold_defaults(db, self.draft_model_id, self.user)
-            self.assertEqual(len(scaffolded["grade_conversions"]), 5)
+            self.assertEqual(len(scaffolded["grade_conversions"]), 12)
+            self.assertEqual(
+                [c["letter_grade"] for c in scaffolded["grade_conversions"]],
+                ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E"],
+            )
             self.assertEqual(len(scaffolded["course_weights"]), 2 * 3)  # 2 active courses * 3 active specs
             self.assertEqual(len(scaffolded["variables"]), 3)
             self.assertEqual(len(scaffolded["sets"]), 9)
@@ -735,6 +740,277 @@ class BackendFixesUnitTests(unittest.TestCase):
                 mismatch.exception.detail["message"],
             )
             self.assertNotIn("Siti Rahma", mismatch.exception.detail["message"])
+
+    def test_unm_12_grade_scale_sorting_save_and_import(self):
+        expected_order = ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E"]
+        with self.engine.begin() as db:
+            # Save in scrambled order with lowercase/whitespace; verify normalization & duplicate guard.
+            with self.assertRaises(HTTPException) as dup_exc:
+                self.grade_conversions.save(
+                    db,
+                    self.draft_model_id,
+                    [
+                        {"letter_grade": "a-", "grade_points": 3.75, "normalized_score": 93.75},
+                        {"letter_grade": " A- ", "grade_points": 3.75, "normalized_score": 93.75},
+                    ],
+                    self.user,
+                )
+            self.assertEqual(dup_exc.exception.status_code, 422)
+
+            scrambled = [
+                {"letter_grade": f" {letter.lower()} ", "grade_points": pts, "normalized_score": norm}
+                for letter, pts, norm in reversed(self.grade_conversions.UNM_GRADE_CONVERSIONS)
+            ]
+            saved_cfg = self.grade_conversions.save(db, self.draft_model_id, scrambled, self.user)
+            self.assertEqual(
+                [c["letter_grade"] for c in saved_cfg["grade_conversions"]],
+                expected_order,
+            )
+            self.assertEqual(
+                [c["letter_grade"] for c in self.grade_conversions.listing(db, self.draft_model_id)],
+                expected_order,
+            )
+
+            # Publish a 12-level model and verify assessment_grades.check + for_assessment accept A-/B+/C-/D+.
+            for course_id in (self.c1, self.c2):
+                for spec in self.specs:
+                    store.add(
+                        db,
+                        "course_weights",
+                        model_version_id=self.draft_model_id,
+                        course_id=course_id,
+                        specialization_id=spec["id"],
+                        weight=1.0,
+                        is_required=True,
+                    )
+            store.change(db, "fuzzy_model_versions", self.draft_model_id, status="PUBLISHED", published_at=store.now())
+            aid = store.add(
+                db,
+                "assessments",
+                public_id="cccc3333-0000-0000-0000-000000000003",
+                student_id=None,
+                preferred_specialization_id=self.specs[0]["id"],
+                model_version_id=self.draft_model_id,
+                access_token_hash="d" * 64,
+                mode="FULL",
+                status="DRAFT",
+                current_semester=4,
+                question_count=30,
+            )
+            assessment = store.one(db, "assessments", id=aid)
+            master = self.courses.for_assessment(db, assessment)
+            self.assertEqual([c["letter_grade"] for c in master["conversions"]], expected_order)
+
+            for pair in (("A-", "B+"), ("C-", "D+")):
+                accepted, errors = self.assessment_grades.check(
+                    db,
+                    assessment,
+                    [
+                        {"semester": 1, "kode_mk": "MK101", "nama_mk": "Rangkaian Digital", "nilai_huruf": pair[0].lower()},
+                        {"semester": 2, "kode_mk": "MK102", "nama_mk": "Pemrograman Dasar", "nilai_huruf": f" {pair[1]} "},
+                    ],
+                )
+                self.assertEqual(errors, [])
+                self.assertEqual([g["letter_grade"] for g in accepted], list(pair))
+
+    def test_publish_all_drafts_and_bulk_import_specialization_code(self):
+        with self.engine.begin() as db:
+            # Validation checks for QuestionImportItem specialization_id / specialization_code.
+            with self.assertRaises(ValidationError):
+                QuestionImport(
+                    questions=[{
+                        "code": "NO-SPEC",
+                        "prompt": "Tanpa peminatan",
+                        "options": [
+                            {"label": "A", "option_text": "Ya", "is_correct": True},
+                            {"label": "B", "option_text": "Tidak", "is_correct": False},
+                        ],
+                    }],
+                )
+
+            payload = QuestionImport(
+                questions=[
+                    {
+                        "specialization_code": " es-01 ",
+                        "code": "CODE-ES-1",
+                        "prompt": "Soal ES via kode",
+                        "options": [
+                            {"label": "A", "option_text": "Benar", "is_correct": True},
+                            {"label": "B", "option_text": "Salah", "is_correct": False},
+                        ],
+                    },
+                    {
+                        "specialization_code": "SC-02",
+                        "code": "CODE-SC-1",
+                        "prompt": "Soal SC via kode",
+                        "options": [
+                            {"label": "A", "option_text": "Salah", "is_correct": False},
+                            {"label": "B", "option_text": "Benar", "is_correct": True},
+                        ],
+                    },
+                    {
+                        "specialization_code": "UNKNOWN-99",
+                        "code": "BAD-CODE",
+                        "prompt": "Soal peminatan tidak dikenal",
+                        "options": [
+                            {"label": "A", "option_text": "Ya", "is_correct": True},
+                            {"label": "B", "option_text": "Tidak", "is_correct": False},
+                        ],
+                    },
+                ],
+                publish=False,
+            )
+            imported = self.questions.bulk_import(
+                db,
+                [q.model_dump() for q in payload.questions],
+                payload.publish,
+                self.user,
+            )
+            self.assertEqual(len(imported["created"]), 2)
+            self.assertEqual(imported["created"][0]["specialization_id"], self.specs[0]["id"])
+            self.assertEqual(imported["created"][1]["specialization_id"], self.specs[1]["id"])
+            self.assertEqual(len(imported["errors"]), 1)
+            self.assertEqual(imported["errors"][0]["code"], "BAD-CODE")
+
+            # Add a newer DRAFT revision for CODE-ES-1 so rev 1 is no longer latest,
+            # plus an invalid DRAFT (missing correct option).
+            rev2 = self.questions.revision(db, imported["created"][0]["id"], self.user)
+            broken_id = store.add(
+                db,
+                "questions",
+                specialization_id=self.specs[2]["id"],
+                code="BROKEN-DRAFT",
+                revision=1,
+                prompt="Tanpa opsi benar",
+                status="DRAFT",
+            )
+            store.add(
+                db,
+                "question_options",
+                question_id=broken_id,
+                label="A",
+                option_text="Salah 1",
+                is_correct=False,
+            )
+            store.add(
+                db,
+                "question_options",
+                question_id=broken_id,
+                label="B",
+                option_text="Salah 2",
+                is_correct=False,
+            )
+
+            result = self.questions.publish_all_drafts(db, self.user)
+            self.assertEqual(result["published_count"], 2)
+            self.assertEqual(len(result["failed"]), 1)
+            self.assertEqual(result["failed"][0]["id"], str(broken_id))
+            self.assertEqual(result["failed"][0]["code"], "BROKEN-DRAFT")
+            self.assertEqual(store.one(db, "questions", id=imported["created"][0]["id"])["status"], "DRAFT")
+            self.assertEqual(store.one(db, "questions", id=rev2["id"])["status"], "PUBLISHED")
+            self.assertEqual(store.one(db, "questions", id=imported["created"][1]["id"])["status"], "PUBLISHED")
+
+    def test_seed_boundary_cases_and_validate(self):
+        schema_defaults = BoundarySeed()
+        self.assertEqual(schema_defaults.tolerance, 0.5)
+        self.assertFalse(schema_defaults.recalculate_existing)
+
+        with self.engine.begin() as db:
+            # Incomplete draft model must reject with MODEL_INCOMPLETE.
+            with self.assertRaises(HTTPException) as incomplete:
+                self.fuzzy_validation_cases.seed_boundary_cases(db, self.draft_model_id, self.user)
+            self.assertEqual(incomplete.exception.status_code, 422)
+            self.assertEqual(incomplete.exception.detail["code"], "MODEL_INCOMPLETE")
+
+            # Unknown specialization_id must reject with 422.
+            with self.assertRaises(HTTPException) as bad_spec:
+                self.fuzzy_validation_cases.seed_boundary_cases(
+                    db,
+                    self.draft_model_id,
+                    self.user,
+                    specialization_id=999999,
+                )
+            self.assertEqual(bad_spec.exception.status_code, 422)
+
+            self.fuzzy_model_versions.scaffold_defaults(db, self.draft_model_id, self.user)
+            for row in store.rows(db, "course_weights", model_version_id=self.draft_model_id):
+                store.change(db, "course_weights", row["id"], weight=1.0)
+
+            # Seed an existing 0..99 placeholder on ES-01 (0, 0), a custom range on SC-02 (50, 50),
+            # and a colliding case_code BATAS-JDF-03-S01.
+            placeholder_id = store.add(
+                db,
+                "fuzzy_validation_cases",
+                model_version_id=self.draft_model_id,
+                specialization_id=self.specs[0]["id"],
+                case_code="PLACEHOLDER-01",
+                academic_input=0,
+                competency_input=0,
+                expected_min=0,
+                expected_max=99,
+            )
+            custom_id = store.add(
+                db,
+                "fuzzy_validation_cases",
+                model_version_id=self.draft_model_id,
+                specialization_id=self.specs[1]["id"],
+                case_code="BATAS-SC-02-S02",
+                academic_input=50,
+                competency_input=50,
+                expected_min=40,
+                expected_max=60,
+            )
+            store.add(
+                db,
+                "fuzzy_validation_cases",
+                model_version_id=self.draft_model_id,
+                specialization_id=self.specs[2]["id"],
+                case_code="BATAS-JDF-03-S01",
+                academic_input=10,
+                competency_input=10,
+                expected_min=10,
+                expected_max=30,
+            )
+
+            seeded = self.fuzzy_validation_cases.seed_boundary_cases(
+                db,
+                self.draft_model_id,
+                self.user,
+                tolerance=0.5,
+                recalculate_existing=False,
+            )
+            # 30 boundary cases total: 2 already existed ((0,0) on ES-01 and (50,50) on SC-02), 28 created.
+            self.assertEqual(seeded["created_count"], 28)
+            self.assertEqual(seeded["updated_count"], 1)  # Only 0..99 placeholder updated.
+            self.assertEqual(len(seeded["cases"]), 31)
+
+            placeholder_after = store.one(db, "fuzzy_validation_cases", id=placeholder_id)
+            self.assertNotEqual(float(placeholder_after["expected_max"]), 99.0)
+            custom_after = store.one(db, "fuzzy_validation_cases", id=custom_id)
+            self.assertEqual(float(custom_after["expected_min"]), 40.0)
+            self.assertEqual(float(custom_after["expected_max"]), 60.0)
+
+            # With recalculate_existing=True, custom case is updated too; all cases pass validate().
+            reseeded = self.fuzzy_validation_cases.seed_boundary_cases(
+                db,
+                self.draft_model_id,
+                self.user,
+                tolerance=0.5,
+                recalculate_existing=True,
+            )
+            self.assertEqual(reseeded["created_count"], 0)
+            self.assertEqual(reseeded["updated_count"], 30)
+            custom_recalc = store.one(db, "fuzzy_validation_cases", id=custom_id)
+            self.assertAlmostEqual(float(custom_recalc["expected_min"]), 49.5, places=3)
+            self.assertAlmostEqual(float(custom_recalc["expected_max"]), 50.5, places=3)
+
+            results = self.fuzzy_validation_cases.validate(db, self.draft_model_id, self.user)
+            self.assertEqual(len(results), 31)
+            self.assertTrue(all(item["passed"] for item in results))
+            readiness = self.fuzzy_model_versions.publication_readiness(db, self.draft_model_id)
+            validation_checks = [c for c in readiness["checks"] if c["key"].startswith("validation-")]
+            self.assertEqual(len(validation_checks), 3)
+            self.assertTrue(all(c["ready"] for c in validation_checks))
 
 
 if __name__ == "__main__":

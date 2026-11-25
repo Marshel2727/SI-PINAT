@@ -2,8 +2,196 @@
 
 import { ErrorNotice, Field, Modal, Notice, StatusBadge } from "@/components/ui";
 import { number, time } from "@/lib/format";
+import { evaluateMamdaniScore } from "@/lib/fuzzy-curve";
+import type { FuzzyModel, Specialization, ValidationEditorState } from "@/types/api";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { caseStatusKey, useValidation, type ValidationStatusFilter } from "./use-validation";
+
+function ValidationCaseForm({
+  edit,
+  specs,
+  fullModel,
+  busy,
+  modalError,
+  onSubmit,
+  onCancel,
+}: {
+  edit: ValidationEditorState;
+  specs: Specialization[];
+  fullModel: FuzzyModel | null;
+  busy: boolean;
+  modalError: unknown;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  const [caseCode, setCaseCode] = useState(edit.case_code ?? "");
+  const [specId, setSpecId] = useState(String(edit.specialization_id ?? specs[0]?.id ?? ""));
+  const [academicInput, setAcademicInput] = useState(
+    edit.academic_input !== undefined && edit.academic_input !== null ? String(edit.academic_input) : ""
+  );
+  const [competencyInput, setCompetencyInput] = useState(
+    edit.competency_input !== undefined && edit.competency_input !== null ? String(edit.competency_input) : ""
+  );
+  const [expectedMin, setExpectedMin] = useState(
+    edit.expected_min !== undefined && edit.expected_min !== null ? String(edit.expected_min) : ""
+  );
+  const [expectedMax, setExpectedMax] = useState(
+    edit.expected_max !== undefined && edit.expected_max !== null ? String(edit.expected_max) : ""
+  );
+
+  useEffect(() => {
+    setCaseCode(edit.case_code ?? "");
+    setSpecId(String(edit.specialization_id ?? specs[0]?.id ?? ""));
+    setAcademicInput(edit.academic_input !== undefined && edit.academic_input !== null ? String(edit.academic_input) : "");
+    setCompetencyInput(edit.competency_input !== undefined && edit.competency_input !== null ? String(edit.competency_input) : "");
+    setExpectedMin(edit.expected_min !== undefined && edit.expected_min !== null ? String(edit.expected_min) : "");
+    setExpectedMax(edit.expected_max !== undefined && edit.expected_max !== null ? String(edit.expected_max) : "");
+  }, [edit, specs]);
+
+  const previewScore = useMemo(() => {
+    if (!fullModel || !specId || academicInput.trim() === "" || competencyInput.trim() === "") {
+      return null;
+    }
+    return evaluateMamdaniScore(Number(academicInput), Number(competencyInput), fullModel, specId);
+  }, [fullModel, specId, academicInput, competencyInput]);
+
+  function applyPreviewTolerance(tolerance: number) {
+    if (previewScore === null) return;
+    setExpectedMin(String(Number(Math.max(0, previewScore - tolerance).toFixed(5))));
+    setExpectedMax(String(Number(Math.min(100, previewScore + tolerance).toFixed(5))));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <Field label="Kode kasus">
+        <input
+          name="case_code"
+          value={caseCode}
+          onChange={e => setCaseCode(e.target.value)}
+          autoCorrect="off"
+          spellCheck={false}
+          required
+          maxLength={32}
+        />
+      </Field>
+      <Field label="Peminatan">
+        <select
+          name="specialization_id"
+          value={specId}
+          onChange={e => setSpecId(e.target.value)}
+          required
+        >
+          {specs.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <div className="two-columns">
+        <Field label="Input akademik X1">
+          <input
+            name="academic_input"
+            type="number"
+            min="0"
+            max="100"
+            step="0.00001"
+            value={academicInput}
+            onChange={e => setAcademicInput(e.target.value)}
+            required
+          />
+        </Field>
+        <Field label="Input kompetensi X2">
+          <input
+            name="competency_input"
+            type="number"
+            min="0"
+            max="100"
+            step="0.00001"
+            value={competencyInput}
+            onChange={e => setCompetencyInput(e.target.value)}
+            required
+          />
+        </Field>
+      </div>
+      <div className="score-preview-box">
+        <div className="spread wrap">
+          <span className="small">
+            <strong>Pratinjau skor model Mamdani</strong>
+            {previewScore !== null
+              ? ` untuk (${academicInput}, ${competencyInput})`
+              : ""}
+          </span>
+          {previewScore !== null ? (
+            <strong className="mono">{number(previewScore, 5)}</strong>
+          ) : (
+            <span className="small muted">Skor belum tersedia</span>
+          )}
+        </div>
+        {previewScore === null ? (
+          <p className="small muted" style={{ margin: 0 }}>
+            Isi X1 dan X2 dalam rentang 0–100 serta pastikan variabel, himpunan, dan aturan model sudah lengkap.
+          </p>
+        ) : (
+          <div className="actions">
+            <button
+              type="button"
+              className="secondary compact"
+              disabled={busy}
+              onClick={() => applyPreviewTolerance(0.5)}
+            >
+              Gunakan Skor Model (±0,5)
+            </button>
+            <button
+              type="button"
+              className="secondary compact"
+              disabled={busy}
+              onClick={() => applyPreviewTolerance(0.05)}
+            >
+              Presisi Ketat (±0,05)
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="two-columns">
+        <Field label="Ekspektasi minimum">
+          <input
+            name="expected_min"
+            type="number"
+            min="0"
+            max="100"
+            step="0.00001"
+            value={expectedMin}
+            onChange={e => setExpectedMin(e.target.value)}
+            required
+          />
+        </Field>
+        <Field label="Ekspektasi maksimum">
+          <input
+            name="expected_max"
+            type="number"
+            min="0"
+            max="100"
+            step="0.00001"
+            value={expectedMax}
+            onChange={e => setExpectedMax(e.target.value)}
+            required
+          />
+        </Field>
+      </div>
+      <ErrorNotice error={modalError} />
+      <div className="actions end" style={{ marginTop: 12 }}>
+        <button type="button" className="secondary" disabled={busy} onClick={onCancel}>
+          Batal
+        </button>
+        <button disabled={busy}>
+          {busy ? "Menyimpan\u2026" : "Simpan skenario"}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export function Validation({ initialModel = "" }: {
   initialModel?: string;
@@ -11,6 +199,7 @@ export function Validation({ initialModel = "" }: {
   const {
     models,
     model,
+    fullModel,
     modelId,
     setModelId,
     specs,
@@ -35,6 +224,7 @@ export function Validation({ initialModel = "" }: {
     save,
     remove,
     seedMissingBoundaryCases,
+    seedAndRunAllBoundaryCases,
     validate
   } = useValidation({ initialModel });
 
@@ -78,10 +268,13 @@ export function Validation({ initialModel = "" }: {
       {modelId && (
         <>
           <div className="actions">
-            <button type="button" disabled={locked || busy} onClick={() => openModal({})}>
+            <button type="button" disabled={locked || busy} onClick={seedAndRunAllBoundaryCases}>
+              {busy ? "Memproses\u2026" : "⚡ Siapkan 30 Kasus Batas & Uji Otomatis"}
+            </button>
+            <button type="button" className="secondary" disabled={locked || busy} onClick={() => openModal({})}>
               + Tambah skenario
             </button>
-            <button type="button" disabled={locked || busy} onClick={validate}>
+            <button type="button" className="secondary" disabled={locked || busy} onClick={validate}>
               {busy ? "Menjalankan\u2026" : "Jalankan semua skenario"}
             </button>
             <Link className="button secondary" href={"/admin/model-fuzzy/" + modelId}>
@@ -179,7 +372,7 @@ export function Validation({ initialModel = "" }: {
                   : "Belum ada skenario pada versi ini."}
               </Notice>
             ) : (
-              <div className="table-scroll">
+              <div className="table-scroll" tabIndex={0} role="region" aria-label="Daftar skenario validasi">
                 <table>
                   <thead>
                     <tr>
@@ -260,56 +453,18 @@ export function Validation({ initialModel = "" }: {
         </>
       )}
 
-      <Modal open={!!edit} title={edit?.id ? "Edit skenario validasi" : "Tambah skenario validasi"} onClose={closeModal}>
+      <Modal open={!!edit} title={edit?.id ? "Edit skenario validasi" : "Tambah skenario validasi"} dismissible={!busy} onClose={closeModal}>
         {edit && (
-          <form key={edit.id || "new"} onSubmit={save}>
-            <Field label="Kode kasus">
-              <input
-                name="case_code"
-                defaultValue={edit.case_code}
-                required
-                maxLength={32}
-              />
-            </Field>
-            <Field label="Peminatan">
-              <select name="specialization_id" defaultValue={edit.specialization_id || specs[0]?.id} required>
-                {specs.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="two-columns">
-              {([
-                ["academic_input", "Input akademik X1"],
-                ["competency_input", "Input kompetensi X2"],
-                ["expected_min", "Ekspektasi minimum"],
-                ["expected_max", "Ekspektasi maksimum"]
-              ] as const).map(([key, label]) => (
-                <Field key={key} label={label}>
-                  <input
-                    name={key}
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.00001"
-                    defaultValue={edit[key]}
-                    required
-                  />
-                </Field>
-              ))}
-            </div>
-            <ErrorNotice error={modalError} />
-            <div className="actions end" style={{ marginTop: 12 }}>
-              <button type="button" className="secondary" disabled={busy} onClick={closeModal}>
-                Batal
-              </button>
-              <button disabled={busy}>
-                {busy ? "Menyimpan\u2026" : "Simpan skenario"}
-              </button>
-            </div>
-          </form>
+          <ValidationCaseForm
+            key={edit.id ? String(edit.id) : "new"}
+            edit={edit}
+            specs={specs}
+            fullModel={fullModel}
+            busy={busy}
+            modalError={modalError}
+            onSubmit={save}
+            onCancel={closeModal}
+          />
         )}
       </Modal>
     </>

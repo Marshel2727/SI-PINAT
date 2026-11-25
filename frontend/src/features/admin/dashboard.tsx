@@ -6,16 +6,20 @@ import Link from "next/link";
 import { useDashboard } from "./use-dashboard";
 
 const ASSESSMENT_STATUSES = [
-  ["DRAFT", "DRAFT"],
-  ["ACADEMIC_READY", "ACADEMIC_READY"],
-  ["IN_PROGRESS", "IN_PROGRESS"],
-  ["COMPLETED", "COMPLETED"]
+  ["DRAFT", "Draf Awal"],
+  ["ACADEMIC_READY", "Nilai Lengkap"],
+  ["IN_PROGRESS", "Sedang Tes"],
+  ["COMPLETED", "Selesai"]
 ] as const;
 
 export function Dashboard() {
   const {
     stats,
     records,
+    questionSummary,
+    publishedModels,
+    draftModel,
+    readinessLoading,
     pages,
     total,
     page,
@@ -39,6 +43,13 @@ export function Dashboard() {
   } = useDashboard();
 
   const hasActiveFilter = Boolean(mode || status || search.trim() || from || to);
+  const coursesReady = Boolean(stats && stats.total_courses > 0);
+  const readySpecsCount = questionSummary.filter(s => s.ready).length;
+  const totalSpecsCount = questionSummary.length || 3;
+  const questionsReady = questionSummary.length > 0 && questionSummary.every(s => s.ready);
+  const modelReady = publishedModels.length > 0;
+  const systemReady = coursesReady && questionsReady && modelReady;
+  const modelSetupHref = draftModel ? `/admin/model-fuzzy/${draftModel.id}` : "/admin/model-fuzzy";
 
   return (
     <>
@@ -73,6 +84,92 @@ export function Dashboard() {
         <ErrorNotice error={exportError} />
       </article>
 
+      {stats && !readinessLoading && (
+        <section
+          aria-label="Status Kesiapan Sistem Publik"
+          className={"readiness-banner " + (systemReady ? "is-ready" : "needs-setup")}
+        >
+          <div className="spread wrap">
+            <div>
+              <span className="eyebrow">STATUS KESIAPAN SISTEM PUBLIK</span>
+              <h2 style={{ marginTop: 4, marginBottom: 4 }}>
+                {systemReady
+                  ? "✓ Sistem Siap Digunakan Mahasiswa"
+                  : "Lengkapi 3 prasyarat sebelum membuka portal mahasiswa"}
+              </h2>
+              <p className="small muted" style={{ margin: 0 }}>
+                {systemReady
+                  ? `Model fuzzy aktif: ${publishedModels[0].version_code} · ${stats.total_courses} mata kuliah aktif · ${readySpecsCount}/${totalSpecsCount} peminatan bank soal memenuhi kuota.`
+                  : "Portal publik membutuhkan minimal 1 mata kuliah aktif, kuota bank soal terpublikasi di seluruh peminatan, dan 1 model fuzzy terpublikasi."}
+              </p>
+            </div>
+            {systemReady && (
+              <div className="actions">
+                <span className="badge success">{publishedModels[0].version_code}</span>
+                <Link className="button secondary compact" href="/admin/model-fuzzy">
+                  Kelola Model
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {!systemReady && (
+            <div className="setup-steps">
+              <div className={"setup-step" + (coursesReady ? " is-done" : "")}>
+                <div>
+                  <StatusBadge status={coursesReady ? "COMPLETED" : "DRAFT"}>
+                    {coursesReady ? "1. Selesai" : "1. Belum Siap"}
+                  </StatusBadge>
+                  <h3 style={{ marginTop: 8, marginBottom: 4, fontSize: "15px" }}>Mata Kuliah Aktif</h3>
+                  <p className="small muted" style={{ margin: 0 }}>
+                    {coursesReady
+                      ? `${stats.total_courses} mata kuliah aktif tersedia.`
+                      : "Belum ada mata kuliah aktif di kurikulum."}
+                  </p>
+                </div>
+                <Link className="button secondary compact" href="/admin/mata-kuliah">
+                  {coursesReady ? "Kelola Mata Kuliah" : "Tambah Mata Kuliah →"}
+                </Link>
+              </div>
+
+              <div className={"setup-step" + (questionsReady ? " is-done" : "")}>
+                <div>
+                  <StatusBadge status={questionsReady ? "COMPLETED" : "DRAFT"}>
+                    {questionsReady ? "2. Selesai" : "2. Belum Siap"}
+                  </StatusBadge>
+                  <h3 style={{ marginTop: 8, marginBottom: 4, fontSize: "15px" }}>Kuota Bank Soal</h3>
+                  <p className="small muted" style={{ margin: 0 }}>
+                    {readySpecsCount}/{totalSpecsCount} peminatan siap (minimal 10 soal terpublikasi per peminatan).
+                  </p>
+                </div>
+                <Link className="button secondary compact" href="/admin/bank-soal">
+                  {questionsReady ? "Lihat Bank Soal" : "Lengkapi Bank Soal →"}
+                </Link>
+              </div>
+
+              <div className={"setup-step" + (modelReady ? " is-done" : "")}>
+                <div>
+                  <StatusBadge status={modelReady ? "COMPLETED" : "DRAFT"}>
+                    {modelReady ? "3. Selesai" : "3. Belum Siap"}
+                  </StatusBadge>
+                  <h3 style={{ marginTop: 8, marginBottom: 4, fontSize: "15px" }}>Model Fuzzy Terpublikasi</h3>
+                  <p className="small muted" style={{ margin: 0 }}>
+                    {modelReady
+                      ? `Model aktif: ${publishedModels[0].version_code}.`
+                      : draftModel
+                        ? `Draf ${draftModel.version_code} belum dipublikasikan.`
+                        : "Belum ada model fuzzy resmi yang dipublikasikan."}
+                  </p>
+                </div>
+                <Link className="button secondary compact" href={modelSetupHref}>
+                  {modelReady ? "Kelola Model Fuzzy" : draftModel ? "Lanjutkan Draf Model →" : "Buka Konfigurasi Fuzzy →"}
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
       <div className="filters">
         <Field label="Cari NIM, Nama, atau ID Sesi">
           <input
@@ -93,9 +190,9 @@ export function Dashboard() {
               setPage(1);
             }}
           >
-            <option value="">DEMO dan FULL</option>
-            <option value="FULL">FULL</option>
-            <option value="DEMO">DEMO</option>
+            <option value="">Semua sesi</option>
+            <option value="FULL">Asesmen Mahasiswa (FULL)</option>
+            <option value="DEMO">Data Simulasi Lama (DEMO)</option>
           </select>
         </Field>
         <Field label="Status">
@@ -183,7 +280,7 @@ export function Dashboard() {
               {!records.length ? (
                 <Notice>Belum ada asesmen sesuai filter.</Notice>
               ) : (
-                <div className="table-scroll">
+                <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel aktivitas asesmen mahasiswa">
                   <table>
                     <thead>
                       <tr>

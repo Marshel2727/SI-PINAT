@@ -79,9 +79,13 @@ class SeedFuzzyModelTests(unittest.TestCase):
                 ("rules", 27),
                 ("validation_cases", 30),
                 ("course_weights", 105),
-                ("grade_conversions", 5),
+                ("grade_conversions", 12),
             ):
                 self.assertEqual(len(config[key]), count)
+            self.assertEqual(
+                [c["letter_grade"] for c in config["grade_conversions"]],
+                ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E"],
+            )
             for case in config["validation_cases"]:
                 self.assertIsNone(case["last_passed"])
                 self.assertIsNone(case["last_tested_at"])

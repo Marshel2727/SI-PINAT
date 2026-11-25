@@ -42,6 +42,7 @@ export function ModelEditor({ id }: {
     save,
     scaffoldDefaults,
     hasEmptyScaffoldSection,
+    seedAndValidateBoundaryCases,
     action,
     clone,
     locked,
@@ -125,15 +126,17 @@ export function ModelEditor({ id }: {
               Versi ini terkunci. Kloning untuk membuat perubahan.
             </Notice>
           )}
-          {model.version_code.toUpperCase().startsWith("DEMO") && (
-            <Notice>
-              Model contoh teknis. Publikasi secara eksplisit hanya mengaktifkan
-              DEMO; FULL memerlukan model akademik yang disetujui.
-            </Notice>
-          )}
-          <div className="tabs wrap section">
+          <div className="tablist-scroll" role="tablist" aria-label="Bagian konfigurasi model">
             {Object.entries(labels).map(([key, label]) => (
-              <button key={key} type="button" disabled={busy} className={tab === key ? "" : "secondary"} onClick={() => changeTab(key)}>
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={tab === key}
+                disabled={busy}
+                className={tab === key ? "" : "secondary"}
+                onClick={() => changeTab(key)}
+              >
                 {label}
               </button>
             ))}
@@ -218,9 +221,14 @@ export function ModelEditor({ id }: {
                 Lengkapi seluruh konfigurasi, sepuluh skenario batas/overlap per
                 peminatan, serta bank soal. Semua skenario harus lulus.
               </p>
-              <button type="button" disabled={busy || dirty} onClick={() => action("validate")}>
-                Jalankan seluruh skenario
-              </button>
+              <div className="actions">
+                <button type="button" disabled={busy || dirty} onClick={seedAndValidateBoundaryCases}>
+                  ⚡ Siapkan 30 Skenario Batas &amp; Uji Otomatis
+                </button>
+                <button type="button" className="secondary" disabled={busy || dirty} onClick={() => action("validate")}>
+                  Jalankan seluruh skenario
+                </button>
+              </div>
               <label className="checkbox section">
                 <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />
                 Saya sudah meninjau sumber data, parameter, aturan, soal, dan
@@ -233,7 +241,7 @@ export function ModelEditor({ id }: {
           )}
         </>
       )}
-      <Modal open={cloneOpen} title="Kloning versi model" onClose={closeCloneModal}>
+      <Modal open={cloneOpen} title="Kloning versi model" dismissible={!busy} onClose={closeCloneModal}>
         <form onSubmit={clone} key={cloneOpen ? "open" : "closed"}>
           <Field label="Kode versi baru">
             <input
@@ -241,6 +249,8 @@ export function ModelEditor({ id }: {
               required
               maxLength={32}
               pattern="[A-Za-z0-9_-]+"
+              autoCorrect="off"
+              spellCheck={false}
               placeholder="Contoh: v2-revisi"
             />
           </Field>

@@ -28,11 +28,13 @@ export function Questions() {
     publishAllDrafts,
     busyId,
     bulkBusy,
-    draftCount,
+    totalDraftCount,
     isLatest,
     importOpen,
     openImportModal,
     closeImportModal,
+    templateSpecCode,
+    setTemplateSpecCode,
     importJson,
     setImportJson,
     importPublish,
@@ -59,15 +61,15 @@ export function Questions() {
           </p>
         </div>
         <div className="actions">
-          {draftCount > 0 && (
+          {totalDraftCount > 0 && (
             <button
               type="button"
               className="secondary"
               disabled={bulkBusy || busyId !== null}
               onClick={publishAllDrafts}
-              title="Publikasikan semua butir draf revisi terbaru pada halaman ini sekaligus"
+              title="Publikasikan seluruh butir draf revisi terbaru di bank soal sekaligus"
             >
-              {bulkBusy ? "Memproses publikasi massal\u2026" : `⚡ Publikasikan Semua Draf (${draftCount})`}
+              {bulkBusy ? "Memproses publikasi massal\u2026" : `⚡ Publikasikan Semua Draf (${totalDraftCount})`}
             </button>
           )}
           <button
@@ -131,6 +133,8 @@ export function Questions() {
           <input
             value={search}
             maxLength={200}
+            autoCorrect="off"
+            spellCheck={false}
             placeholder="Cari kata kunci soal…"
             onChange={event => {
               setSearch(event.target.value);
@@ -163,9 +167,13 @@ export function Questions() {
             }}
           >
             <option value="">Semua status</option>
-            {["DRAFT", "PUBLISHED", "ARCHIVED"].map(s => (
+            {[
+              ["DRAFT", "Draf"],
+              ["PUBLISHED", "Terpublikasi"],
+              ["ARCHIVED", "Diarsipkan"]
+            ].map(([s, label]) => (
               <option key={s} value={s}>
-                {s}
+                {label}
               </option>
             ))}
           </select>
@@ -180,7 +188,7 @@ export function Questions() {
         {!loading && !rows.length ? (
           <Notice>Tidak ada soal yang cocok dengan filter.</Notice>
         ) : (
-          <div className="table-scroll">
+          <div className="table-scroll" role="region" tabIndex={0} aria-label="Daftar bank soal kompetensi">
             <table>
               <thead>
                 <tr>
@@ -293,21 +301,31 @@ export function Questions() {
         <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
 
-      <Modal open={importOpen} title="Impor Soal Massal (JSON)" onClose={closeImportModal}>
+      <Modal open={importOpen} title="Impor Soal Massal (JSON)" dismissible={!importBusy} onClose={closeImportModal}>
         <form onSubmit={submitImport}>
           <p className="small muted">
             Unggah atau tempel payload JSON berisi 1–100 butir soal (<code>{`{ "questions": [...] }`}</code> atau array <code>[...]</code>).
-            {specs.length > 0 && (
-              <>
-                {" "}ID peminatan aktif:{" "}
-                <span className="mono">
-                  {specs.map(s => `${s.code}=${s.id}`).join(", ")}
-                </span>.
-              </>
-            )}
+            Gunakan <code>specialization_code</code> (misal <code>ES-01</code>, <code>SC-02</code>, <code>JDF-03</code>) atau <code>specialization_id</code>.
           </p>
-          <div className="actions" style={{ marginBottom: 12 }}>
-            <button type="button" className="secondary compact" disabled={importBusy} onClick={loadTemplate}>
+          <div className="actions" style={{ marginBottom: 12, alignItems: "center" }}>
+            <select
+              aria-label="Peminatan untuk contoh template JSON"
+              value={templateSpecCode}
+              disabled={importBusy}
+              onChange={e => setTemplateSpecCode(e.target.value)}
+              style={{ width: "auto", minWidth: 160 }}
+            >
+              {specs.length > 0 ? (
+                specs.map(s => (
+                  <option key={s.code} value={s.code}>
+                    {s.code} · {s.name}
+                  </option>
+                ))
+              ) : (
+                <option value="ES-01">ES-01</option>
+              )}
+            </select>
+            <button type="button" className="secondary compact" disabled={importBusy} onClick={() => loadTemplate()}>
               Muat Contoh Template JSON
             </button>
             <label className="button secondary compact" style={{ cursor: "pointer" }}>

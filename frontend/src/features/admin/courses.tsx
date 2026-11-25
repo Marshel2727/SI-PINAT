@@ -121,7 +121,7 @@ export function Courses() {
         {!loading && !rows.length ? (
           <Notice>Belum ada mata kuliah sesuai filter.</Notice>
         ) : (
-          <div className="table-scroll">
+          <div className="table-scroll" role="region" tabIndex={0} aria-label="Daftar mata kuliah kurikulum">
             <table>
               <thead>
                 <tr>
@@ -157,6 +157,7 @@ export function Courses() {
                       <button
                         type="button"
                         className="compact"
+                        aria-pressed={r.is_active}
                         style={{
                           minHeight: 28,
                           padding: "3px 12px",
@@ -200,6 +201,7 @@ export function Courses() {
       <Modal
         open={!!edit}
         title={edit?.id ? "Edit mata kuliah" : "Tambah mata kuliah"}
+        dismissible={!busy}
         onClose={closeModal}
       >
         {edit && (
@@ -213,6 +215,8 @@ export function Courses() {
               <input
                 name="code"
                 defaultValue={edit.code}
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 maxLength={20}
                 disabled={isEditLocked}

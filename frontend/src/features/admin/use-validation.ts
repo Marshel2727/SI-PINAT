@@ -1,7 +1,7 @@
 "use client";
 
 import { api, send } from "@/lib/api";
-import type { FuzzyModelSummary, Specialization, ValidationCase, ValidationEditorState, ValidationResult } from "@/types/api";
+import type { FuzzyModel, FuzzyModelSummary, Specialization, ValidationCase, ValidationEditorState, ValidationResult } from "@/types/api";
 import { useEffect, useMemo, useState } from "react";
 
 export const MANDATORY_BOUNDARY_PAIRS: ReadonlyArray<readonly [number, number]> = [
@@ -30,6 +30,7 @@ export function useValidation({ initialModel = "" }: {
 }) {
   const [models, setModels] = useState<FuzzyModelSummary[]>([]);
   const [modelId, setModelId] = useState(initialModel);
+  const [fullModel, setFullModel] = useState<FuzzyModel | null>(null);
   const [specs, setSpecs] = useState<Specialization[]>([]);
   const [cases, setCases] = useState<ValidationCase[]>([]);
   const [specFilter, setSpecFilter] = useState("");
@@ -63,16 +64,21 @@ export function useValidation({ initialModel = "" }: {
   useEffect(() => {
     if (!modelId) {
       setCases([]);
+      setFullModel(null);
       return;
     }
     let active = true;
     setLoading(true);
     setError(null);
-    api<ValidationCase[]>("/admin/fuzzy-models/" + modelId + "/validation-cases")
-      .then(r => {
+    Promise.all([
+      api<ValidationCase[]>("/admin/fuzzy-models/" + modelId + "/validation-cases"),
+      api<FuzzyModel>("/admin/fuzzy-models/" + modelId)
+    ])
+      .then(([casesRes, modelRes]) => {
         if (!active)
           return;
-        setCases(r.data);
+        setCases(casesRes.data);
+        setFullModel(modelRes.data);
       })
       .catch(e => active && setError(e))
       .finally(() => active && setLoading(false));
@@ -194,33 +200,41 @@ export function useValidation({ initialModel = "" }: {
     setBusy(true);
     setError(null);
     setMessage("");
-    const existingCodes = new Set(
-      cases
-        .filter(c => String(c.specialization_id) === String(spec.id))
-        .map(c => c.case_code)
-    );
     try {
-      for (const pair of entry.missing) {
-        let candidate = `BATAS-${spec.code}-S${String(pair.index + 1).padStart(2, "0")}`;
-        let suffix = 0;
-        while (existingCodes.has(candidate)) {
-          suffix++;
-          candidate = `BATAS-S${String(pair.index + 1).padStart(2, "0")}-${suffix}`;
-        }
-        existingCodes.add(candidate);
-
-        await send(`/admin/fuzzy-models/${modelId}/validation-cases`, {
-          specialization_id: Number(spec.id),
-          case_code: candidate,
-          academic_input: pair.x1,
-          competency_input: pair.x2,
-          expected_min: 0,
-          expected_max: 99
-        }, "POST");
-      }
+      const { data } = await send<{ created_count: number; updated_count: number }>(
+        `/admin/fuzzy-models/${modelId}/seed-boundary-cases`,
+        { specialization_id: Number(spec.id), tolerance: 0.5 },
+        "POST"
+      );
       await reload();
       setMessage(
-        `${entry.missing.length} template kasus batas untuk ${spec.name} ditambahkan (rentang awal 0–99). Sesuaikan ekspektasi minimum/maksimum tiap kasus sebelum menjalankan validasi.`
+        `${data.created_count} kasus batas baru dan ${data.updated_count} pembaruan untuk ${spec.name} (toleransi ±0,5). Jalankan validasi untuk menguji.`
+      );
+    }
+    catch (e) {
+      setError(e);
+    }
+    finally {
+      setBusy(false);
+    }
+  }
+
+  async function seedAndRunAllBoundaryCases() {
+    if (busy || locked || !modelId)
+      return;
+    setBusy(true);
+    setError(null);
+    setMessage("");
+    try {
+      const seedRes = await send<{ created_count: number; updated_count: number }>(
+        `/admin/fuzzy-models/${modelId}/seed-boundary-cases`,
+        { recalculate_existing: true, tolerance: 0.5 },
+        "POST"
+      );
+      const { data } = await send<ValidationResult[]>(`/admin/fuzzy-models/${modelId}/validate`);
+      await reload();
+      setMessage(
+        `30 kasus batas disiapkan (${seedRes.data.created_count} baru, ${seedRes.data.updated_count} diperbarui) — ${data.filter(r => r.passed).length} / ${data.length} skenario lulus.`
       );
     }
     catch (e) {
@@ -258,6 +272,7 @@ export function useValidation({ initialModel = "" }: {
   return {
     models,
     model,
+    fullModel,
     modelId,
     setModelId,
     specs,
@@ -282,6 +297,7 @@ export function useValidation({ initialModel = "" }: {
     save,
     remove,
     seedMissingBoundaryCases,
+    seedAndRunAllBoundaryCases,
     validate
   };
 }

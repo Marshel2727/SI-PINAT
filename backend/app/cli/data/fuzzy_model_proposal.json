@@ -5,7 +5,7 @@
   "academic_review_required": true,
   "review_notes": [
     "Nama/kode/SKS berasal dari master panduan ACO; bobot di bawah adalah usulan penulis kode berdasarkan topik, bukan keputusan kurikulum resmi.",
-    "Konversi A=4, B=3, C=2, D=1, E=0; skor normalisasi = poin/4*100 adalah asumsi awal. Sesuaikan nilai antara jika digunakan kampus.",
+    "Konversi resmi UNM 12 tingkat (A=4.00, A-=3.75, B+=3.25, B=3.00, B-=2.75, C+=2.25, C=2.00, C-=1.75, D+=1.25, D=1.00, D-=0.75, E=0.00); skor normalisasi = poin/4*100.",
     "Batas LOW/MEDIUM/HIGH dan konsekuen aturan menggunakan profil teknis yang sudah ada; belum dikalibrasi terhadap data mahasiswa atau penilaian dosen.",
     "Semua mata kuliah dengan bobot positif diwajibkan untuk semester yang sudah berlaku pada sesi; bobot nol tidak memengaruhi skor.",
     "Mata kuliah aktif di luar 32 kode diberi bobot nol dan tidak diwajibkan; setiap tambahan kurikulum perlu ditinjau ulang.",

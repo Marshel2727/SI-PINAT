@@ -1,12 +1,20 @@
 "use client";
 
 import { api, downloadFile } from "@/lib/api";
-import type { AdminAssessmentRow, DashboardStats } from "@/types/api";
+import type {
+  AdminAssessmentRow,
+  DashboardStats,
+  FuzzyModelSummary,
+  PublishedQuestionSummary
+} from "@/types/api";
 import { useEffect, useState } from "react";
 
 export function useDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [records, setRecords] = useState<AdminAssessmentRow[]>([]);
+  const [questionSummary, setQuestionSummary] = useState<PublishedQuestionSummary[]>([]);
+  const [fuzzyModels, setFuzzyModels] = useState<FuzzyModelSummary[]>([]);
+  const [readinessLoading, setReadinessLoading] = useState(true);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -20,6 +28,28 @@ export function useDashboard() {
   const [exportError, setExportError] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setReadinessLoading(true);
+    Promise.allSettled([
+      api<PublishedQuestionSummary[]>("/admin/questions/summary"),
+      api<FuzzyModelSummary[]>("/admin/fuzzy-models?page_size=50")
+    ])
+      .then(([summaryRes, modelsRes]) => {
+        if (!active)
+          return;
+        if (summaryRes.status === "fulfilled")
+          setQuestionSummary(summaryRes.value.data);
+        if (modelsRes.status === "fulfilled")
+          setFuzzyModels(modelsRes.value.data);
+      })
+      .finally(() => active && setReadinessLoading(false));
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -120,9 +150,20 @@ export function useDashboard() {
     }
   }
 
+  const publishedModels = fuzzyModels.filter(
+    m => m.status === "PUBLISHED" && !m.version_code.toUpperCase().startsWith("DEMO")
+  );
+  const draftModel = fuzzyModels.find(
+    m => m.status === "DRAFT" && !m.version_code.toUpperCase().startsWith("DEMO")
+  ) ?? fuzzyModels.find(m => m.status === "DRAFT") ?? null;
+
   return {
     stats,
     records,
+    questionSummary,
+    publishedModels,
+    draftModel,
+    readinessLoading,
     pages,
     total,
     page,

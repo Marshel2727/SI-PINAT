@@ -27,7 +27,7 @@ export function AdminAssessment({ id }: {
               {value.assessment.mode} · {value.assessment.status}
             </StatusBadge>
             <h2 style={{ marginTop: 10 }}>
-              {value.assessment.student?.full_name || "Peserta DEMO"}
+              {value.assessment.student?.full_name || "Peserta Asesmen"}
             </h2>
             <p className="mono muted">
               {id}
@@ -69,7 +69,7 @@ export function AdminAssessment({ id }: {
                 Belum ada nilai akademik tersimpan untuk asesmen ini (status saat ini: {value.assessment.status}).
               </Notice>
             ) : (
-              <div className="table-scroll">
+              <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel nilai akademik peserta">
                 <table>
                   <thead>
                     <tr>
@@ -133,13 +133,16 @@ export function AdminAssessment({ id }: {
                   <h2>Jejak perhitungan</h2>
                   {traceLoading && <span className="small muted">Memuat jejak perhitungan…</span>}
                 </div>
-                <div className="tabs wrap">
+                <div className="tablist-scroll" role="tablist" aria-label="Jejak perhitungan per peminatan">
                   {Object.entries(names).map(([key, name]) => {
                     const isTop = value.result?.top_specialization_codes?.includes(key as SpecializationCode);
+                    const selected = key === code;
                     return (
                       <button
                         type="button"
-                        className={key === code ? "" : "secondary"}
+                        role="tab"
+                        aria-selected={selected}
+                        className={selected ? "" : "secondary"}
                         key={key}
                         onClick={() => {
                           if (key === code) return;

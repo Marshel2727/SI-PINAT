@@ -4,6 +4,20 @@ import { ErrorNotice, Field, Notice, Pagination, StatusBadge } from "@/component
 import { time } from "@/lib/format";
 import { useAuditLogs } from "./use-audit-logs";
 
+const ENTITY_LABELS: Record<string, string> = {
+  admin_sessions: "Sesi Admin",
+  courses: "Mata Kuliah",
+  questions: "Bank Soal",
+  fuzzy_model_versions: "Versi Model Fuzzy",
+  fuzzy_validation_cases: "Skenario Validasi",
+  grade_conversions: "Konversi Nilai",
+  course_weights: "Bobot Mata Kuliah",
+  fuzzy_variables: "Variabel Fuzzy",
+  fuzzy_sets: "Himpunan Fuzzy",
+  fuzzy_rules: "Aturan Fuzzy",
+  assessments: "Asesmen Mahasiswa"
+};
+
 const ENTITY_OPTIONS = [
   ["admin_sessions", "Sesi Admin (admin_sessions)"],
   ["courses", "Mata Kuliah (courses)"],
@@ -16,6 +30,26 @@ const ENTITY_OPTIONS = [
   ["fuzzy_sets", "Himpunan Fuzzy (fuzzy_sets)"],
   ["fuzzy_rules", "Aturan Fuzzy (fuzzy_rules)"]
 ] as const;
+
+const ACTION_LABELS: Record<string, string> = {
+  LOGIN: "Masuk Admin",
+  LOGOUT: "Keluar Admin",
+  CREATE: "Tambah Data",
+  UPDATE: "Perbarui Data",
+  SAVE: "Simpan",
+  DELETE: "Hapus Data",
+  PUBLISH: "Publikasikan",
+  PUBLISHED: "Publikasikan",
+  ARCHIVED: "Arsipkan",
+  CLONE: "Kloning Model",
+  VALIDATE: "Uji Validasi",
+  UPDATE_CONFIG: "Perbarui Konfigurasi",
+  SCAFFOLD_DEFAULTS: "Muat Kerangka Awal",
+  SEED_BOUNDARY_CASES: "Siapkan Skenario Otomatis",
+  UPDATE_OPTIONS: "Perbarui Opsi",
+  SEED_FUZZY_MODEL: "Inisialisasi Model Fuzzy",
+  SEED_DEMO: "Inisialisasi Data Simulasi"
+};
 
 const ACTION_OPTIONS = [
   "LOGIN",
@@ -31,6 +65,7 @@ const ACTION_OPTIONS = [
   "VALIDATE",
   "UPDATE_CONFIG",
   "SCAFFOLD_DEFAULTS",
+  "SEED_BOUNDARY_CASES",
   "UPDATE_OPTIONS",
   "SEED_FUZZY_MODEL",
   "SEED_DEMO"
@@ -109,7 +144,7 @@ export function AuditLogs() {
             <option value="">Semua aksi</option>
             {ACTION_OPTIONS.map(act => (
               <option key={act} value={act}>
-                {act}
+                {ACTION_LABELS[act] ? `${ACTION_LABELS[act]} (${act})` : act}
               </option>
             ))}
           </select>
@@ -130,7 +165,7 @@ export function AuditLogs() {
         {!loading && !rows.length ? (
           <Notice>Belum ada catatan log aktivitas sesuai filter.</Notice>
         ) : (
-          <div className="table-scroll">
+          <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel log aktivitas">
             <table>
               <thead>
                 <tr>
@@ -145,6 +180,8 @@ export function AuditLogs() {
                 {rows.map(row => {
                   const hasDiff = row.before_data !== null && row.before_data !== undefined
                     || row.after_data !== null && row.after_data !== undefined;
+                  const actionLabel = ACTION_LABELS[row.action] || row.action;
+                  const entityLabel = ENTITY_LABELS[row.entity_table] || row.entity_table;
                   return (
                     <tr key={row.id}>
                       <td style={{ whiteSpace: "nowrap" }}>
@@ -158,12 +195,16 @@ export function AuditLogs() {
                       </td>
                       <td>
                         <StatusBadge status={badgeStatusForAction(row.action)}>
-                          {row.action}
+                          {actionLabel}
                         </StatusBadge>
+                        {ACTION_LABELS[row.action] && (
+                          <small className="block mono muted">{row.action}</small>
+                        )}
                       </td>
-                      <td className="mono">
-                        {row.entity_table}
+                      <td>
+                        <strong>{entityLabel}</strong>
                         {row.entity_id ? ` #${row.entity_id}` : ""}
+                        <small className="block mono muted">{row.entity_table}</small>
                       </td>
                       <td style={{ minWidth: 260 }}>
                         {hasDiff ? (

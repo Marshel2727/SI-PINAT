@@ -14,9 +14,11 @@ export function QuestionEditor({ id }: {
     autoPublish,
     setAutoPublish,
     busy,
+    suggestingCode,
     error,
     message,
     isDirty,
+    generateCode,
     addOption,
     removeOption,
     save,
@@ -60,14 +62,29 @@ export function QuestionEditor({ id }: {
             <fieldset disabled={busy || locked}>
               <div className="two-columns">
                 <Field label="Kode soal">
-                  <input
-                    name="code"
-                    value={question.code ?? ""}
-                    maxLength={32}
-                    required
-                    readOnly={!!question.id}
-                    onChange={e => setQuestion({ ...question, code: e.target.value })}
-                  />
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                      name="code"
+                      value={question.code ?? ""}
+                      maxLength={32}
+                      autoCorrect="off"
+                      spellCheck={false}
+                      required
+                      readOnly={!!question.id}
+                      onChange={e => setQuestion({ ...question, code: e.target.value })}
+                    />
+                    {!question.id && !locked && (
+                      <button
+                        type="button"
+                        className="secondary compact"
+                        disabled={busy || suggestingCode}
+                        onClick={generateCode}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        {suggestingCode ? "Menyiapkan\u2026" : "Buat Kode Otomatis"}
+                      </button>
+                    )}
+                  </div>
                 </Field>
                 <Field label="Peminatan">
                   <select
@@ -110,7 +127,7 @@ export function QuestionEditor({ id }: {
               </div>
 
               {question.options.map((o, index) => (
-                <div className="option-editor" key={o.label}>
+                <div className={"option-editor" + (o.is_correct ? " is-correct" : "")} key={o.label}>
                   <label className="checkbox">
                     <input
                       type="radio"
@@ -124,7 +141,7 @@ export function QuestionEditor({ id }: {
                         }))
                       })}
                     />
-                    Kunci {o.label}
+                    {`Kunci (${o.label})`}
                   </label>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <input

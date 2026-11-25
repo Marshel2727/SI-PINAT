@@ -37,7 +37,7 @@ export function ModelList() {
             Belum ada model. Buat draft dan lengkapi instrumennya.
           </Notice>
         ) : (
-          <div className="table-scroll">
+          <div className="table-scroll" tabIndex={0} role="region" aria-label="Daftar versi model fuzzy">
             <table>
               <thead>
                 <tr>
@@ -81,7 +81,7 @@ export function ModelList() {
         )}
         <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
-      <Modal open={open} title="Buat model draft" onClose={closeCreateModal}>
+      <Modal open={open} title="Buat model draft" dismissible={!busy} onClose={closeCreateModal}>
         <form onSubmit={create}>
           <Field label="Kode versi">
             <input
@@ -89,6 +89,8 @@ export function ModelList() {
               required
               maxLength={32}
               pattern="[A-Za-z0-9_-]+"
+              autoCorrect="off"
+              spellCheck={false}
               placeholder="Contoh: v2-akademik-2026"
             />
           </Field>

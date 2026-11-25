@@ -43,6 +43,11 @@ def bulk_import(body: QuestionImport, user=Depends(admin), db=Depends(database))
     ))
 
 
+@router.post("/admin/questions/publish-all-drafts")
+def publish_all_drafts(user=Depends(admin), db=Depends(database)):
+    return ok(questions.publish_all_drafts(db, user))
+
+
 @router.get("/admin/questions/{identifier}")
 def detail(identifier: int, db=Depends(database)):
     return ok(questions.detail(db, identifier))

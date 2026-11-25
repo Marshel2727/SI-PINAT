@@ -44,6 +44,9 @@ export function Login({ nextPath, expired = false }: {
               type="email"
               name="email"
               autoComplete="username"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               placeholder="admin@unm.ac.id"
               required
               maxLength={190}
@@ -63,6 +66,7 @@ export function Login({ nextPath, expired = false }: {
               <button
                 type="button"
                 className="password-toggle-btn"
+                aria-pressed={showPassword}
                 aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                 onClick={() => setShowPassword(!showPassword)}
               >

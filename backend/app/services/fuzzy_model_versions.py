@@ -19,6 +19,8 @@ def model(db, identifier, draft=False, lock=False):
 
 
 def configuration(db, identifier, specialization_id=None):
+    from app.services.grade_conversions import sort_conversions
+
     value = dict(model(db, identifier))
     value["variables"] = rows(db, "fuzzy_variables", model_version_id=identifier)
     ids = [v["id"] for v in value["variables"]]
@@ -30,7 +32,7 @@ def configuration(db, identifier, specialization_id=None):
         **({"specialization_id": specialization_id} if specialization_id else {}),
     )
     value["course_weights"] = rows(db, "course_weights", model_version_id=identifier)
-    value["grade_conversions"] = rows(db, "grade_conversions", model_version_id=identifier)
+    value["grade_conversions"] = sort_conversions(rows(db, "grade_conversions", model_version_id=identifier))
     value["validation_cases"] = rows(db, "fuzzy_validation_cases", model_version_id=identifier)
     return value
 
@@ -219,19 +221,21 @@ def publish(db, identifier, confirmed, user):
 
 
 def scaffold_defaults(db, identifier, user):
+    from app.services.grade_conversions import UNM_GRADE_CONVERSIONS
+
     model(db, identifier, draft=True, lock=True)
     before = configuration(db, identifier)
     specs = rows(db, "specializations", is_active=True)
 
     if not before["grade_conversions"]:
-        for letter, points in (("A", 4), ("B", 3), ("C", 2), ("D", 1), ("E", 0)):
+        for letter, points, normalized in UNM_GRADE_CONVERSIONS:
             add(
                 db,
                 "grade_conversions",
                 model_version_id=identifier,
                 letter_grade=letter,
                 grade_points=points,
-                normalized_score=points * 25,
+                normalized_score=normalized,
             )
 
     if not before["course_weights"]:

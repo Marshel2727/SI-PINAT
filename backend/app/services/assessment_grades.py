@@ -8,7 +8,7 @@ from app.fuzzy.engine import academic_score
 def check(db, value, data, warnings=None):
     master = for_assessment(db, value)
     courses = {c["code"]: c for c in master["courses"]}
-    conversions = {c["letter_grade"]: c for c in master["conversions"]}
+    conversions = {c["letter_grade"].strip().upper(): c for c in master["conversions"]}
     errors, accepted, seen = [], [], set()
     for index, row in enumerate(data, 2):
         course = courses.get(str(row.get("kode_mk", "")).strip())

@@ -72,8 +72,25 @@ class Question(Input):
         return self
 
 
+class QuestionImportItem(Input):
+    specialization_id: int | None = Field(default=None, gt=0)
+    specialization_code: str | None = Field(default=None, max_length=16)
+    code: str = Field(min_length=1, max_length=32)
+    prompt: str = Field(min_length=1, max_length=10000)
+    explanation: str | None = Field(default=None, max_length=10000)
+    options: list[Option] = Field(min_length=2, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_import_item(self):
+        if self.specialization_id is None and not self.specialization_code:
+            raise ValueError("Isi specialization_id atau specialization_code.")
+        if len({o.label for o in self.options}) != len(self.options) or sum(o.is_correct for o in self.options) != 1:
+            raise ValueError("Label harus unik dan tepat satu opsi benar.")
+        return self
+
+
 class QuestionImport(Input):
-    questions: list[Question] = Field(min_length=1, max_length=100)
+    questions: list[QuestionImportItem] = Field(min_length=1, max_length=100)
     publish: bool = False
 
 
@@ -153,6 +170,12 @@ class ValidationCase(Input):
         if self.expected_min > self.expected_max or self.expected_max - self.expected_min >= 100:
             raise ValueError("Rentang ekspektasi tidak sah atau terlalu lebar.")
         return self
+
+
+class BoundarySeed(Input):
+    specialization_id: int | None = Field(default=None, gt=0)
+    tolerance: float = Field(default=0.5, ge=0.001, le=20.0)
+    recalculate_existing: bool = False
 
 
 class Publish(Input):
