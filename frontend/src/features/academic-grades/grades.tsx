@@ -125,9 +125,17 @@ export function Grades() {
 
       {master && tab === "import" && (
         <article className="card">
-          <div className="spread wrap">
+          <div className="spread wrap" style={{ marginBottom: 16 }}>
             <h2>Impor Transkrip: Excel (.xlsx) / CSV</h2>
             <div className="actions">
+              <button
+                type="button"
+                className="compact"
+                disabled={busy || downloadingTemplate !== null}
+                onClick={() => downloadTemplate("xlsx")}
+              >
+                {downloadingTemplate === "xlsx" ? "Mengunduh Excel\u2026" : "Unduh Template Excel (.xlsx)"}
+              </button>
               <button
                 type="button"
                 className="secondary compact"
@@ -136,19 +144,8 @@ export function Grades() {
               >
                 {downloadingTemplate === "csv" ? "Mengunduh CSV\u2026" : "Unduh Template CSV"}
               </button>
-              <button
-                type="button"
-                className="secondary compact"
-                disabled={busy || downloadingTemplate !== null}
-                onClick={() => downloadTemplate("xlsx")}
-              >
-                {downloadingTemplate === "xlsx" ? "Mengunduh XLSX\u2026" : "Unduh Template XLSX"}
-              </button>
             </div>
           </div>
-          <p>
-            Unduh template <strong>XLSX</strong> (disarankan, dilengkapi dropdown nilai huruf &amp; panduan) atau <strong>CSV</strong>. Isi kolom <strong>nilai_huruf</strong> tanpa mengubah header <strong>semester, kode_mk, nama_mk, nilai_huruf</strong>; mata kuliah opsional yang belum diambil boleh dibiarkan kosong. Berkas maksimal 10 MB, tanpa formula atau makro.
-          </p>
 
           <div
             className={"upload-zone " + (isDragging ? "is-dragging" : "")}
