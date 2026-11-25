@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Modal, Notice, StatusBadge } from "@/components/ui";
+import { ErrorNotice, Field, Modal, Notice, StatusBadge, statusLabel } from "@/components/ui";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { configRows, configLabels as labels } from "./configuration";
@@ -42,6 +42,8 @@ export function ModelEditor({ id }: {
     save,
     scaffoldDefaults,
     hasEmptyScaffoldSection,
+    missingUnmGrades,
+    syncUnmGrades,
     seedAndValidateBoundaryCases,
     action,
     clone,
@@ -100,7 +102,7 @@ export function ModelEditor({ id }: {
         <>
           <div className="spread wrap">
             <StatusBadge status={model.status}>
-              {model.status} · {model.method} / {model.defuzzification} · step {model.sampling_step}
+              {statusLabel(model.status)} · {model.method} / {model.defuzzification} · step {model.sampling_step}
             </StatusBadge>
             <div className="actions">
               {hasEmptyScaffoldSection && (
@@ -124,6 +126,26 @@ export function ModelEditor({ id }: {
           {locked && (
             <Notice>
               Versi ini terkunci. Kloning untuk membuat perubahan.
+            </Notice>
+          )}
+          {missingUnmGrades.length > 0 && (
+            <Notice tone="info">
+              <div className="spread wrap" style={{ gap: 12 }}>
+                <div>
+                  <strong>Skala Nilai UNM Belum Lengkap di Database ({model.grade_conversions.length}/12)</strong>
+                  <p className="small" style={{ margin: "4px 0 0" }}>
+                    Belum tersedia: {missingUnmGrades.join(", ")}. Penambahan ini bersifat aditif dan aman untuk model yang sudah terpublikasi.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="compact"
+                  disabled={busy || dirty}
+                  onClick={syncUnmGrades}
+                >
+                  {busy ? "Melengkapi\u2026" : `Lengkapi 12 Nilai Huruf UNM di Database (+${missingUnmGrades.length})`}
+                </button>
+              </div>
             </Notice>
           )}
           <div className="tablist-scroll" role="tablist" aria-label="Bagian konfigurasi model">

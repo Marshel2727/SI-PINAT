@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Modal, Notice, StatusBadge } from "@/components/ui";
+import { ErrorNotice, Field, Modal, Notice, StatusBadge, statusLabel } from "@/components/ui";
 import { number, time } from "@/lib/format";
 import { evaluateMamdaniScore } from "@/lib/fuzzy-curve";
 import type { FuzzyModel, Specialization, ValidationEditorState } from "@/types/api";
@@ -249,7 +249,7 @@ export function Validation({ initialModel = "" }: {
           <option value="">Pilih versi</option>
           {models.map(m => (
             <option key={m.id} value={m.id}>
-              {m.version_code} · {m.status}
+              {m.version_code} · {statusLabel(m.status)}
             </option>
           ))}
         </select>
@@ -257,8 +257,8 @@ export function Validation({ initialModel = "" }: {
 
       {model && locked && (
         <Notice>
-          Model <strong>{model.version_code}</strong> berstatus <strong>{model.status}</strong> (terkunci).
-          Penambahan, penyuntingan, penghapusan, atau pengujian ulang skenario hanya tersedia pada model berstatus DRAFT.
+          Model <strong>{model.version_code}</strong> berstatus <strong>{statusLabel(model.status)}</strong> (terkunci).
+          Penambahan, penyuntingan, penghapusan, atau pengujian ulang skenario hanya tersedia pada model berstatus Draf.
         </Notice>
       )}
 

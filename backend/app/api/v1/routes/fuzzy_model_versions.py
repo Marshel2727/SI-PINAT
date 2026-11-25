@@ -4,6 +4,7 @@ from app.core.security import admin
 from app.schemas.inputs import BoundarySeed, ModelCreate, Publish
 from app.repositories.store import rows, add, audit
 from app.services import fuzzy_model_versions as models
+from app.services.grade_conversions import sync_unm_grades
 from app.api.v1.common import ok, page as envelope
 from app.services.fuzzy_validation_cases import seed_boundary_cases, validate as run_validation
 
@@ -50,6 +51,11 @@ def clone(identifier: int, body: ModelCreate, user=Depends(admin), db=Depends(da
 @router.post("/admin/fuzzy-models/{identifier}/scaffold-defaults")
 def scaffold_defaults(identifier: int, user=Depends(admin), db=Depends(database)):
     return ok(models.scaffold_defaults(db, identifier, user))
+
+
+@router.post("/admin/fuzzy-models/{identifier}/sync-unm-grades")
+def sync_unm(identifier: int, user=Depends(admin), db=Depends(database)):
+    return ok(sync_unm_grades(db, identifier, user))
 
 
 @router.get("/admin/fuzzy-models/{identifier}/readiness")

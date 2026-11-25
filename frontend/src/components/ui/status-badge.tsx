@@ -11,6 +11,11 @@ const STATUS_LABELS: Record<string, string> = {
   GAGAL: "Gagal",
 };
 
+export function statusLabel(status: string): string {
+  const value = status.toUpperCase();
+  return STATUS_LABELS[value] ?? status;
+}
+
 export function StatusBadge({ status, children }: { status: string; children?: ReactNode; }) {
   const value = status.toUpperCase();
   const tone = ["PUBLISHED", "COMPLETED", "SUCCESS", "LULUS"].includes(value)

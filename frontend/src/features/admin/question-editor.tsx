@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Notice, StatusBadge } from "@/components/ui";
+import { ErrorNotice, Field, Notice, StatusBadge, statusLabel } from "@/components/ui";
 import Link from "next/link";
 import { useQuestionEditor } from "./use-question-editor";
 
@@ -48,7 +48,7 @@ export function QuestionEditor({ id }: {
 
           {locked && (
             <Notice>
-              Revisi ini terkunci ({question.status}). Buat revisi baru untuk mengubah isi soal atau opsi jawaban.
+              Revisi ini terkunci ({statusLabel(question.status)}). Buat revisi baru untuk mengubah isi soal atau opsi jawaban.
             </Notice>
           )}
 

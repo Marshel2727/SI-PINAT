@@ -101,7 +101,7 @@ export function Questions() {
                 <span className="badge mono">{item.code}</span>
               </div>
               <StatusBadge status={item.ready ? "PUBLISHED" : "DRAFT"}>
-                {item.published_count} / {item.required_count} kode soal PUBLISHED
+                {item.published_count} / {item.required_count} soal terpublikasi
               </StatusBadge>
               <p className="small muted" style={{ marginTop: 8, marginBottom: 10 }}>
                 {item.ready
@@ -124,7 +124,7 @@ export function Questions() {
         })}
       </div>
       <Notice>
-        Paket tes mahasiswa mengambil <strong>10 kode soal PUBLISHED pertama berdasarkan urutan abjad (A–Z)</strong> per peminatan.
+        Paket tes mahasiswa mengambil <strong>10 kode soal terpublikasi pertama berdasarkan urutan abjad (A–Z)</strong> per peminatan.
         Klik kartu kuota di atas untuk memfilter daftar soal berdasarkan peminatan.
       </Notice>
 

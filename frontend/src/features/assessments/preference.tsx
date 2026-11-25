@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Notice } from "@/components/ui";
+import { ErrorNotice, Field } from "@/components/ui";
 import { descriptions, icons, names } from "@/lib/format";
 import { usePreference } from "./use-preference";
 
@@ -21,12 +21,6 @@ export function Preference() {
     <>
       <span className="eyebrow">TAHAP 1 DARI 4</span>
       <h1>Pilih Peminatan yang Paling Kamu Minati</h1>
-      <p className="lead">
-        Pilihan awal dicatat sebagai bahan pembanding. Rekomendasi dihitung murni dari nilai akademik dan tes kompetensi.
-      </p>
-      <Notice>
-        Memilih suatu peminatan tidak menambah skornya dan tidak memecahkan hasil seri (hasil rekomendasi sepenuhnya obyektif).
-      </Notice>
       <form onSubmit={save}>
         <div className="three-columns">
           {Object.entries(names).map(([code, name]) => (

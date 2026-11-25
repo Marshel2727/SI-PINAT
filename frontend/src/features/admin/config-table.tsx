@@ -575,29 +575,39 @@ export function ConfigTable({
         </div>
       </div>
 
-      {isGradeConversions && (
-        <div className="preset-toolbar">
-          <div>
-            <strong>Standar 12 Nilai Huruf UNM</strong>
-            <p className="small muted" style={{ margin: "2px 0 0" }}>
-              Skala resmi A–E dengan rumus otomatis <code>Normalisasi = (Nilai Mutu ÷ 4) × 100</code>. Mengubah nilai mutu memperbarui normalisasi otomatis, dan nilai normalisasi tetap bisa disunting langsung.
-            </p>
+      {isGradeConversions && (() => {
+        const presentGrades = new Set(local.map((r) => String(r.letter_grade ?? "").trim().toUpperCase()));
+        const presentCount = UNM_GRADE_PRESET.filter((g) => presentGrades.has(g.letter_grade)).length;
+        const missingCount = UNM_GRADE_PRESET.length - presentCount;
+        return (
+          <div className="preset-toolbar">
+            <div>
+              <div className="actions" style={{ gap: 8 }}>
+                <strong>Standar 12 Nilai Huruf UNM</strong>
+                <span className={"badge " + (missingCount === 0 ? "success" : "warning")}>
+                  {presentCount}/12 skala UNM{missingCount === 0 ? " lengkap" : ` (kurang ${missingCount})`}
+                </span>
+              </div>
+              <p className="small muted" style={{ margin: "4px 0 0" }}>
+                Skala resmi A–E dengan rumus otomatis <code>Normalisasi = (Nilai Mutu ÷ 4) × 100</code>. Mengubah nilai mutu memperbarui normalisasi otomatis, dan nilai normalisasi tetap bisa disunting langsung.
+              </p>
+            </div>
+            <div className="actions">
+              <button type="button" className="secondary compact" disabled={locked || busy} onClick={loadUnmGradePreset}>
+                Muat Standar UNM (A s/d E)
+              </button>
+              <button
+                type="button"
+                className="secondary compact"
+                disabled={locked || busy || !local.length}
+                onClick={syncNormalizedGrades}
+              >
+                Selaraskan Normalisasi (×25)
+              </button>
+            </div>
           </div>
-          <div className="actions">
-            <button type="button" className="secondary compact" disabled={locked || busy} onClick={loadUnmGradePreset}>
-              Muat Standar UNM (A s/d E)
-            </button>
-            <button
-              type="button"
-              className="secondary compact"
-              disabled={locked || busy || !local.length}
-              onClick={syncNormalizedGrades}
-            >
-              Selaraskan Normalisasi (×25)
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {isSetEditor && (
         <div className="preset-toolbar">

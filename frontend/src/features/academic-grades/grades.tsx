@@ -295,7 +295,7 @@ export function Grades() {
                             <option value="">-- Pilih Nilai --</option>
                             {master.conversions.map(g => (
                               <option value={g.letter_grade} key={g.id}>
-                                {g.letter_grade} (Bobot {number(g.grade_points, 1)})
+                                {g.letter_grade} (Bobot {number(g.grade_points, 2)})
                               </option>
                             ))}
                           </select>
@@ -331,7 +331,7 @@ export function Grades() {
           <div className="actions" style={{ marginTop: 8 }}>
             {master.conversions.map(g => (
               <span className="badge" key={g.id}>
-                {g.letter_grade}: Bobot {number(g.grade_points, 1)} → Skor {number(g.normalized_score, 0)}
+                {g.letter_grade}: Bobot {number(g.grade_points, 2)} → Skor {number(g.normalized_score, 2)}
               </span>
             ))}
           </div>

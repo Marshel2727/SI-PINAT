@@ -1,6 +1,6 @@
 "use client";
 
-import { Curve, ErrorNotice, Notice, ScoreBars, StatusBadge } from "@/components/ui";
+import { Curve, ErrorNotice, Notice, ScoreBars, StatusBadge, statusLabel } from "@/components/ui";
 import { names, number, time } from "@/lib/format";
 import type { SpecializationCode } from "@/types/api";
 import Link from "next/link";
@@ -24,7 +24,7 @@ export function AdminAssessment({ id }: {
         <>
           <article className="card">
             <StatusBadge status={value.assessment.status}>
-              {value.assessment.mode} · {value.assessment.status}
+              {value.assessment.mode === "FULL" ? "Resmi" : "Simulasi"} · {statusLabel(value.assessment.status)}
             </StatusBadge>
             <h2 style={{ marginTop: 10 }}>
               {value.assessment.student?.full_name || "Peserta Asesmen"}
@@ -57,8 +57,8 @@ export function AdminAssessment({ id }: {
               <strong>{preferredLabel}</strong>
             </p>
             <p className="small muted" style={{ marginBottom: 0 }}>
-              Selesai: {time(value.assessment.completed_at)} · Jawaban:{" "}
-              {value.assessment.progress.user} USER · {value.assessment.progress.example} EXAMPLE
+              Selesai: {time(value.assessment.completed_at)} · Jawaban mandiri: {value.assessment.progress.user}
+              {value.assessment.progress.example > 0 ? ` · ${value.assessment.progress.example} contoh` : ""}
             </p>
           </article>
 
@@ -66,7 +66,7 @@ export function AdminAssessment({ id }: {
             <h2>Nilai akademik tersimpan</h2>
             {!value.grades.length ? (
               <Notice>
-                Belum ada nilai akademik tersimpan untuk asesmen ini (status saat ini: {value.assessment.status}).
+                Belum ada nilai akademik tersimpan untuk asesmen ini (status saat ini: {statusLabel(value.assessment.status)}).
               </Notice>
             ) : (
               <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel nilai akademik peserta">
@@ -97,7 +97,7 @@ export function AdminAssessment({ id }: {
                           {g.credits_snapshot}
                         </td>
                         <td>
-                          {g.letter_grade}
+                          <span className="badge mono">{g.letter_grade}</span>
                         </td>
                         <td>
                           {number(g.normalized_score)}
@@ -116,8 +116,10 @@ export function AdminAssessment({ id }: {
                 <h2>Hasil tersimpan</h2>
                 <ScoreBars scores={value.result.scores} />
                 <p className="small" style={{ marginTop: 12 }}>
-                  Sumber jawaban: <strong>{value.result.answer_sources.USER}</strong> jawaban mandiri (USER) ·{" "}
-                  <strong>{value.result.answer_sources.EXAMPLE}</strong> jawaban contoh (EXAMPLE)
+                  Sumber jawaban: <strong>{value.result.answer_sources.USER}</strong> jawaban mandiri
+                  {value.result.answer_sources.EXAMPLE > 0 ? (
+                    <> · <strong>{value.result.answer_sources.EXAMPLE}</strong> jawaban contoh</>
+                  ) : null}
                 </p>
                 {value.result.preferred_specialization_code && value.result.preference_comparison && (
                   <Notice tone={value.result.preference_comparison.matches_top ? "success" : "info"}>

@@ -4,7 +4,7 @@ import { api, send } from "@/lib/api";
 import type { Course, FuzzyModel, PublicationReadiness, Specialization, ValidationResult } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { enumOptions, type Column, type ConfigRow } from "./configuration";
+import { enumOptions, UNM_GRADE_PRESET, type Column, type ConfigRow } from "./configuration";
 
 async function fetchAllCourses(): Promise<Course[]> {
   const first = await api<Course[]>("/admin/courses?page_size=100&page=1");
@@ -227,6 +227,32 @@ export function useModelEditor({ id }: {
   }
 
   const locked = model?.status !== "DRAFT";
+  const presentGrades = new Set(
+    (model?.grade_conversions || []).map((g) => g.letter_grade.trim().toUpperCase())
+  );
+  const missingUnmGrades = model
+    ? UNM_GRADE_PRESET.map((g) => g.letter_grade).filter((letter) => !presentGrades.has(letter))
+    : [];
+
+  async function syncUnmGrades() {
+    if (busy || !model || !missingUnmGrades.length)
+      return;
+    setBusy(true);
+    setError(null);
+    setMessage("");
+    try {
+      const { data } = await send<FuzzyModel>(base + "/sync-unm-grades", undefined, "POST");
+      setModel(data);
+      await refreshReadiness();
+      setMessage("Skala 12 nilai huruf UNM berhasil dilengkapi di database.");
+    }
+    catch (e) {
+      setError(e);
+    }
+    finally {
+      setBusy(false);
+    }
+  }
   const hasEmptyScaffoldSection = Boolean(
     model && !locked && (
       !model.grade_conversions.length ||
@@ -312,6 +338,8 @@ export function useModelEditor({ id }: {
     save,
     scaffoldDefaults,
     hasEmptyScaffoldSection,
+    missingUnmGrades,
+    syncUnmGrades,
     seedAndValidateBoundaryCases,
     action,
     clone,

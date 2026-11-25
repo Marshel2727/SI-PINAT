@@ -28,7 +28,7 @@ export function ModelList() {
         Versi mencakup konversi, bobot, variabel, himpunan, dan aturan. Model
         terpublikasi dikunci; perubahan dilakukan melalui kloning.
       </Notice>
-      <button type="button" onClick={openCreateModal}>+ Buat model DRAFT</button>
+      <button type="button" onClick={openCreateModal}>+ Buat Model Draf</button>
       <ErrorNotice error={error} />
       {loading && <Notice>Memuat model…</Notice>}
       <article className="card section">

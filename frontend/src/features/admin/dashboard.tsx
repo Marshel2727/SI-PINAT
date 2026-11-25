@@ -191,8 +191,8 @@ export function Dashboard() {
             }}
           >
             <option value="">Semua sesi</option>
-            <option value="FULL">Asesmen Mahasiswa (FULL)</option>
-            <option value="DEMO">Data Simulasi Lama (DEMO)</option>
+            <option value="FULL">Asesmen Mahasiswa (Resmi)</option>
+            <option value="DEMO">Data Simulasi Lama</option>
           </select>
         </Field>
         <Field label="Status">
@@ -266,8 +266,8 @@ export function Dashboard() {
 
           <Notice>
             <strong>Ringkasan Asesmen (sesuai filter mode &amp; tanggal):</strong>{" "}
-            {stats.total_assessments} asesmen · {stats.modes.FULL} FULL ·{" "}
-            {stats.modes.DEMO} DEMO · {stats.completed} selesai.
+            {stats.total_assessments} asesmen · {stats.completed} selesai
+            {stats.modes.DEMO > 0 ? ` · ${stats.modes.DEMO} simulasi lama` : ""}.
             {(status || search.trim()) && " (Filter status & pencarian diterapkan pada daftar tabel dan ekspor XLSX.)"}
           </Notice>
 
@@ -295,7 +295,7 @@ export function Dashboard() {
                         <tr key={r.public_id}>
                           <td>
                             <Link href={"/admin/asesmen/" + r.public_id}>
-                              {r.student?.full_name || "Peserta DEMO"}
+                              {r.student?.full_name || "Peserta Asesmen"}
                             </Link>
                             <small className="block mono">
                               {r.student?.nim || r.public_id.slice(0, 8)}
@@ -303,7 +303,7 @@ export function Dashboard() {
                           </td>
                           <td>
                             <span className="badge">
-                              {r.mode}
+                              {r.mode === "FULL" ? "Resmi" : "Simulasi"}
                             </span>
                             <small className="block">
                               <StatusBadge status={r.status} />

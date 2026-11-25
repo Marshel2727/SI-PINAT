@@ -3,6 +3,7 @@ import argparse
 from app.repositories.store import rows, one, add, audit
 from app.db.session import engine
 from app.fuzzy.reference import exact_reference
+from app.services.grade_conversions import UNM_GRADE_CONVERSIONS
 
 CASES = [
     (0, 0),
@@ -274,14 +275,14 @@ def seed(db, user):
                 weight=1 if target["id"] == spec["id"] else 0.2,
                 is_required=True,
             )
-    for letter, points in [("A", 4), ("B", 3), ("C", 2), ("D", 1), ("E", 0)]:
+    for letter, points, normalized in UNM_GRADE_CONVERSIONS:
         add(
             db,
             "grade_conversions",
             model_version_id=identifier,
             letter_grade=letter,
             grade_points=points,
-            normalized_score=points * 25,
+            normalized_score=normalized,
         )
     set_ids = {}
     for code in ["ACADEMIC", "COMPETENCY", "SUITABILITY"]:

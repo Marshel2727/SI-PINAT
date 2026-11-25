@@ -1012,6 +1012,56 @@ class BackendFixesUnitTests(unittest.TestCase):
             self.assertEqual(len(validation_checks), 3)
             self.assertTrue(all(c["ready"] for c in validation_checks))
 
+    def test_sync_unm_grades_on_published_model_and_idempotency(self):
+        with self.engine.begin() as db:
+            before_rows = {
+                row["letter_grade"]: row["id"]
+                for row in store.rows(db, "grade_conversions", model_version_id=self.pub_model_id)
+            }
+            self.assertEqual(set(before_rows), {"A", "B", "C", "D", "E"})
+
+            synced = self.grade_conversions.sync_unm_grades(db, self.pub_model_id, self.user)
+            letters = [row["letter_grade"] for row in synced["grade_conversions"]]
+            self.assertEqual(
+                letters,
+                ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E"],
+            )
+            after_rows = {row["letter_grade"]: row["id"] for row in synced["grade_conversions"]}
+            for legacy_letter, legacy_id in before_rows.items():
+                self.assertEqual(after_rows[legacy_letter], legacy_id)
+
+            synced_again = self.grade_conversions.sync_unm_grades(db, self.pub_model_id, self.user)
+            self.assertEqual(len(synced_again["grade_conversions"]), 12)
+            sync_audits = [
+                a for a in store.rows(db, "audit_logs", entity_table="grade_conversions")
+                if a["action"] == "SYNC_UNM_GRADES"
+            ]
+            self.assertEqual(len(sync_audits), 1)
+
+    def test_migration_0002_unm_grade_conversions_upgrade_and_idempotency(self):
+        from pathlib import Path
+
+        path = Path(__file__).resolve().parents[2] / "alembic" / "versions" / "0002_unm_grade_conversions.py"
+        spec = importlib.util.spec_from_file_location("mig_0002_unm_grade_conversions", path)
+        mig = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mig)
+        with self.engine.begin() as db:
+            before_ids = {
+                row["letter_grade"]: row["id"]
+                for row in store.rows(db, "grade_conversions", model_version_id=self.pub_model_id)
+            }
+            with patch.object(mig.op, "get_bind", return_value=db):
+                mig.upgrade()
+                mig.upgrade()
+            rows_after = self.grade_conversions.listing(db, self.pub_model_id)
+            self.assertEqual(
+                [row["letter_grade"] for row in rows_after],
+                ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "E"],
+            )
+            for legacy_letter, legacy_id in before_ids.items():
+                matched = next(r for r in rows_after if r["letter_grade"] == legacy_letter)
+                self.assertEqual(matched["id"], legacy_id)
+
 
 if __name__ == "__main__":
     unittest.main()

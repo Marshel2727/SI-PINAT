@@ -1,4 +1,4 @@
-from app.repositories.store import rows, add, remove_where
+from app.repositories.store import rows, add, audit, remove_where
 from app.services._draft_config import begin, finish
 from app.core.errors import fail
 
@@ -44,3 +44,28 @@ def save(db, version_id, values, user):
     for value in normalized:
         add(db, "grade_conversions", model_version_id=version_id, **value)
     return finish(db, version_id, "grade_conversions", user, config["grade_conversions"], normalized)
+
+
+def sync_unm_grades(db, version_id, user):
+    """Add missing official 12-level UNM letter grades without altering or deleting existing rows."""
+    from app.services.fuzzy_model_versions import configuration, model
+
+    model(db, version_id, lock=True)
+    current = rows(db, "grade_conversions", model_version_id=version_id)
+    existing = {str(r["letter_grade"]).strip().upper() for r in current}
+    added = []
+    for letter, points, normalized in UNM_GRADE_CONVERSIONS:
+        if letter in existing:
+            continue
+        add(
+            db,
+            "grade_conversions",
+            model_version_id=version_id,
+            letter_grade=letter,
+            grade_points=points,
+            normalized_score=normalized,
+        )
+        added.append(letter)
+    if added:
+        audit(db, user, "SYNC_UNM_GRADES", "grade_conversions", version_id, after={"added_grades": added})
+    return configuration(db, version_id)
