@@ -6,6 +6,7 @@ from app.core.errors import fail
 from app.api.v1.common import ok
 
 router = APIRouter(tags=["health"])
+EXPECTED_MIGRATION = "0002_unm_grade_conversions"
 
 
 @router.get("/health/live")
@@ -20,9 +21,9 @@ def ready():
             tables = set(inspect(db).get_table_names())
             revision = db.execute(text("SELECT version_num FROM alembic_version")).scalar()
             specs = set(db.execute(text("SELECT code FROM specializations WHERE is_active=TRUE")).scalars())
-            valid = set(TABLES).issubset(tables) and revision == "0001_initial" and specs == {"ES-01", "SC-02", "JDF-03"}
+            valid = set(TABLES).issubset(tables) and revision == EXPECTED_MIGRATION and specs == {"ES-01", "SC-02", "JDF-03"}
     except Exception:
         valid = False
     if not valid:
         fail(503, "Database, migrasi, atau master belum siap.", "NOT_READY")
-    return ok({"status": "ready", "tables": 23, "migration": "0001_initial"})
+    return ok({"status": "ready", "tables": len(TABLES), "migration": EXPECTED_MIGRATION})
