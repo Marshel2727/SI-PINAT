@@ -6,6 +6,7 @@ import { useAuditLogs } from "./use-audit-logs";
 
 const ENTITY_LABELS: Record<string, string> = {
   admin_sessions: "Sesi Admin",
+  admin_users: "Akun Administrator",
   courses: "Mata Kuliah",
   questions: "Bank Soal",
   fuzzy_model_versions: "Versi Model Fuzzy",
@@ -20,6 +21,7 @@ const ENTITY_LABELS: Record<string, string> = {
 
 const ENTITY_OPTIONS = [
   ["admin_sessions", "Sesi Admin"],
+  ["admin_users", "Akun Administrator"],
   ["courses", "Mata Kuliah"],
   ["questions", "Bank Soal"],
   ["fuzzy_model_versions", "Versi Model Fuzzy"],
@@ -34,6 +36,8 @@ const ENTITY_OPTIONS = [
 const ACTION_LABELS: Record<string, string> = {
   LOGIN: "Masuk Admin",
   LOGOUT: "Keluar Admin",
+  CHANGE_PASSWORD: "Ubah Kata Sandi",
+  REVOKE_OTHER_SESSIONS: "Akhiri Sesi Lain",
   CREATE: "Tambah Data",
   UPDATE: "Perbarui Data",
   SAVE: "Simpan",
@@ -55,6 +59,8 @@ const ACTION_LABELS: Record<string, string> = {
 const ACTION_OPTIONS = [
   "LOGIN",
   "LOGOUT",
+  "CHANGE_PASSWORD",
+  "REVOKE_OTHER_SESSIONS",
   "CREATE",
   "UPDATE",
   "SAVE",

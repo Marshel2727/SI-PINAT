@@ -129,8 +129,12 @@ export function useAdminSession() {
     }
   }
 
+  const refreshSession = useCallback(() => verifySession(true), [verifySession]);
+
   return {
     user,
+    setUser,
+    refreshSession,
     error,
     sessionNotice,
     sessionExpired,

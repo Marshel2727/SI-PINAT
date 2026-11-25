@@ -11,6 +11,24 @@ class Login(Input):
     password: str = Field(min_length=1, max_length=512)
 
 
+class AdminProfileUpdate(Input):
+    full_name: str = Field(min_length=2, max_length=120)
+
+
+class AdminPasswordChange(Input):
+    current_password: str = Field(min_length=1, max_length=512)
+    new_password: str = Field(min_length=8, max_length=512)
+    confirm_password: str = Field(min_length=8, max_length=512)
+
+    @model_validator(mode="after")
+    def passwords_valid(self):
+        if self.new_password != self.confirm_password:
+            raise ValueError("Konfirmasi kata sandi baru tidak cocok.")
+        if self.new_password == self.current_password:
+            raise ValueError("Kata sandi baru harus berbeda dari kata sandi saat ini.")
+        return self
+
+
 class Profile(Input):
     semester: int = Field(default=4, ge=1, le=14)
     nim: str | None = Field(default=None, max_length=20)

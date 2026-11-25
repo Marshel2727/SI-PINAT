@@ -1,5 +1,5 @@
 @media print {
-  .header, .footer, .admin-sidebar, button, .button, .steps, .no-print, .ambient-bg, .bg-motion-toggle {
+  .header, .footer, .admin-navbar, .admin-sidebar, .admin-mobile-breadcrumb, button, .button, .steps, .no-print, .ambient-bg, .bg-motion-toggle {
     display: none!important;
   }
 
@@ -70,7 +70,7 @@
     position: static;
   }
 
-  .admin-layout {
+  .admin-layout, .admin-shell-body {
     display: block;
   }
 

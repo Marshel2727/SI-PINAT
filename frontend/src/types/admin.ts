@@ -6,6 +6,13 @@ export interface AdminUser {
   id: string;
   email: string;
   full_name: string;
+  is_active?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+  session_created_at?: string | null;
+  session_expires_at?: string | null;
+  active_sessions_count?: number;
+  last_login_at?: string | null;
 }
 
 export interface DashboardStats {
