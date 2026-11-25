@@ -147,7 +147,7 @@ export function Grades() {
             </div>
           </div>
           <p>
-            Pastikan header berkas mencakup: <strong>semester, kode_mk, nama_mk, nilai_huruf</strong>. Berkas maksimal 10 MB, tanpa formula atau makro.
+            Unduh template <strong>XLSX</strong> (disarankan, dilengkapi dropdown nilai huruf &amp; panduan) atau <strong>CSV</strong>. Isi kolom <strong>nilai_huruf</strong> tanpa mengubah header <strong>semester, kode_mk, nama_mk, nilai_huruf</strong>; mata kuliah opsional yang belum diambil boleh dibiarkan kosong. Berkas maksimal 10 MB, tanpa formula atau makro.
           </p>
 
           <div
