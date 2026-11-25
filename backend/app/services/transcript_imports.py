@@ -16,14 +16,15 @@ from app.services.assessment_grades import check, readiness, save
 HEADERS = ["semester", "kode_mk", "nama_mk", "nilai_huruf"]
 PDF_ROW_RE = re.compile(
     r"(?:^|\s)(\d{1,3})\s+"
-    r"([A-Z0-9]{5,15})\s+"
-    r"(.+?)\s+"
+    r"((?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*\d)[A-Z0-9]{5,15})\s+"
+    r"(.{2,160}?)\s+"
     r"(\d{1,2})\s+"
     r"([0-4][.,]\d{2})\s+"
     r"([A-EKTabl][+\-\u2212\u2013]?|BL)\s+"
     r"(20\d{2}\s*-\s*20\d{2}\s*/\s*(?:Ganjil|Genap|Pendek|Antara))",
     re.IGNORECASE | re.DOTALL,
 )
+PDF_TABLE_START_RE = re.compile(r"No\s+Kode\s+MK\s+Matakuliah", re.IGNORECASE)
 PDF_NIM_RE = re.compile(r"NO\.?\s*INDUK\s*MAHASISWA\s*:\s*([A-Z0-9]{4,25})", re.IGNORECASE)
 _INFER_SEMESTER_RE = re.compile(r"[A-Z](\d)\d{2}$")
 
@@ -70,8 +71,11 @@ def parse_siakad_pdf(content: bytes, master=None, student_nim: str | None = None
                     f"NIM pada PDF ({extracted_nim}) berbeda dengan NIM sesi saat ini ({student_nim}). Pastikan berkas transkrip benar milik kamu."
                 )
 
+    table_match = PDF_TABLE_START_RE.search(full_text)
+    table_text = full_text[table_match.end():] if table_match else full_text
+
     raw_matches = []
-    for match in PDF_ROW_RE.finditer(full_text):
+    for match in PDF_ROW_RE.finditer(table_text):
         code = match.group(2).strip().upper()
         if any(ch.isalpha() for ch in code) and any(ch.isdigit() for ch in code):
             raw_matches.append(match)

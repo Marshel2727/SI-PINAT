@@ -62,6 +62,9 @@ export function Grades() {
       return;
     }
     setFile(selected);
+    if (selected) {
+      void upload(false, selected);
+    }
   }
 
   const maxSemester = Math.max(1, Math.min(assessment.current_semester || 4, 4));
@@ -177,7 +180,7 @@ export function Grades() {
               }}
             />
             <button type="button" className="secondary" disabled={locked || busy} onClick={() => fileInput.current?.click()}>
-              Pilih berkas
+              {busy && !preview ? "Memvalidasi berkas\u2026" : "Pilih berkas"}
             </button>
             {fileError && <Notice tone="error">{fileError}</Notice>}
 
@@ -199,15 +202,6 @@ export function Grades() {
                 </button>
               </div>
             )}
-
-            <button
-              type="button"
-              disabled={locked || busy || !file}
-              onClick={() => upload(false)}
-              style={{ marginTop: 8 }}
-            >
-              {busy ? "Memvalidasi berkas\u2026" : "Validasi & Lihat Pratinjau"}
-            </button>
           </div>
         </article>
       )}
@@ -391,7 +385,7 @@ export function Grades() {
             )}
             {preview.warnings && preview.warnings.length > 0 && (
               <Notice>
-                <strong>Penyesuaian nama mata kuliah ({preview.warnings.length}):</strong>
+                <strong>Catatan pratinjau ({preview.warnings.length}):</strong>
                 <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
                   {preview.warnings.map((warning, idx) => (
                     <li key={idx}>{warning}</li>

@@ -118,8 +118,9 @@ export function useGrades() {
     }
   }
 
-  async function upload(confirm = false) {
-    if (!file || busy) return;
+  async function upload(confirm = false, overrideFile?: File | null) {
+    const target = overrideFile ?? file;
+    if (!target || busy) return;
 
     setBusy(true);
     if (confirm) {
@@ -131,7 +132,7 @@ export function useGrades() {
 
     try {
       const body = new FormData();
-      body.set("file", file);
+      body.set("file", target);
       body.set("confirm", String(confirm));
       const { data } = await api<GradeImport>(base + "/grades/import", {
         method: "POST",

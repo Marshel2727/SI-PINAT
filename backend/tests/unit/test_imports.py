@@ -220,9 +220,13 @@ class ImportTests(unittest.TestCase):
     def test_pdf_siakad_unm_parsing_with_multiline_k_skip_and_code_alias(self):
         pdf_bytes = _build_text_pdf([
             [
+                "KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI",
                 "UNIVERSITAS NEGERI MAKASSAR",
+                "JL. PETTARANI MAKASSAR 90222 Telp. 0411865677 Fax. 0411861377",
                 "TRANSKRIP NILAI",
-                "NO. INDUK MAHASISWA : 250210501029",
+                "NAMA : MARSHEL ANDHINO S. GORUNG ANGKATAN/KELAS : 2025 / 01",
+                "NO. INDUK MAHASISWA : 250210501029 FAKULTAS : TEKNIK",
+                "TEMPAT/TGL LAHIR : MAKASSAR / 27 April 2006 PROGRAM STUDI : TEKNIK KOMPUTER - (S1)",
                 "No Kode MK Matakuliah SKS Bobot Nilai Tahun/Semester",
                 "1 21B01C101 RANGKAIAN ELEKTRONIKA 3 3.25 B+ 2025-2026 / Ganjil",
                 "2 21B01C102 ALGORITME DAN PEMROGRAMAN",
