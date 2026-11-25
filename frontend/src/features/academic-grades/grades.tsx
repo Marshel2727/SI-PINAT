@@ -2,7 +2,7 @@
 
 import { ErrorNotice, Field, Modal, Notice } from "@/components/ui";
 import { IconUpload } from "@/components/icons";
-import { names, number } from "@/lib/format";
+import { isFailingGrade, names, number } from "@/lib/format";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -271,16 +271,23 @@ export function Grades() {
                             <option value="">-- Pilih Nilai --</option>
                             {master.conversions.map(g => (
                               <option value={g.letter_grade} key={g.id}>
-                                {g.letter_grade} (Bobot {number(g.grade_points, 2)})
+                                {g.letter_grade} (Bobot {number(g.grade_points, 2)}{isFailingGrade(g.letter_grade) ? " · Tidak Lulus" : ""})
                               </option>
                             ))}
                           </select>
                         </td>
                         <td>
                           {values[c.id] ? (
-                            <span className="mono" style={{ color: "var(--primary)", fontWeight: 600 }}>
-                              {number(master.conversions.find(g => g.letter_grade === values[c.id])?.normalized_score || 0)}
-                            </span>
+                            <>
+                              <span className="mono" style={{ color: "var(--primary)", fontWeight: 600 }}>
+                                {number(master.conversions.find(g => g.letter_grade === values[c.id])?.normalized_score || 0)}
+                              </span>
+                              {isFailingGrade(values[c.id]) && (
+                                <span className="badge danger" style={{ marginLeft: 8 }}>
+                                  Tidak Lulus
+                                </span>
+                              )}
+                            </>
                           ) : (
                             <span className="muted">{"\u2014"}</span>
                           )}
@@ -303,11 +310,18 @@ export function Grades() {
           </summary>
           <div className="actions" style={{ marginTop: 10 }}>
             {master.conversions.map(g => (
-              <span className="badge" key={g.id}>
+              <span
+                className={"badge " + (isFailingGrade(g.letter_grade) ? "danger" : "")}
+                key={g.id}
+              >
                 {g.letter_grade}: Bobot {number(g.grade_points, 2)} → Skor {number(g.normalized_score, 2)}
+                {isFailingGrade(g.letter_grade) ? " · Tidak Lulus" : ""}
               </span>
             ))}
           </div>
+          <p className="small muted" style={{ margin: "10px 0 0" }}>
+            Dasar: Peraturan Rektor UNM Nomor 2 Tahun 2025 Pasal 37 ayat (6) &amp; (7). Nilai C−, D+, D, D−, dan E dinyatakan tidak lulus.
+          </p>
         </details>
       )}
 

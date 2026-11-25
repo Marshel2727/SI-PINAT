@@ -180,6 +180,7 @@ class ImportTests(unittest.TestCase):
             "conversions": [
                 {"letter_grade": "A", "grade_points": 4.0, "normalized_score": 100.0},
                 {"letter_grade": "A-", "grade_points": 3.75, "normalized_score": 93.75},
+                {"letter_grade": "C-", "grade_points": 1.75, "normalized_score": 43.75},
             ],
         }
         assessment = {"model_version_id": 1, "current_semester": 2}
@@ -195,6 +196,10 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(wb.sheetnames, ["Nilai", "Panduan & Skala Nilai"])
         self.assertEqual(wb.active.title, "Nilai")
         sheet = wb["Nilai"]
+        guide = wb["Panduan & Skala Nilai"]
+        self.assertEqual(guide.cell(12, 4).value, "Lulus")
+        self.assertEqual(guide.cell(13, 4).value, "Lulus")
+        self.assertEqual(guide.cell(14, 4).value, "Tidak Lulus")
         self.assertEqual([sheet.cell(1, i).value for i in range(1, 5)], ["semester", "kode_mk", "nama_mk", "nilai_huruf"])
         self.assertTrue(len(sheet.data_validations.dataValidation) >= 1)
         for ws in wb.worksheets:

@@ -12,6 +12,7 @@ from app.repositories.store import add, one, safe
 from app.services.assessments import editable
 from app.services.courses import for_assessment
 from app.services.assessment_grades import check, readiness, save
+from app.services.grade_conversions import UNM_FAILING_GRADES
 
 HEADERS = ["semester", "kode_mk", "nama_mk", "nilai_huruf"]
 PDF_ROW_RE = re.compile(
@@ -414,31 +415,54 @@ def _build_xlsx_template(courses, conversions, required_ids, version_code, curre
         guide.row_dimensions[offset].height = 22
 
     conv_title_row = 10
-    guide.cell(row=conv_title_row, column=1, value="2. Skala Konversi Nilai Resmi").font = section_font
+    guide.cell(row=conv_title_row, column=1, value="2. Skala Konversi Nilai Resmi — Pasal 37 ayat (6) & (7)").font = section_font
     guide.row_dimensions[conv_title_row].height = 22
     conv_header_row = conv_title_row + 1
     guide.row_dimensions[conv_header_row].height = 24
-    for col_idx, heading in enumerate(["Nilai Huruf", "Nilai Mutu (0–4)", "Skor Normalisasi (0–100)"], start=1):
+    for col_idx, heading in enumerate(["Nilai Huruf", "Nilai Mutu (0–4)", "Skor Normalisasi (0–100)", "Status"], start=1):
         cell = guide.cell(row=conv_header_row, column=col_idx, value=heading)
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = center_align
         cell.border = header_border
 
+    fail_fill = PatternFill("solid", fgColor="FEE2E2")
+    fail_font = Font(name="Calibri", size=11, bold=True, color="991B1B")
+    pass_fill = PatternFill("solid", fgColor="DCFCE7")
+    pass_font = Font(name="Calibri", size=11, bold=True, color="166534")
+
     for idx, conv in enumerate(conversions, start=conv_header_row + 1):
         guide.row_dimensions[idx].height = 21
-        c1 = guide.cell(row=idx, column=1, value=str(conv["letter_grade"]))
+        letter = str(conv["letter_grade"]).strip().upper()
+        is_failing = letter in UNM_FAILING_GRADES
+        c1 = guide.cell(row=idx, column=1, value=letter)
         c2 = guide.cell(row=idx, column=2, value=float(conv["grade_points"]))
         c3 = guide.cell(row=idx, column=3, value=float(conv["normalized_score"]))
+        c4 = guide.cell(row=idx, column=4, value="Tidak Lulus" if is_failing else "Lulus")
         c2.number_format = "0.00"
         c3.number_format = "0.00"
-        for col_idx, cell in enumerate((c1, c2, c3), start=1):
-            cell.font = code_font if col_idx == 1 else body_font
+        for col_idx, cell in enumerate((c1, c2, c3, c4), start=1):
             cell.alignment = center_align
             cell.border = cell_border
-            cell.fill = zebra_fills[idx % 2]
+            if col_idx == 4:
+                cell.fill = fail_fill if is_failing else pass_fill
+                cell.font = fail_font if is_failing else pass_font
+            else:
+                cell.fill = zebra_fills[idx % 2]
+                cell.font = code_font if col_idx == 1 else body_font
 
-    course_title_row = conv_header_row + max(len(conversions), 1) + 2
+    footnote_row = conv_header_row + max(len(conversions), 1) + 1
+    guide.merge_cells(start_row=footnote_row, start_column=1, end_row=footnote_row, end_column=5)
+    note_cell = guide.cell(
+        row=footnote_row,
+        column=1,
+        value="Dasar: Peraturan Rektor UNM Nomor 2 Tahun 2025 Pasal 37 ayat (6) & (7). Nilai C−, D+, D, D−, dan E dinyatakan tidak lulus.",
+    )
+    note_cell.font = Font(name="Calibri", size=9.5, italic=True, color="475569")
+    note_cell.alignment = left_wrap_align
+    guide.row_dimensions[footnote_row].height = 22
+
+    course_title_row = footnote_row + 2
     guide.cell(row=course_title_row, column=1, value="3. Daftar Status Mata Kuliah").font = section_font
     guide.row_dimensions[course_title_row].height = 22
     course_header_row = course_title_row + 1

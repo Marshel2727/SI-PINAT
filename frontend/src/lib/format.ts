@@ -48,3 +48,9 @@ export const icons: Record<string, string> = {
   "SC-02": "6f02e.svg",
   "JDF-03": "9d2a9.svg",
 };
+
+/** Peraturan Rektor UNM Nomor 2 Tahun 2025 Pasal 37 ayat (7). */
+export const UNM_FAILING_GRADES = new Set(["C-", "D+", "D", "D-", "E"]);
+
+export const isFailingGrade = (letter?: string | null): boolean =>
+  Boolean(letter && UNM_FAILING_GRADES.has(letter.trim().toUpperCase()));

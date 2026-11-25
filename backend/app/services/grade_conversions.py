@@ -16,7 +16,15 @@ UNM_GRADE_CONVERSIONS = (
     ("D-", 0.75, 18.75),
     ("E", 0.00, 0.00),
 )
+# Peraturan Rektor UNM Nomor 2 Tahun 2025 Pasal 37 ayat (6) & (7):
+# Nilai C-, D+, D, D-, dan E dinyatakan tidak lulus.
+UNM_FAILING_GRADES = frozenset({"C-", "D+", "D", "D-", "E"})
 GRADE_RANK = {g: i for i, g in enumerate(["A+", *(x[0] for x in UNM_GRADE_CONVERSIONS), "F"])}
+
+
+def is_passing_grade(letter_grade: str) -> bool:
+    """Return True when the UNM letter grade is passing (C or higher)."""
+    return str(letter_grade).strip().upper() not in UNM_FAILING_GRADES
 
 
 def sort_conversions(items):

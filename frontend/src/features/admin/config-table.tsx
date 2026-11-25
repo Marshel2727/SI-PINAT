@@ -589,7 +589,7 @@ export function ConfigTable({
                 </span>
               </div>
               <p className="small muted" style={{ margin: "4px 0 0" }}>
-                Skala resmi A–E dengan rumus otomatis <code>Normalisasi = (Nilai Mutu ÷ 4) × 100</code>. Mengubah nilai mutu memperbarui normalisasi otomatis, dan nilai normalisasi tetap bisa disunting langsung.
+                Skala resmi Peraturan Rektor UNM No. 2 Tahun 2025 Pasal 37 ayat (6) &amp; (7) (C−, D+, D, D−, dan E dinyatakan tidak lulus) dengan rumus <code>Normalisasi = (Nilai Mutu ÷ 4) × 100</code>.
               </p>
             </div>
             <div className="actions">
