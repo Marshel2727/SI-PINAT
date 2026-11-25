@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import io
+import re
 import uuid
 import zipfile
 from pathlib import Path
@@ -13,14 +14,138 @@ from app.services.courses import for_assessment
 from app.services.assessment_grades import check, readiness, save
 
 HEADERS = ["semester", "kode_mk", "nama_mk", "nilai_huruf"]
+PDF_ROW_RE = re.compile(
+    r"(?:^|\s)(\d{1,3})\s+"
+    r"([A-Z0-9]{5,15})\s+"
+    r"(.+?)\s+"
+    r"(\d{1,2})\s+"
+    r"([0-4][.,]\d{2})\s+"
+    r"([A-EKTabl][+\-\u2212\u2013]?|BL)\s+"
+    r"(20\d{2}\s*-\s*20\d{2}\s*/\s*(?:Ganjil|Genap|Pendek|Antara))",
+    re.IGNORECASE | re.DOTALL,
+)
+PDF_NIM_RE = re.compile(r"NO\.?\s*INDUK\s*MAHASISWA\s*:\s*([A-Z0-9]{4,25})", re.IGNORECASE)
+_INFER_SEMESTER_RE = re.compile(r"[A-Z](\d)\d{2}$")
 
 
-def parse(filename, content, content_type):
+def _normalize_course_name(value: str) -> str:
+    """Normalize course names so '&' and '+ Lab' variants match consistently."""
+    cleaned = value.lower().replace("&", " dan ")
+    cleaned = re.sub(r"\s*(?:\+|dan)\s*lab\b", "", cleaned)
+    cleaned = re.sub(r"[^a-z0-9]+", " ", cleaned)
+    return " ".join(cleaned.split())
+
+
+def _is_dangerous_prefix(value: str) -> bool:
+    return value.lstrip().startswith(("=", "+", "-", "@"))
+
+
+def parse_siakad_pdf(content: bytes, master=None, student_nim: str | None = None, warnings=None):
+    """Extract course grades from a native text PDF Transkrip Nilai SIAKAD UNM."""
+    if not content.startswith(b"%PDF-"):
+        raise ValueError("Struktur berkas PDF tidak sah.")
+    from pypdf import PdfReader
+
+    try:
+        reader = PdfReader(io.BytesIO(content))
+    except Exception:
+        raise ValueError("Berkas PDF tidak dapat dibaca.")
+    if reader.is_encrypted:
+        raise ValueError("PDF terenkripsi atau terkunci kata sandi tidak didukung.")
+    if len(reader.pages) > 30:
+        raise ValueError("PDF terlalu panjang (maksimal 30 halaman).")
+
+    full_text = "\n".join((page.extract_text() or "") for page in reader.pages)
+    if len(full_text.strip()) < 50:
+        raise ValueError(
+            "PDF tidak berisi teks (kemungkinan hasil foto/scan). Unduh PDF asli langsung dari SIAKAD UNM atau gunakan template Excel (.xlsx)."
+        )
+
+    if warnings is not None and student_nim:
+        nim_match = PDF_NIM_RE.search(full_text)
+        if nim_match:
+            extracted_nim = nim_match.group(1).strip()
+            if extracted_nim.upper() != student_nim.strip().upper():
+                warnings.append(
+                    f"NIM pada PDF ({extracted_nim}) berbeda dengan NIM sesi saat ini ({student_nim}). Pastikan berkas transkrip benar milik kamu."
+                )
+
+    raw_matches = []
+    for match in PDF_ROW_RE.finditer(full_text):
+        code = match.group(2).strip().upper()
+        if any(ch.isalpha() for ch in code) and any(ch.isdigit() for ch in code):
+            raw_matches.append(match)
+    if not raw_matches:
+        raise ValueError(
+            "Tabel Transkrip Nilai SIAKAD UNM tidak ditemukan pada PDF ini. Pastikan berkas berasal dari menu Cetak Transkrip Keseluruhan di SIAKAD UNM."
+        )
+
+    by_code = {}
+    by_name = {}
+    if master:
+        by_code = {str(c["code"]).strip().upper(): c for c in master["courses"]}
+        by_name = {_normalize_course_name(c["name"]): c for c in master["courses"]}
+
+    accepted = {}
+    skipped_k = 0
+    skipped_outside = 0
+    for match in raw_matches:
+        code = match.group(2).strip().upper()
+        nama_mk = " ".join(match.group(3).split())
+        nilai = match.group(6).strip().upper().replace("\u2212", "-").replace("\u2013", "-")
+        if nilai in {"K", "T", "BL"}:
+            skipped_k += 1
+            continue
+        if any(_is_dangerous_prefix(part) for part in (code, nama_mk, nilai)):
+            raise ValueError("Formula atau awalan berbahaya tidak diizinkan.")
+
+        if master is not None:
+            course = by_code.get(code) or by_name.get(_normalize_course_name(nama_mk))
+            if not course:
+                skipped_outside += 1
+                continue
+            if course["code"].strip().upper() != code and warnings is not None:
+                warnings.append(
+                    f"Kode {code} ({nama_mk}) pada PDF dicocokkan ke {course['code']} ({course['name']})."
+                )
+            accepted[course["code"]] = {
+                "semester": str(course["semester"]),
+                "kode_mk": course["code"],
+                "nama_mk": course["name"],
+                "nilai_huruf": nilai,
+            }
+        else:
+            sem_match = _INFER_SEMESTER_RE.search(code)
+            inferred_sem = sem_match.group(1) if sem_match else "1"
+            accepted[code] = {
+                "semester": inferred_sem,
+                "kode_mk": code,
+                "nama_mk": nama_mk,
+                "nilai_huruf": nilai,
+            }
+
+    if warnings is not None:
+        if skipped_k > 0:
+            warnings.append(f"{skipped_k} mata kuliah berstatus belum selesai (K/T/BL) pada PDF dilewati otomatis.")
+        if skipped_outside > 0:
+            warnings.append(f"{skipped_outside} mata kuliah di luar cakupan semester/kurikulum aktif dilewati otomatis.")
+
+    if not accepted:
+        raise ValueError("Tidak ada nilai mata kuliah kurikulum aktif yang sudah berstatus selesai (A–E) pada PDF ini.")
+
+    return sorted(accepted.values(), key=lambda r: (int(r["semester"]), r["kode_mk"]))
+
+
+def parse(filename, content, content_type, master=None, student_nim=None, warnings=None):
     if not content or len(content) > 10 * 1024 * 1024:
         raise ValueError("Berkas kosong atau lebih dari 10 MB.")
     suffix = Path(filename).suffix.lower()
-    if suffix not in {".csv", ".xlsx"}:
-        raise ValueError("Hanya berkas CSV dan XLSX yang didukung.")
+    if suffix not in {".csv", ".xlsx", ".pdf"}:
+        raise ValueError("Hanya berkas PDF SIAKAD dan XLSX yang didukung.")
+    if suffix == ".pdf":
+        if content_type not in {"application/pdf", "application/octet-stream"}:
+            raise ValueError("Tipe berkas PDF tidak sesuai.")
+        return parse_siakad_pdf(content, master=master, student_nim=student_nim, warnings=warnings)
     if suffix == ".csv":
         if content_type not in {
             "text/csv",
@@ -99,7 +224,10 @@ def import_file(db, assessment, filename, content, content_type, confirm):
     filename = Path(filename or "upload").name[:255]
     error, warnings = [], []
     try:
-        data = parse(filename, content, content_type)
+        master = for_assessment(db, assessment)
+        student = one(db, "students", id=assessment["student_id"]) if assessment.get("student_id") else None
+        student_nim = student["nim"] if student else None
+        data = parse(filename, content, content_type, master=master, student_nim=student_nim, warnings=warnings)
         grades, error = check(db, assessment, data, warnings=warnings)
         state = readiness(db, assessment, grades)
         if confirm and not state["ready"]:

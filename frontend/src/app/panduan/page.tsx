@@ -13,7 +13,7 @@ const ASSESSMENT_STEPS = [
   ],
   [
     "Masukkan Nilai Akademik",
-    "Unduh template Excel (.xlsx) resmi atau isi langsung nilai huruf mata kuliah wajib semester 1–4 sesuai daftar kurikulum aktif.",
+    "Unggah PDF Transkrip SIAKAD UNM, gunakan template Excel (.xlsx), atau isi langsung nilai huruf mata kuliah wajib semester 1–4.",
   ],
   [
     "Kerjakan 30 Soal Kompetensi",
@@ -54,7 +54,7 @@ export default function Guide() {
               Isi <strong>NIM</strong>, <strong>nama lengkap</strong>, <strong>semester saat ini</strong>, dan <strong>kelas</strong> (opsional) sesuai data akademik.
             </li>
             <li>
-              Isi nilai secara manual atau unggah template <strong>Excel (.xlsx)</strong> tanpa mengubah header <code>semester, kode_mk, nama_mk, nilai_huruf</code>.
+              Isi nilai secara manual, unggah langsung <strong>PDF Transkrip SIAKAD UNM</strong>, atau gunakan template <strong>Excel (.xlsx)</strong>.
             </li>
             <li>
               Lengkapi seluruh mata kuliah wajib sebelum melanjutkan; nilai terkunci otomatis saat tes kompetensi dimulai.

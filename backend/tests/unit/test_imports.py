@@ -12,10 +12,53 @@ os.environ.setdefault("DB_PASSWORD", "unit-test-no-live-database")
 os.environ.setdefault("PUBLIC_ORIGIN", "http://testserver")
 
 HAS_OPENPYXL = importlib.util.find_spec("openpyxl") is not None
+HAS_PYPDF = importlib.util.find_spec("pypdf") is not None
 if HAS_OPENPYXL:
     from openpyxl import Workbook
 else:
     Workbook = None
+
+
+def _build_text_pdf(pages):
+    """Construct a minimal valid multi-page PDF containing extractable text lines."""
+    page_objs = []
+    page_ids = []
+    font_id = 3 + len(pages) * 2
+    for idx, lines in enumerate(pages):
+        page_id = 3 + idx * 2
+        content_id = page_id + 1
+        page_ids.append(page_id)
+        ops = ["BT", "/F1 10 Tf", "40 760 Td"]
+        for line_idx, line in enumerate(lines):
+            escaped = line.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+            if line_idx > 0:
+                ops.append("0 -14 Td")
+            ops.append(f"({escaped}) Tj")
+        ops.append("ET")
+        stream = "\n".join(ops).encode("latin-1", "replace")
+        page_objs.append((page_id, f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 {font_id} 0 R >> >> /Contents {content_id} 0 R >>".encode()))
+        page_objs.append((content_id, f"<< /Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream"))
+
+    kids = " ".join(f"{pid} 0 R" for pid in page_ids)
+    all_objs = sorted([
+        (1, b"<< /Type /Catalog /Pages 2 0 R >>"),
+        (2, f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>".encode()),
+        *page_objs,
+        (font_id, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"),
+    ], key=lambda item: item[0])
+
+    buf = io.BytesIO()
+    buf.write(b"%PDF-1.4\n")
+    offsets = {}
+    for oid, body in all_objs:
+        offsets[oid] = buf.tell()
+        buf.write(f"{oid} 0 obj\n".encode() + body + b"\nendobj\n")
+    xref_pos = buf.tell()
+    buf.write(f"xref\n0 {len(all_objs) + 1}\n0000000000 65535 f \n".encode())
+    for oid, _ in all_objs:
+        buf.write(f"{offsets[oid]:010d} 00000 n \n".encode())
+    buf.write(f"trailer\n<< /Size {len(all_objs) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n".encode())
+    return buf.getvalue()
 
 
 class ImportTests(unittest.TestCase):
@@ -172,3 +215,70 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(len(parsed), 1)
         self.assertEqual(parsed[0]["kode_mk"], "001")
         self.assertEqual(parsed[0]["nilai_huruf"], "A-")
+
+    @unittest.skipIf(not HAS_PYPDF, "pypdf tidak terpasang di environment lokal")
+    def test_pdf_siakad_unm_parsing_with_multiline_k_skip_and_code_alias(self):
+        pdf_bytes = _build_text_pdf([
+            [
+                "UNIVERSITAS NEGERI MAKASSAR",
+                "TRANSKRIP NILAI",
+                "NO. INDUK MAHASISWA : 250210501029",
+                "No Kode MK Matakuliah SKS Bobot Nilai Tahun/Semester",
+                "1 21B01C101 RANGKAIAN ELEKTRONIKA 3 3.25 B+ 2025-2026 / Ganjil",
+                "2 21B01C102 ALGORITME DAN PEMROGRAMAN",
+                "DASAR 3 4.00 A 2025-2026 / Ganjil",
+                "3 21B01C205 PENDIDIKAN AGAMA 2 3.75 A- 2025-2026 / Genap",
+                "4 21B01C104 ALJABAR LINEAR I 3 2.00 C 2025-2026 / Ganjil",
+                "5 21B01C301 PEMROGRAMAN LANJUT 3 0.00 K 2026-2027 / Ganjil",
+            ],
+            [
+                "6 21B01C104 ALJABAR LINEAR I 3 3.00 B 2026-2027 / Ganjil",
+                "7 21B01C303 ANALISIS DAN DESAIN ALGORITME 3 0.00 K 2026-2027 / Ganjil",
+                "8 21B01C501 KERJA PRAKTEK 2 4.00 A 2027-2028 / Ganjil",
+            ],
+        ])
+        master = {
+            "courses": [
+                {"id": 1, "semester": 1, "code": "21B10C101", "name": "Rangkaian Elektronika", "credits": 3},
+                {"id": 2, "semester": 1, "code": "21B01C102", "name": "Algoritme & Pemrograman Dasar", "credits": 3},
+                {"id": 3, "semester": 1, "code": "21B01C104", "name": "Aljabar Linear I", "credits": 3},
+                {"id": 4, "semester": 2, "code": "21B01C205", "name": "Pendidikan Agama", "credits": 2},
+            ],
+            "weights": [],
+            "conversions": [],
+        }
+        warnings = []
+        rows = self.parse(
+            "transkrip.pdf",
+            pdf_bytes,
+            "application/pdf",
+            master=master,
+            student_nim="250210501999",
+            warnings=warnings,
+        )
+        by_code = {r["kode_mk"]: r for r in rows}
+        self.assertEqual(set(by_code), {"21B10C101", "21B01C102", "21B01C104", "21B01C205"})
+        self.assertEqual(by_code["21B10C101"]["nilai_huruf"], "B+")
+        self.assertEqual(by_code["21B01C102"]["nilai_huruf"], "A")
+        self.assertEqual(by_code["21B01C205"]["nilai_huruf"], "A-")
+        # Retaken course uses the latest grade in chronological order.
+        self.assertEqual(by_code["21B01C104"]["nilai_huruf"], "B")
+        self.assertTrue(any("250210501029" in w for w in warnings))
+        self.assertTrue(any("21B01C101" in w and "21B10C101" in w for w in warnings))
+        self.assertTrue(any("K/T/BL" in w for w in warnings))
+        self.assertTrue(any("di luar cakupan" in w for w in warnings))
+
+    @unittest.skipIf(not HAS_PYPDF, "pypdf tidak terpasang di environment lokal")
+    def test_pdf_rejects_empty_or_non_siakad_and_unsupported_extension(self):
+        with self.assertRaises(ValueError):
+            self.parse("transkrip.docx", b"PK\x03\x04", "application/octet-stream")
+        with self.assertRaises(ValueError):
+            self.parse("grades.pdf", b"%PDF", "application/pdf")
+
+        blank_pdf = _build_text_pdf([[""]])
+        with self.assertRaises(ValueError):
+            self.parse("scan.pdf", blank_pdf, "application/pdf")
+
+        non_siakad_pdf = _build_text_pdf([["Ini dokumen PDF biasa tanpa tabel transkrip SIAKAD UNM yang lengkap."]])
+        with self.assertRaises(ValueError):
+            self.parse("other.pdf", non_siakad_pdf, "application/pdf")

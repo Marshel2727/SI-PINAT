@@ -56,9 +56,9 @@ export function Grades() {
   function selectFile(selected: File | null) {
     closePreview();
     setFileError("");
-    if (selected && (!/\.xlsx$/i.test(selected.name) || selected.size > 10 * 1024 * 1024)) {
+    if (selected && (!/\.(pdf|xlsx)$/i.test(selected.name) || selected.size > 10 * 1024 * 1024)) {
       setFile(null);
-      setFileError("Pilih berkas Excel (.xlsx) dengan ukuran maksimal 10 MB.");
+      setFileError("Pilih berkas PDF Transkrip SIAKAD (.pdf) atau Excel (.xlsx) dengan ukuran maksimal 10 MB.");
       return;
     }
     setFile(selected);
@@ -91,7 +91,7 @@ export function Grades() {
       <div className="spread wrap">
         <div className="tabs">
           {[
-            ["import", "Impor Excel (.xlsx)"],
+            ["import", "Impor PDF / Excel"],
             ["manual", "Input Manual"]
           ].map(([id, title]) => (
             <button
@@ -123,7 +123,7 @@ export function Grades() {
       {master && tab === "import" && (
         <article className="card">
           <div className="spread wrap" style={{ marginBottom: 16 }}>
-            <h2>Impor Transkrip Excel (.xlsx)</h2>
+            <h2>Impor Transkrip: PDF SIAKAD / Excel (.xlsx)</h2>
             <div className="actions">
               <button
                 type="button"
@@ -162,14 +162,14 @@ export function Grades() {
           >
             <IconUpload size={40} style={{ color: "var(--primary)", marginBottom: 8 }} />
             <h3>Tarik & Lepas Berkas di Sini</h3>
-            <p className="small muted">atau klik area ini untuk memilih berkas transkrip Excel (.xlsx)</p>
+            <p className="small muted">atau klik area ini untuk memilih PDF Transkrip SIAKAD UNM atau Excel (.xlsx)</p>
 
             <input
               ref={fileInput}
               type="file"
               hidden
               aria-label="Pilih berkas transkrip"
-              accept=".xlsx"
+              accept=".pdf,.xlsx"
               disabled={locked || busy}
               onChange={e => {
                 selectFile(e.target.files?.[0] || null);
