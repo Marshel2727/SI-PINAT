@@ -13,7 +13,7 @@ const ASSESSMENT_STEPS = [
   ],
   [
     "Masukkan Nilai Akademik",
-    "Unduh template Excel/CSV resmi atau isi langsung nilai huruf mata kuliah wajib semester 1–4 sesuai daftar kurikulum aktif.",
+    "Unduh template Excel (.xlsx) resmi atau isi langsung nilai huruf mata kuliah wajib semester 1–4 sesuai daftar kurikulum aktif.",
   ],
   [
     "Kerjakan 30 Soal Kompetensi",
@@ -60,7 +60,7 @@ export default function Guide() {
               Jika menggunakan NIM yang sama untuk sesi baru, pastikan nama lengkap dan kelas (kosongkan bila sebelumnya kosong) ditulis sama persis.
             </li>
             <li>
-              Untuk impor transkrip, unduh template dari halaman nilai lalu isi kolom <code>semester</code>, <code>kode_mk</code>, <code>nama_mk</code>, dan <code>nilai_huruf</code> tanpa mengubah header. Unggah berkas <strong>CSV UTF-8</strong> atau <strong>XLSX</strong>, periksa pratinjau, lalu konfirmasi—atau isi nilai satu per satu secara manual.
+              Untuk impor transkrip, unduh template Excel (.xlsx) dari halaman nilai lalu isi kolom <code>nilai_huruf</code> tanpa mengubah header <code>semester</code>, <code>kode_mk</code>, <code>nama_mk</code>, dan <code>nilai_huruf</code>. Unggah berkas <strong>XLSX</strong>, periksa pratinjau, lalu konfirmasi—atau isi nilai satu per satu secara manual.
             </li>
             <li>
               Lengkapi seluruh mata kuliah wajib sesuai model aktif; nilai akademik terkunci otomatis setelah jawaban tes kompetensi pertama disimpan.

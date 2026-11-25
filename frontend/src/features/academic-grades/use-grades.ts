@@ -19,7 +19,7 @@ export function useGrades() {
   const [tab, setTab] = useState("manual");
   const [semester, setSemester] = useState("");
   const [busy, setBusy] = useState(false);
-  const [downloadingTemplate, setDownloadingTemplate] = useState<"csv" | "xlsx" | null>(null);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<GradeImport | null>(null);
   const [validationAttempted, setValidationAttempted] = useState(false);
@@ -161,17 +161,17 @@ export function useGrades() {
     }
   }
 
-  async function downloadTemplate(format: "csv" | "xlsx") {
-    if (downloadingTemplate !== null) return;
+  async function downloadTemplate() {
+    if (downloadingTemplate) return;
 
-    setDownloadingTemplate(format);
+    setDownloadingTemplate(true);
     setError(null);
     try {
-      await downloadFile(`${base}/grades/template?format=${format}`, `template-nilai.${format}`);
+      await downloadFile(`${base}/grades/template?format=xlsx`, "template-nilai.xlsx");
     } catch (e) {
       setError(e);
     } finally {
-      setDownloadingTemplate(null);
+      setDownloadingTemplate(false);
     }
   }
 

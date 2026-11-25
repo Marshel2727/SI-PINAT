@@ -125,7 +125,7 @@ export default function Home() {
           <div>
             <h2>Siap mengetahui peminatan yang paling sesuai?</h2>
             <p>
-              Siapkan nilai semester 1–4 (atau file transkrip CSV/XLSX) dan luangkan waktu untuk 30 soal tes kompetensi.
+              Siapkan nilai semester 1–4 (atau file transkrip Excel .xlsx) dan luangkan waktu untuk 30 soal tes kompetensi.
             </p>
           </div>
           <div className="actions">

@@ -56,9 +56,9 @@ export function Grades() {
   function selectFile(selected: File | null) {
     closePreview();
     setFileError("");
-    if (selected && (!/\.(csv|xlsx)$/i.test(selected.name) || selected.size > 10 * 1024 * 1024)) {
+    if (selected && (!/\.xlsx$/i.test(selected.name) || selected.size > 10 * 1024 * 1024)) {
       setFile(null);
-      setFileError("Pilih berkas .csv atau .xlsx dengan ukuran maksimal 10 MB.");
+      setFileError("Pilih berkas Excel (.xlsx) dengan ukuran maksimal 10 MB.");
       return;
     }
     setFile(selected);
@@ -94,7 +94,7 @@ export function Grades() {
       <div className="spread wrap">
         <div className="tabs">
           {[
-            ["import", "Impor Excel / CSV"],
+            ["import", "Impor Excel (.xlsx)"],
             ["manual", "Input Manual"]
           ].map(([id, title]) => (
             <button
@@ -126,23 +126,15 @@ export function Grades() {
       {master && tab === "import" && (
         <article className="card">
           <div className="spread wrap" style={{ marginBottom: 16 }}>
-            <h2>Impor Transkrip: Excel (.xlsx) / CSV</h2>
+            <h2>Impor Transkrip Excel (.xlsx)</h2>
             <div className="actions">
               <button
                 type="button"
                 className="compact"
-                disabled={busy || downloadingTemplate !== null}
-                onClick={() => downloadTemplate("xlsx")}
+                disabled={busy || downloadingTemplate}
+                onClick={downloadTemplate}
               >
-                {downloadingTemplate === "xlsx" ? "Mengunduh Excel\u2026" : "Unduh Template Excel (.xlsx)"}
-              </button>
-              <button
-                type="button"
-                className="secondary compact"
-                disabled={busy || downloadingTemplate !== null}
-                onClick={() => downloadTemplate("csv")}
-              >
-                {downloadingTemplate === "csv" ? "Mengunduh CSV\u2026" : "Unduh Template CSV"}
+                {downloadingTemplate ? "Mengunduh Excel\u2026" : "Unduh Template Excel (.xlsx)"}
               </button>
             </div>
           </div>
@@ -173,14 +165,14 @@ export function Grades() {
           >
             <IconUpload size={40} style={{ color: "var(--primary)", marginBottom: 8 }} />
             <h3>Tarik & Lepas Berkas di Sini</h3>
-            <p className="small muted">atau klik area ini untuk memilih berkas transkrip (.xlsx atau .csv)</p>
+            <p className="small muted">atau klik area ini untuk memilih berkas transkrip Excel (.xlsx)</p>
 
             <input
               ref={fileInput}
               type="file"
               hidden
               aria-label="Pilih berkas transkrip"
-              accept=".csv,.xlsx"
+              accept=".xlsx"
               disabled={locked || busy}
               onChange={e => {
                 selectFile(e.target.files?.[0] || null);
