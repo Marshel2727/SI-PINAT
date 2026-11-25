@@ -290,12 +290,12 @@
     font-size: 28px;
   }
 
-  .login-card {
-    padding: 28px 20px;
+  .login-form-container {
+    padding: 24px 20px;
   }
 
-  .login-card h1 {
-    font-size: 24px;
+  .login-title {
+    font-size: 23px;
   }
 
   .field {

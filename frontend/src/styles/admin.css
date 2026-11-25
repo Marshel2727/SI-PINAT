@@ -1,9 +1,12 @@
 .login-background {
   position: relative;
   overflow: hidden;
-  padding: 40px 24px;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
   background: radial-gradient(ellipse at 0% 90%, #d9e4ff90, transparent 45%), var(--page);
-  min-height: 80vh;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .login-background::before {
@@ -40,26 +43,191 @@ html[data-bg-motion="paused"] .login-background::before {
   animation-play-state: paused;
 }
 
-.login-card {
+.login-form-container {
   position: relative;
   z-index: 1;
-  max-width: 576px;
-  margin: auto;
-  padding: 40px;
-  text-align: center;
+  width: 100%;
+  max-width: 370px;
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 32px rgba(0, 24, 53, 0.13), 0 2px 8px rgba(0, 24, 53, 0.05);
+  border-radius: 14px;
+  box-sizing: border-box;
+  padding: 28px 30px;
 }
 
 .login-logo {
   display: block;
-  margin: 24px auto;
+  margin: 0 auto 10px;
 }
 
-.login-card h1 {
-  font-size: 28px;
+.login-title {
+  text-align: center;
+  margin: 0 0 4px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--navy);
 }
 
-.login-card form {
-  margin-top: 24px;
+.login-subtitle {
+  text-align: center;
+  margin: 0 0 22px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.login-status-text {
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.login-field-group {
+  width: 100%;
+}
+
+.login-form-container .login-form input.login-input {
+  border-radius: 20px;
+  border: 1px solid #c8d3ea;
+  background: #ffffff;
+  padding: 11px 16px;
+  min-height: 44px;
+  font-size: 13px;
+}
+
+@media (hover: hover) {
+  .login-form-container .login-form input.login-input:not(:disabled):hover {
+    border-color: #9db3ec;
+    background-color: #ffffff;
+  }
+}
+
+.login-form-container .login-form input.login-input:focus,
+.login-form-container .login-form input.login-input:focus-visible {
+  outline: 2px solid rgba(0, 81, 213, 0.45);
+  outline-offset: 1px;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 81, 213, 0.15);
+}
+
+.login-form-container .login-form .password-field-wrapper input.login-input {
+  padding-right: 46px;
+}
+
+.login-form-container .login-form .password-toggle-btn {
+  right: 10px;
+  border-radius: 999px;
+}
+
+.login-page-link {
+  margin: -6px 4px 0;
+  text-align: right;
+  color: #5b6270;
+}
+
+.login-page-link-label {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.login-form .notice {
+  margin: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.login-form-btn {
+  width: 100%;
+  padding: 11px 18px;
+  min-height: 44px;
+  border-radius: 20px;
+  border: 0;
+  background: var(--navy);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 6px 16px rgba(0, 24, 53, 0.22);
+}
+
+.login-sign-up-label {
+  margin: 0;
+  font-size: 11px;
+  color: #5b6270;
+  text-align: center;
+}
+
+.login-sign-up-highlight {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.login-buttons-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-top: 18px;
+  gap: 12px;
+}
+
+.login-portal-btn {
+  border-radius: 20px;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  min-height: 42px;
+  box-shadow: 0 6px 16px rgba(0, 24, 53, 0.08);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 8px;
+  border: 1.5px solid #cfd8ec;
+  background: #ffffff;
+  color: var(--navy);
+  text-decoration: none;
+  translate: 0 0;
+  scale: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  .login-portal-btn:hover {
+    background: #f6f8ff;
+    border-color: #a8b9e8;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(0, 24, 53, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-portal-btn {
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease, translate 0.2s ease-out, scale 0.2s ease-out;
+  }
+
+  .login-portal-btn:active {
+    scale: 0.985;
+    translate: 0 0;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .login-portal-btn:hover {
+    translate: 0 -1.5px;
+  }
 }
 
 .admin-layout {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice, Field, Notice } from "@/components/ui";
+import { ErrorNotice, Notice } from "@/components/ui";
 import { IconEye, IconEyeOff } from "@/components/icons";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,20 +14,17 @@ export function Login({ nextPath, expired = false }: {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <main className="login-background">
-      <article className="card login-card">
-        <span className="badge">PORTAL MANAJEMEN AKADEMIK</span>
+    <main id="main-content" className="login-background">
+      <article className="login-form-container">
         <img
           className="login-logo"
           src="/images/e2ec3.png"
-          width="64"
-          height="64"
-          alt="SI-PINAT"
+          width="40"
+          height="40"
+          alt="Logo SI-PINAT"
         />
-        <h1>Masuk sebagai Administrator</h1>
-        <p>
-          Kelola mata kuliah kurikulum, bank instrumen kompetensi, dan konfigurasi versi model fuzzy SI-PINAT.
-        </p>
+        <h1 className="login-title">Selamat Datang</h1>
+        <p className="login-subtitle">Masuk ke Panel Administrator SI-PINAT</p>
 
         {expired && (
           <Notice>
@@ -35,31 +32,41 @@ export function Login({ nextPath, expired = false }: {
           </Notice>
         )}
         {checkingSession && (
-          <p className="small muted">Memeriksa sesi administrator aktif…</p>
+          <p className="small muted login-status-text">Memeriksa sesi administrator aktif…</p>
         )}
 
-        <form onSubmit={submit}>
-          <Field label="Email administrator">
+        <form className="login-form" onSubmit={submit}>
+          <div className="login-field-group">
+            <label htmlFor="admin-email" className="visually-hidden">
+              Email administrator
+            </label>
             <input
+              id="admin-email"
               type="email"
               name="email"
+              className="login-input"
               autoComplete="username"
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="admin@unm.ac.id"
+              placeholder="Email administrator"
               required
               maxLength={190}
             />
-          </Field>
+          </div>
 
-          <Field label="Kata sandi">
+          <div className="login-field-group">
+            <label htmlFor="admin-password" className="visually-hidden">
+              Kata sandi
+            </label>
             <div className="password-field-wrapper">
               <input
+                id="admin-password"
                 type={showPassword ? "text" : "password"}
                 name="password"
+                className="login-input"
                 autoComplete="current-password"
-                placeholder="Masukkan kata sandi"
+                placeholder="Kata sandi"
                 required
                 maxLength={512}
               />
@@ -73,19 +80,42 @@ export function Login({ nextPath, expired = false }: {
                 {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
               </button>
             </div>
-          </Field>
+          </div>
+
+          <p className="login-page-link">
+            <span className="login-page-link-label">Maks. 10 percobaan / 5 menit</span>
+          </p>
 
           <ErrorNotice error={error} />
 
-          <button className="full" disabled={busy} style={{ marginTop: 8 }}>
-            {busy ? "Memeriksa kredensial\u2026" : "Masuk ke Panel Admin →"}
+          <button type="submit" className="login-form-btn" disabled={busy}>
+            {busy ? "Memeriksa kredensial\u2026" : "Masuk"}
           </button>
         </form>
 
-        <p className="small muted" style={{ marginTop: 20 }}>
-          Gunakan akun terdaftar yang dibuat oleh koordinator sistem. Batas keamanan login: maksimal 10 percobaan per 5 menit.
+        <p className="login-sign-up-label">
+          Belum memiliki akses?
+          <span className="login-sign-up-highlight">Hubungi Koordinator</span>
         </p>
-        <Link href="/">← Kembali ke Portal Mahasiswa</Link>
+
+        <div className="login-buttons-container">
+          <Link href="/" className="login-portal-btn">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            <span>Kembali ke Portal Mahasiswa</span>
+          </Link>
+        </div>
       </article>
     </main>
   );
