@@ -28,10 +28,12 @@ export function FuzzyDetail() {
       </section>
 
       <div className="actions wrap no-print">
-        <div className="tabs wrap">
+        <div className="tablist-scroll" role="tablist" aria-label="Detail perhitungan per peminatan">
           {Object.entries(names).map(([key, title]) => (
             <button
               type="button"
+              role="tab"
+              aria-selected={code === key}
               key={key}
               className={code === key ? "" : "secondary"}
               onClick={() => setCode(key)}

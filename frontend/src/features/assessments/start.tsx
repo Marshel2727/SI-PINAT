@@ -87,7 +87,7 @@ function StartAssessmentModal({
             />
           </Field>
           <p id={nimHintId} className="small muted" style={{ marginTop: -8 }}>
-            Jika NIM pernah dipakai pada sesi sebelumnya, nama lengkap dan kelas (kosongkan bila sebelumnya kosong) harus sama persis.
+            Gunakan nama dan kelas yang sama jika mengulang dengan NIM yang sama.
           </p>
           <Field label="Nama lengkap">
             <input

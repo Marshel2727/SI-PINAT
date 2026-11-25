@@ -84,7 +84,7 @@ export function RuleActivationTable({ trace }: { trace: FuzzyTrace; }) {
           {activeCount} dari {trace.rule_activations.length} Aturan Aktif
         </span>
       </div>
-      <div className="table-scroll">
+      <div className="table-scroll" tabIndex={0} role="region" aria-label="Tabel aktivasi aturan inferensi">
         <table>
           <thead>
             <tr>

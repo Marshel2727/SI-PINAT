@@ -234,8 +234,7 @@ export function Validation({ initialModel = "" }: {
     <>
       <h1>Skenario Validasi Fuzzy</h1>
       <Notice>
-        Ekspektasi ditetapkan dari referensi independen yang telah ditinjau,
-        sebelum menjalankan pengujian. Publikasi mensyaratkan 10 pasang koordinat batas/overlap (X1, X2) wajib per peminatan dan seluruh skenario lulus.
+        Publikasi model mensyaratkan 10 skenario batas/overlap per peminatan dan seluruh skenario berstatus lulus.
       </Notice>
 
       <Field label="Versi model">

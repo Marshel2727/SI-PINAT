@@ -19,16 +19,16 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 const ENTITY_OPTIONS = [
-  ["admin_sessions", "Sesi Admin (admin_sessions)"],
-  ["courses", "Mata Kuliah (courses)"],
-  ["questions", "Bank Soal (questions)"],
-  ["fuzzy_model_versions", "Versi Model Fuzzy (fuzzy_model_versions)"],
-  ["fuzzy_validation_cases", "Skenario Validasi (fuzzy_validation_cases)"],
-  ["grade_conversions", "Konversi Nilai (grade_conversions)"],
-  ["course_weights", "Bobot Mata Kuliah (course_weights)"],
-  ["fuzzy_variables", "Variabel Fuzzy (fuzzy_variables)"],
-  ["fuzzy_sets", "Himpunan Fuzzy (fuzzy_sets)"],
-  ["fuzzy_rules", "Aturan Fuzzy (fuzzy_rules)"]
+  ["admin_sessions", "Sesi Admin"],
+  ["courses", "Mata Kuliah"],
+  ["questions", "Bank Soal"],
+  ["fuzzy_model_versions", "Versi Model Fuzzy"],
+  ["fuzzy_validation_cases", "Skenario Validasi"],
+  ["grade_conversions", "Konversi Nilai"],
+  ["course_weights", "Bobot Mata Kuliah"],
+  ["fuzzy_variables", "Variabel Fuzzy"],
+  ["fuzzy_sets", "Himpunan Fuzzy"],
+  ["fuzzy_rules", "Aturan Fuzzy"]
 ] as const;
 
 const ACTION_LABELS: Record<string, string> = {

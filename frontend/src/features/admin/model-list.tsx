@@ -34,7 +34,7 @@ export function ModelList() {
       <article className="card section">
         {!loading && !rows.length ? (
           <Notice>
-            Belum ada model. Buat draft dan lengkapi instrumennya.
+            Belum ada model. Buat draf dan lengkapi instrumennya.
           </Notice>
         ) : (
           <div className="table-scroll" tabIndex={0} role="region" aria-label="Daftar versi model fuzzy">
@@ -81,7 +81,7 @@ export function ModelList() {
         )}
         <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
-      <Modal open={open} title="Buat model draft" dismissible={!busy} onClose={closeCreateModal}>
+      <Modal open={open} title="Buat Model Draf" dismissible={!busy} onClose={closeCreateModal}>
         <form onSubmit={create}>
           <Field label="Kode versi">
             <input
@@ -107,7 +107,7 @@ export function ModelList() {
           </Field>
           <ErrorNotice error={modalError} />
           <button disabled={busy}>
-            {busy ? "Membuat draft\u2026" : "Buat draft"}
+            {busy ? "Membuat draf\u2026" : "Buat Draf"}
           </button>
         </form>
       </Modal>

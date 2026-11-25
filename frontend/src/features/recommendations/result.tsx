@@ -122,9 +122,6 @@ export function Recommendation() {
             Nilai akademik dan hasil tes kompetensi diolah melalui aturan pada versi model fuzzy sesi ini.
           </p>
           <ScoreBars scores={result.scores} />
-          <p className="small muted" style={{ marginTop: 12 }}>
-            Skala 0–100 · Pemeringkatan membandingkan skor hingga 5 angka desimal (peringkat sama bila bernilai persis sama).
-          </p>
         </article>
 
         {/* Perbandingan Pilihan Awal Mahasiswa vs Hasil Sistem */}
@@ -176,12 +173,6 @@ export function Recommendation() {
                 Ulangi Penentuan Peminatan
               </Link>
             </div>
-          </div>
-
-          <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-            <p className="small muted" style={{ margin: 0 }}>
-              Model {result.model_version} · Engine {result.engine_version} · {time(result.completed_at)}
-            </p>
           </div>
         </article>
       </div>

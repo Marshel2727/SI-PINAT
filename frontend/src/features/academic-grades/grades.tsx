@@ -38,6 +38,7 @@ export function Grades() {
     canContinue,
     hasPositiveScores,
     missingRequired,
+    validationAttempted,
   } = useGrades();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -81,11 +82,6 @@ export function Grades() {
       </p>
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
-      {dirty && (
-        <Notice>
-          Ada perubahan nilai manual yang belum disimpan. Tombol “Simpan &amp; Lanjut” akan menyimpan dan memvalidasi nilai terlebih dahulu.
-        </Notice>
-      )}
       {locked && (
         <Notice>
           Nilai akademik telah terkunci setelah Anda memulai tes kompetensi.{" "}
@@ -317,44 +313,33 @@ export function Grades() {
             </div>
           )}
 
-          <div className="actions end" style={{ marginTop: 16 }}>
-            <button type="button" disabled={locked || busy} onClick={manual}>
-              {busy ? "Menyimpan\u2026" : "Simpan Nilai Manual"}
-            </button>
-          </div>
         </article>
       )}
 
       {master && (
-        <article className="notice">
-          <h3>Konversi Nilai Huruf ke Skor Normalisasi (Model {assessment.model_version})</h3>
-          <div className="actions" style={{ marginTop: 8 }}>
+        <details className="notice">
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>
+            Lihat tabel konversi nilai huruf (Model {assessment.model_version})
+          </summary>
+          <div className="actions" style={{ marginTop: 10 }}>
             {master.conversions.map(g => (
               <span className="badge" key={g.id}>
                 {g.letter_grade}: Bobot {number(g.grade_points, 2)} → Skor {number(g.normalized_score, 2)}
               </span>
             ))}
           </div>
-        </article>
+        </details>
       )}
 
-      {state && (
+      {state && state.ready && !dirty && Object.keys(state.academic_scores || {}).length > 0 && (
         <article className="card">
-          <h2>Status Kelengkapan Nilai Akademik</h2>
-          <p>
-            {state.coverage?.provided || 0} / {state.coverage?.available || 0} mata kuliah terisi.
-          </p>
-          {state.missing_required?.length > 0 && (
-            <Notice tone="error">
-              Nilai wajib belum lengkap: {state.missing_required.join(", ")}
-            </Notice>
-          )}
-          {state.errors?.map((e: string) => (
-            <p key={e} style={{ color: "var(--danger)" }}>
-              {e}
-            </p>
-          ))}
-          <div className="metrics">
+          <div className="spread wrap">
+            <h2>Ringkasan Skor Akademik</h2>
+            <span className="badge success">
+              ✓ {state.coverage?.provided || 0} / {state.coverage?.available || 0} mata kuliah terisi
+            </span>
+          </div>
+          <div className="metrics" style={{ marginTop: 12 }}>
             {Object.entries(state.academic_scores || {}).map(([key, value]) => (
               <div key={key}>
                 <strong>{number(Number(value))}</strong>
@@ -365,27 +350,37 @@ export function Grades() {
         </article>
       )}
 
+      {!locked && validationAttempted && !canContinue && (
+        <Notice tone="error">
+          <strong>Belum dapat melanjutkan ke tes kompetensi.</strong>{" "}
+          {missingRequired.length > 0 ? (
+            <>
+              Lengkapi <strong>{missingRequired.length} mata kuliah wajib</strong> yang masih kosong:{" "}
+              <span className="mono">{missingRequired.map(course => course.code).join(", ")}</span>.
+            </>
+          ) : !hasPositiveScores ? (
+            "Minimal satu mata kuliah berbobot positif (> 0) pada setiap bidang peminatan harus diisi agar skor akademik dapat dihitung."
+          ) : (
+            state?.errors?.join(" ") || "Pastikan nilai akademik sudah lengkap dan tersimpan."
+          )}
+          {tab === "import" && (
+            <div style={{ marginTop: 8 }}>
+              <button type="button" className="secondary compact" onClick={() => setTab("manual")}>
+                Buka Input Manual →
+              </button>
+            </div>
+          )}
+        </Notice>
+      )}
+
       <div className="spread wrap section">
         <Link className="button secondary" href={"/asesmen/" + assessment.public_id + "/peminatan"}>
           ← Kembali ke Peminatan Awal
         </Link>
-        <button type="button" disabled={busy || !canContinue} onClick={next}>
+        <button type="button" disabled={busy || locked || !master} onClick={next}>
           {busy ? "Menyimpan & menyiapkan tes…" : dirty ? "Simpan & Mulai Tes Kompetensi →" : "Mulai Tes Kompetensi →"}
         </button>
       </div>
-      {!locked && missingRequired.length > 0 && (
-        <p className="small muted">Lengkapi {missingRequired.length} mata kuliah wajib agar dapat melanjutkan: {missingRequired.map(course => course.code).join(", ")}.</p>
-      )}
-      {!locked && missingRequired.length === 0 && !hasPositiveScores && (
-        <p className="small" style={{ color: "var(--danger)" }}>
-          Minimal satu mata kuliah berbobot positif (&gt; 0) pada setiap bidang peminatan harus diisi agar skor akademik dapat dihitung.
-        </p>
-      )}
-      {!locked && !dirty && state && !state.ready && missingRequired.length === 0 && hasPositiveScores && state.errors?.length > 0 && (
-        <p className="small" style={{ color: "var(--danger)" }}>
-          {state.errors.join(" ")}
-        </p>
-      )}
 
       <Modal open={!!preview} title="Pratinjau Impor Nilai Transkrip" dismissible={!busy} onClose={() => !busy && closePreview()}>
         <ErrorNotice error={modalError} />

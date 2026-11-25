@@ -91,7 +91,7 @@ export function ResumeAssessment() {
   function handleStartNew() {
     if (!completed) {
       const ok = window.confirm(
-        "Anda masih memiliki sesi asesmen yang belum selesai. Memulai sesi baru akan mengganti pintasan lanjut sesi ini. Lanjutkan?"
+        "Kamu masih memiliki sesi asesmen yang belum selesai. Memulai sesi baru akan mengganti pintasan lanjut sesi ini. Lanjutkan?"
       );
       if (!ok) return;
     }

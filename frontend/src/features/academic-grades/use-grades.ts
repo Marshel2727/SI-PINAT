@@ -16,12 +16,13 @@ export function useGrades() {
   const [error, setError] = useState<unknown>(null);
   const [modalError, setModalError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
-  const [tab, setTab] = useState("import");
+  const [tab, setTab] = useState("manual");
   const [semester, setSemester] = useState("");
   const [busy, setBusy] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState<"csv" | "xlsx" | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<GradeImport | null>(null);
+  const [validationAttempted, setValidationAttempted] = useState(false);
   const locked = ["IN_PROGRESS", "COMPLETED"].includes(assessment.status);
 
   useEffect(() => {
@@ -104,6 +105,7 @@ export function useGrades() {
     try {
       const data = await persist();
       await reload();
+      setValidationAttempted(!data.ready);
       setMessage(
         data.ready
           ? "Nilai lengkap dan siap untuk tes."
@@ -141,6 +143,7 @@ export function useGrades() {
       } else {
         closePreview();
         setState(data);
+        setValidationAttempted(!data.ready);
         const imported = Object.fromEntries(data.grades.map(g => [g.course_id, g.letter_grade]));
         setValues(imported);
         setSavedValues(imported);
@@ -173,7 +176,11 @@ export function useGrades() {
   }
 
   async function next() {
-    if (busy || !canContinue) return;
+    if (busy || locked || !master) return;
+    if (!canContinue) {
+      setValidationAttempted(true);
+      return;
+    }
 
     setBusy(true);
     setError(null);
@@ -181,6 +188,7 @@ export function useGrades() {
       if (dirty) {
         const data = await persist();
         if (!data.ready) {
+          setValidationAttempted(true);
           setMessage("Nilai tersimpan. Lengkapi mata kuliah wajib sebelum memulai tes.");
           return;
         }
@@ -225,5 +233,6 @@ export function useGrades() {
     canContinue,
     hasPositiveScores,
     missingRequired,
+    validationAttempted,
   };
 }

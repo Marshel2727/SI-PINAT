@@ -116,7 +116,7 @@ export function ModelEditor({ id }: {
                 </button>
               )}
               <button type="button" className="secondary" disabled={dirty || busy} onClick={openCloneModal}>
-                Kloning ke DRAFT
+                Kloning ke Draf
               </button>
               <Link className="button secondary" href={"/admin/validasi?model=" + id}>
                 Kelola skenario
@@ -289,7 +289,7 @@ export function ModelEditor({ id }: {
           </Field>
           <ErrorNotice error={modalError} />
           <button disabled={busy}>
-            {busy ? "Mengkloning\u2026" : "Buat draft hasil kloning"}
+            {busy ? "Mengkloning\u2026" : "Buat Draf Hasil Kloning"}
           </button>
         </form>
       </Modal>

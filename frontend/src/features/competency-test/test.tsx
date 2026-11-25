@@ -3,7 +3,7 @@
 import { ErrorNotice, Modal, Notice } from "@/components/ui";
 import { names } from "@/lib/format";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCompetencyTest } from "./use-competency-test";
 
 export function CompetencyTest() {
@@ -29,6 +29,18 @@ export function CompetencyTest() {
     answer,
     finish
   } = useCompetencyTest();
+
+  const [finishWarning, setFinishWarning] = useState(false);
+
+  function handleFinishClick() {
+    if (busy || pendingCount > 0) return;
+    if (answered !== assessment.question_count) {
+      setFinishWarning(true);
+      return;
+    }
+    setFinishWarning(false);
+    setConfirm(true);
+  }
 
   // Konfirmasi sebelum meninggalkan halaman atau mengklik tautan navigasi saat ada jawaban belum tersimpan
   useUnsavedGuard(
@@ -88,11 +100,8 @@ export function CompetencyTest() {
     <>
       <span className="eyebrow">TAHAP 3 DARI 4</span>
       <h1>Tes Kompetensi Keilmuan</h1>
-      <Notice>
-        Jawab seluruh soal tes kompetensi secara mandiri. Jawaban tersimpan otomatis secara real-time pada server (sesi berlaku 24 jam).
-      </Notice>
       <p className="small muted">
-        Pintasan keyboard: ← / → untuk berpindah soal; A–D atau 1–4 untuk memilih jawaban.
+        Jawaban tersimpan otomatis · Pintasan keyboard: ← / → pindah soal, A–D atau 1–4 pilih jawaban.
       </p>
       <ErrorNotice error={error} />
       {loading && <Notice>Memuat paket instrumen tes…</Notice>}
@@ -184,6 +193,24 @@ export function CompetencyTest() {
               })}
             </div>
 
+            {index === visible.length - 1 && finishWarning && answered !== assessment.question_count && (
+              <div style={{ padding: "0 24px" }}>
+                <Notice tone="error">
+                  <strong>Masih ada {assessment.question_count - answered} soal yang belum terjawab.</strong>{" "}
+                  <button
+                    type="button"
+                    className="secondary compact"
+                    onClick={() => {
+                      setFinishWarning(false);
+                      jumpToUnanswered();
+                    }}
+                  >
+                    Lompat ke Soal Belum Terjawab →
+                  </button>
+                </Notice>
+              </div>
+            )}
+
             <div className="spread wrap question-footer">
               <button
                 type="button"
@@ -204,8 +231,8 @@ export function CompetencyTest() {
               ) : (
                 <button
                   type="button"
-                  disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
-                  onClick={() => setConfirm(true)}
+                  disabled={busy || pendingCount > 0}
+                  onClick={handleFinishClick}
                 >
                   Selesaikan Tes &amp; Lihat Rekomendasi →
                 </button>
@@ -288,17 +315,32 @@ export function CompetencyTest() {
                 </Notice>
               )}
 
+              {finishWarning && answered !== assessment.question_count && (
+                <Notice tone="error">
+                  <strong>Masih ada {assessment.question_count - answered} soal yang belum terjawab.</strong>
+                  <div style={{ marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="secondary compact"
+                      onClick={() => {
+                        setFinishWarning(false);
+                        jumpToUnanswered();
+                      }}
+                    >
+                      Lompat ke Soal Belum Terjawab →
+                    </button>
+                  </div>
+                </Notice>
+              )}
+
               <button
                 type="button"
                 className="full"
-                disabled={busy || pendingCount > 0 || answered !== assessment.question_count}
-                onClick={() => setConfirm(true)}
+                disabled={busy || pendingCount > 0}
+                onClick={handleFinishClick}
               >
                 Selesaikan Tes &amp; Lihat Rekomendasi →
               </button>
-              <p className="muted small" style={{ marginTop: 8 }}>
-                Server memvalidasi kelengkapan seluruh {assessment.question_count} paket soal sebelum menghitung centroid fuzzy.
-              </p>
             </article>
           </aside>
         </div>
@@ -306,7 +348,7 @@ export function CompetencyTest() {
 
       <Modal open={confirm} title="Selesaikan Asesmen?" dismissible={!busy} onClose={() => !busy && setConfirm(false)}>
         <p>
-          Anda telah menjawab <strong>{answered}</strong> dari {assessment.question_count} soal secara mandiri.
+          Kamu telah menjawab <strong>{answered}</strong> dari {assessment.question_count} soal secara mandiri.
           Setelah dikonfirmasi, jawaban akan dikunci dan sistem akan menghitung inferensi Mamdani secara permanen.
         </p>
         <div className="actions end" style={{ marginTop: 20 }}>
