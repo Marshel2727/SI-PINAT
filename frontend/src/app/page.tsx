@@ -25,9 +25,6 @@ export default function Home() {
               SISTEM PENDUKUNG KEPUTUSAN • TEKNIK KOMPUTER UNM
             </span>
             <h1>Tentukan Peminatan Teknik Komputer Sesuai Potensimu</h1>
-            <p className="lead">
-              Evaluasi kesesuaian peminatan berdasarkan nilai mata kuliah wajib semester 1–4 dan tes kompetensi menggunakan metode Fuzzy Mamdani yang transparan.
-            </p>
             <div className="actions">
               <StartAssessment label="Mulai Tentukan Peminatan" />
               <Link className="button white" href="/panduan">
@@ -92,9 +89,6 @@ export default function Home() {
               <small>REKOMENDASI TERATAS (ILUSTRASI)</small>
               <p className="mono">Embedded System · 84,44 dari 100</p>
             </div>
-            <small>
-              Ilustrasi tampilan hasil; skor akhirmu dihitung dari nilai akademik dan tes kompetensi.
-            </small>
           </article>
         </div>
       </section>
@@ -102,7 +96,6 @@ export default function Home() {
       <section className="container section">
         <span className="eyebrow">TAKSONOMI KURIKULUM</span>
         <h2>Tiga Pilar Peminatan Keilmuan</h2>
-        <p>Kenali bidang keilmuan Teknik Komputer UNM yang dibandingkan dalam asesmen.</p>
         <div className="three-columns">
           {Object.entries(names).map(([code, name]) => (
             <article className="card specialization" key={code}>
@@ -124,9 +117,6 @@ export default function Home() {
         <div className="cta-band spread wrap">
           <div>
             <h2>Siap mengetahui peminatan yang paling sesuai?</h2>
-            <p>
-              Siapkan nilai semester 1–4 (atau file transkrip Excel .xlsx) dan luangkan waktu untuk 30 soal tes kompetensi.
-            </p>
           </div>
           <div className="actions">
             <StartAssessment triggerOnly label="Mulai Tentukan Peminatan" />

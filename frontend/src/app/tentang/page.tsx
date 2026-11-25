@@ -32,7 +32,7 @@ export default function AboutMethodPage() {
         <span className="eyebrow">TENTANG SI-PINAT</span>
         <h1>Transparansi Metode Fuzzy Mamdani</h1>
         <p className="lead">
-          SI-PINAT dirancang untuk membantu mahasiswa Program Studi Teknik Komputer Fakultas Teknik Universitas Negeri Makassar menimbang kesesuaian peminatan keilmuan secara objektif, terukur, dan dapat ditelusuri.
+          Sistem pendukung keputusan pemilihan peminatan Teknik Komputer UNM berbasis Fuzzy Mamdani.
         </p>
       </header>
 
@@ -44,7 +44,7 @@ export default function AboutMethodPage() {
             Fuzzifikasi → Aturan MIN–MAX → Agregasi → Centroid
           </p>
           <p>
-            Untuk setiap bidang peminatan, nilai mata kuliah wajib semester 1–4 dihitung rata-rata terbobotnya menjadi skor akademik, lalu digabungkan dengan hasil 30 soal tes kompetensi melalui empat tahapan inferensi Fuzzy Mamdani hingga menghasilkan skor kesesuaian 0–100 yang jejak hitungannya dapat diaudit di halaman detail fuzzy.
+            Nilai mata kuliah wajib semester 1–4 digabungkan dengan hasil 30 soal kompetensi untuk menghasilkan skor kesesuaian 0–100 yang dapat ditelusuri.
           </p>
         </div>
 
@@ -52,10 +52,7 @@ export default function AboutMethodPage() {
           <span className="eyebrow">MENGAPA FUZZY MAMDANI?</span>
           <h2>Mengolah Masukan Melalui Derajat Keanggotaan</h2>
           <p>
-            Skor akademik dan skor tes kompetensi dipetakan ke himpunan fuzzy <strong>Rendah</strong>, <strong>Sedang</strong>, dan <strong>Tinggi</strong> menggunakan derajat keanggotaan kontinyu, bukan batas nilai kaku. Seluruh bobot mata kuliah, paket soal, dan basis aturan mengikuti versi model aktif yang telah tervalidasi.
-          </p>
-          <p>
-            Minat awal yang kamu pilih di tahap pertama hanya ditampilkan sebagai pembanding pada halaman hasil—tidak menambah skor, tidak memengaruhi aturan inferensi, dan tidak memecah hasil seri. Rekomendasi akhir ditujukan sebagai bahan konsultasi akademik bersama Dosen Pembimbing Akademik (PA).
+            Skor akademik dan kompetensi dipetakan ke himpunan fuzzy <strong>Rendah</strong>, <strong>Sedang</strong>, dan <strong>Tinggi</strong> secara kontinyu, lalu diinferensi menggunakan bobot dan basis aturan model aktif yang telah tervalidasi.
           </p>
         </article>
       </section>
@@ -63,9 +60,6 @@ export default function AboutMethodPage() {
       <section className="section" aria-label="Detail tiga pilar peminatan">
         <span className="eyebrow">DETAIL TIGA PILAR PEMINATAN</span>
         <h2>Cakupan Bidang Keilmuan Teknik Komputer</h2>
-        <p>
-          Setiap bidang dievaluasi secara independen menggunakan bobot mata kuliah wajib dan butir soal kompetensi sesuai topik fokus berikut.
-        </p>
         <div className="three-columns">
           {Object.entries(names).map(([code, name]) => (
             <article className="card specialization" key={code}>
@@ -91,9 +85,6 @@ export default function AboutMethodPage() {
         <div className="cta-band spread wrap">
           <div>
             <h2>Siap mengevaluasi kesesuaian peminatanmu?</h2>
-            <p>
-              Mulai sesi asesmen untuk melihat perbandingan skor ketiga peminatan beserta jejak perhitungan Fuzzy Mamdani.
-            </p>
           </div>
           <div className="actions">
             <StartAssessment label="Mulai Tentukan Peminatan" />

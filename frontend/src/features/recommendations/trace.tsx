@@ -20,7 +20,7 @@ export function FuzzyDetail() {
         <span className="badge accent">TRANSPARANSI ALGORITMA PAKAR</span>
         <h1>Detail Perhitungan Fuzzy Logic Mamdani</h1>
         <p>
-          Penelusuran jejak numerik matematis mencakup fuzzifikasi derajat keanggotaan, implikasi MIN, agregasi MAX, dan defuzzifikasi titik berat (centroid).
+          Jejak perhitungan fuzzifikasi, aturan MIN–MAX, agregasi, dan defuzzifikasi Centroid.
         </p>
         <small className="mono">
           {trace ? `Versi Model: ${trace.model_version} · Versi Mesin: ${trace.engine_version}` : "Memuat data jejak inferensi…"}
@@ -92,9 +92,6 @@ export function FuzzyDetail() {
                 </div>
               ))}
             </div>
-            <p className="small muted" style={{ marginTop: 14 }}>
-              Perhitungan defuzzifikasi menggunakan metode Centroid kontinu: z* = ∫(z · μ(z))dz / ∫μ(z)dz. Seluruh data dihitung dan dikunci secara deterministik saat asesmen diselesaikan.
-            </p>
           </article>
         </>
       )}

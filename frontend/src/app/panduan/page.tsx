@@ -31,9 +31,6 @@ export default function Guide() {
       <header className="page-intro">
         <span className="eyebrow">PANDUAN PENGGUNAAN</span>
         <h1>Alur &amp; Panduan Menentukan Peminatan</h1>
-        <p className="lead">
-          Ikuti empat tahapan terstruktur mulai dari memilih minat awal, memasukkan nilai mata kuliah wajib semester 1–4, mengerjakan 30 soal kompetensi, hingga menelaah rekomendasi Fuzzy Mamdani.
-        </p>
       </header>
 
       <section className="section" aria-label="Empat tahapan asesmen">
@@ -54,16 +51,13 @@ export default function Guide() {
           <h2>Identitas &amp; Prasyarat Nilai</h2>
           <ul className="pillar-points">
             <li>
-              Isi <strong>NIM</strong>, <strong>nama lengkap</strong>, <strong>semester saat ini</strong>, dan <strong>kelas</strong> (opsional). Data identitas merupakan pernyataan peserta dan belum terhubung ke verifikasi SIAKAD.
+              Isi <strong>NIM</strong>, <strong>nama lengkap</strong>, <strong>semester saat ini</strong>, dan <strong>kelas</strong> (opsional) sesuai data akademik.
             </li>
             <li>
-              Jika menggunakan NIM yang sama untuk sesi baru, pastikan nama lengkap dan kelas (kosongkan bila sebelumnya kosong) ditulis sama persis.
+              Isi nilai secara manual atau unggah template <strong>Excel (.xlsx)</strong> tanpa mengubah header <code>semester, kode_mk, nama_mk, nilai_huruf</code>.
             </li>
             <li>
-              Untuk impor transkrip, unduh template Excel (.xlsx) dari halaman nilai lalu isi kolom <code>nilai_huruf</code> tanpa mengubah header <code>semester</code>, <code>kode_mk</code>, <code>nama_mk</code>, dan <code>nilai_huruf</code>. Unggah berkas <strong>XLSX</strong>, periksa pratinjau, lalu konfirmasi—atau isi nilai satu per satu secara manual.
-            </li>
-            <li>
-              Lengkapi seluruh mata kuliah wajib sesuai model aktif; nilai akademik terkunci otomatis setelah jawaban tes kompetensi pertama disimpan.
+              Lengkapi seluruh mata kuliah wajib sebelum melanjutkan; nilai terkunci otomatis saat tes kompetensi dimulai.
             </li>
           </ul>
         </article>
@@ -73,16 +67,13 @@ export default function Guide() {
           <h2>Tes Kompetensi, Pintasan &amp; Privasi Sesi</h2>
           <ul className="pillar-points">
             <li>
-              Seluruh <strong>30 soal kompetensi</strong> wajib dikerjakan secara mandiri. Jawaban tersimpan otomatis ke server (auto-save)—tunggu indikator tersimpan sebelum berpindah atau menyelesaikan tes.
+              Kerjakan <strong>30 soal kompetensi</strong> secara mandiri; jawaban tersimpan otomatis ke server dan mendukung pintasan <strong>← / →</strong> serta <strong>A–D</strong> / <strong>1–4</strong>.
             </li>
             <li>
-              Gunakan pintasan keyboard panah kiri/kanan (<strong>← / →</strong>) untuk berpindah soal, serta tombol huruf <strong>A–D</strong> atau angka <strong>1–4</strong> untuk memilih opsi jawaban.
+              Sesi asesmen berlaku selama <strong>24 jam</strong> di browser yang sama.
             </li>
             <li>
-              Akses sesi disimpan melalui cookie rahasia pada browser ini dan berlaku selama <strong>24 jam</strong> secara default. Tautan hasil saja tidak membuka akses dari browser lain, sehingga jangan menghapus cookie selama asesmen berlangsung.
-            </li>
-            <li>
-              Bila terdapat skor tertinggi yang sama (seri), seluruh peminatan teratas ditampilkan bersama. Gunakan laporan PDF dan detail fuzzy sebagai bahan konsultasi bersama Dosen Pembimbing Akademik (PA).
+              Unduh laporan PDF hasil rekomendasi sebagai bahan konsultasi bersama Dosen Pembimbing Akademik (PA).
             </li>
           </ul>
         </article>
@@ -92,9 +83,6 @@ export default function Guide() {
         <div className="cta-band spread wrap">
           <div>
             <h2>Siap memulai asesmen?</h2>
-            <p>
-              Pastikan NIM dan daftar nilai mata kuliah wajib semester 1–4 sudah tersedia sebelum memulai sesi 24 jam.
-            </p>
           </div>
           <div className="actions">
             <StartAssessment label="Mulai Tentukan Peminatan" />

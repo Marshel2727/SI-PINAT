@@ -118,9 +118,6 @@ export function Recommendation() {
         <article className="card">
           <span className="eyebrow">DISTRIBUSI SKOR</span>
           <h2>Perbandingan Tiga Bidang Peminatan</h2>
-          <p className="small muted">
-            Nilai akademik dan hasil tes kompetensi diolah melalui aturan pada versi model fuzzy sesi ini.
-          </p>
           <ScoreBars scores={result.scores} />
         </article>
 
@@ -155,9 +152,9 @@ export function Recommendation() {
           <span className="eyebrow">PANDUAN AKADEMIK</span>
           <h2>Langkah Selanjutnya untuk Mahasiswa</h2>
           <ul style={{ paddingLeft: 20, margin: "10px 0 18px", color: "var(--text-secondary)", fontSize: "13px", lineHeight: 1.7 }}>
-            <li><strong>Konsultasi Dosen PA:</strong> Unduh ringkasan PDF hasil rekomendasi ini dan diskusikan bersama Dosen Pembimbing Akademik saat pengisian KRS.</li>
-            <li><strong>Perencanaan KRS:</strong> Prioritaskan mata kuliah peminatan pilihan pada semester berikutnya untuk memperdalam kompetensi.</li>
-            <li><strong>Pengembangan Portofolio:</strong> Ikuti proyek praktikum atau sertifikasi kompetensi terkait peminatan yang disarankan.</li>
+            <li><strong>Konsultasi Dosen PA:</strong> Unduh PDF hasil ini untuk didiskusikan saat pengisian KRS.</li>
+            <li><strong>Perencanaan KRS:</strong> Prioritaskan mata kuliah peminatan pilihan pada semester berikutnya.</li>
+            <li><strong>Portofolio:</strong> Ikuti proyek praktikum atau sertifikasi sesuai peminatan yang disarankan.</li>
           </ul>
 
           <div className="no-print">

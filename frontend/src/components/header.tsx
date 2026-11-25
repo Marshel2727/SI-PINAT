@@ -148,8 +148,7 @@ export function Footer() {
       <div className="container footer-content">
         <div>
           <strong>SI-PINAT UNM</strong>
-          <p>Sistem pendukung keputusan peminatan mahasiswa Teknik Komputer Universitas Negeri Makassar.</p>
-          <small>Rekomendasi bersifat sebagai bahan konsultasi dan telaah akademik bersama Dosen Pembimbing Akademik (PA).</small>
+          <p>Teknik Komputer — Universitas Negeri Makassar.</p>
         </div>
         <div className="footer-links">
           <Link href="/">Beranda</Link>

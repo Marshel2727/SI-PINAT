@@ -77,9 +77,6 @@ export function Grades() {
     <>
       <span className="eyebrow">TAHAP 2 DARI 4</span>
       <h1>Input Nilai Akademik</h1>
-      <p>
-        Gunakan nilai semester 1–{maxSemester} sesuai mata kuliah kurikulum dan bobot konversi pada versi sesi ini.
-      </p>
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
       {locked && (
