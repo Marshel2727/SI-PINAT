@@ -307,21 +307,6 @@ export function AdminShell({ children }: {
               </nav>
             </div>
 
-            <div className="admin-sidebar-section">
-              <span className="admin-sidebar-label">AKUN</span>
-              <nav aria-label="Pengaturan akun">
-                <Link
-                  href="/admin/profil"
-                  className={pathname.startsWith("/admin/profil") ? "active" : ""}
-                  aria-current={pathname.startsWith("/admin/profil") ? "page" : undefined}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <IconUser size={16} />
-                  <span>Profil Saya</span>
-                </Link>
-              </nav>
-            </div>
-
             <div className="admin-sidebar-footer">
               <Link
                 href="/"
