@@ -131,7 +131,7 @@ function ValidationCaseForm({
         </div>
         {previewScore === null ? (
           <p className="small muted" style={{ margin: 0 }}>
-            Isi X1 dan X2 dalam rentang 0–100 serta pastikan variabel, himpunan, dan aturan model sudah lengkap.
+            Isi X1 dan X2 (0–100) untuk melihat pratinjau skor.
           </p>
         ) : (
           <div className="actions">
@@ -231,139 +231,143 @@ export function Validation({ initialModel = "" }: {
   const hasFilters = Boolean(specFilter || statusFilter);
 
   return (
-    <>
-      <h1>Skenario Validasi Fuzzy</h1>
-      <Notice>
-        Publikasi model mensyaratkan 10 skenario batas/overlap per peminatan dan seluruh skenario berstatus lulus.
-      </Notice>
+    <div className="admin-page">
+      <header className="admin-page-header">
+        <div className="admin-page-title">
+          <h1>Skenario Validasi</h1>
+          <select
+            aria-label="Versi model"
+            className="admin-header-select"
+            value={modelId}
+            onChange={e => {
+              setModelId(e.target.value);
+              setMessage("");
+            }}
+          >
+            <option value="">Pilih versi model</option>
+            {models.map(m => (
+              <option key={m.id} value={m.id}>
+                {m.version_code} · {statusLabel(m.status)}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <Field label="Versi model">
-        <select
-          value={modelId}
-          onChange={e => {
-            setModelId(e.target.value);
-            setMessage("");
-          }}
-        >
-          <option value="">Pilih versi</option>
-          {models.map(m => (
-            <option key={m.id} value={m.id}>
-              {m.version_code} · {statusLabel(m.status)}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      {model && locked && (
-        <Notice>
-          Model <strong>{model.version_code}</strong> berstatus <strong>{statusLabel(model.status)}</strong> (terkunci).
-          Penambahan, penyuntingan, penghapusan, atau pengujian ulang skenario hanya tersedia pada model berstatus Draf.
-        </Notice>
-      )}
+        {modelId && (
+          <div className="actions">
+            <button type="button" className="compact" disabled={locked || busy} onClick={seedAndRunAllBoundaryCases}>
+              {busy ? "Memproses\u2026" : "Siapkan & Uji 30 Kasus Batas"}
+            </button>
+            <button type="button" className="secondary compact" disabled={locked || busy} onClick={() => openModal({})}>
+              + Tambah
+            </button>
+            <button type="button" className="secondary compact" disabled={locked || busy} onClick={validate}>
+              {busy ? "Menjalankan\u2026" : "Jalankan Semua"}
+            </button>
+            <Link className="button secondary compact" href={"/admin/model-fuzzy/" + modelId}>
+              Konfigurasi
+            </Link>
+          </div>
+        )}
+      </header>
 
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
 
       {modelId && (
         <>
-          <div className="actions">
-            <button type="button" disabled={locked || busy} onClick={seedAndRunAllBoundaryCases}>
-              {busy ? "Memproses\u2026" : "⚡ Siapkan 30 Kasus Batas & Uji Otomatis"}
-            </button>
-            <button type="button" className="secondary" disabled={locked || busy} onClick={() => openModal({})}>
-              + Tambah skenario
-            </button>
-            <button type="button" className="secondary" disabled={locked || busy} onClick={validate}>
-              {busy ? "Menjalankan\u2026" : "Jalankan semua skenario"}
-            </button>
-            <Link className="button secondary" href={"/admin/model-fuzzy/" + modelId}>
-              Konfigurasi model
-            </Link>
-          </div>
-
           {boundaryChecklist.length > 0 && (
-            <div className="three-columns section">
-              {boundaryChecklist.map(({ spec, pairs, missing, presentCount, totalCases, passedCount }) => (
-                <article className="card" key={spec.id}>
-                  <div className="spread wrap" style={{ marginBottom: 8 }}>
-                    <h3 style={{ margin: 0 }}>{spec.name}</h3>
-                    <span className="badge mono">{spec.code}</span>
-                  </div>
-                  <StatusBadge status={missing.length === 0 ? "PUBLISHED" : "DRAFT"}>
-                    {presentCount}/10 koordinat wajib
-                  </StatusBadge>
-                  <p className="small muted" style={{ marginTop: 8, marginBottom: 8 }}>
-                    Total skenario: {totalCases} · Lulus: {passedCount}/{totalCases}
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
-                    {pairs.map(p => (
-                      <span
-                        key={p.index}
-                        className={"badge mono " + (p.present ? "success" : "danger")}
-                        style={{ fontSize: "10.5px", padding: "2px 6px" }}
-                        title={p.present ? `Koordinat (${p.x1}, ${p.x2}) tersedia` : `Koordinat (${p.x1}, ${p.x2}) belum ada`}
-                      >
-                        {p.present ? "✓" : "×"} ({p.x1},{p.x2})
+            <div className="quota-grid">
+              {boundaryChecklist.map(({ spec, pairs, missing, presentCount, totalCases, passedCount }) => {
+                const ready = missing.length === 0 && totalCases > 0 && passedCount === totalCases;
+                const pct = Math.min(100, Math.round((100 * presentCount) / 10));
+                return (
+                  <article className="card" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }} key={spec.id}>
+                    <div className="quota-tile-top">
+                      <strong>{spec.name}</strong>
+                      <span className="badge mono">{spec.code}</span>
+                    </div>
+                    <div className="quota-tile-meta">
+                      <span>{presentCount}/10 koordinat</span>
+                      <span className={ready ? "check-ready" : "muted"}>
+                        Lulus {passedCount}/{totalCases}
                       </span>
-                    ))}
-                  </div>
-                  {!locked && missing.length > 0 && (
-                    <button
-                      type="button"
-                      className="secondary compact full"
-                      disabled={busy}
-                      onClick={() => seedMissingBoundaryCases(spec)}
-                    >
-                      Isi Template Kasus Batas Hilang ({missing.length})
-                    </button>
-                  )}
-                </article>
-              ))}
+                    </div>
+                    <div className={"quota-bar" + (ready ? " is-ready" : "")}>
+                      <div style={{ width: `${pct}%` }} />
+                    </div>
+                    <details className="coord-details">
+                      <summary>Lihat 10 koordinat</summary>
+                      <div className="coord-grid">
+                        {pairs.map(p => (
+                          <span
+                            key={p.index}
+                            className={"badge mono " + (p.present ? "success" : "danger")}
+                            style={{ fontSize: "10.5px", padding: "2px 6px" }}
+                            title={p.present ? `Koordinat (${p.x1}, ${p.x2}) tersedia` : `Koordinat (${p.x1}, ${p.x2}) belum ada`}
+                          >
+                            {p.present ? "✓" : "×"} ({p.x1},{p.x2})
+                          </span>
+                        ))}
+                      </div>
+                    </details>
+                    {!locked && missing.length > 0 && (
+                      <button
+                        type="button"
+                        className="secondary btn-row full"
+                        disabled={busy}
+                        onClick={() => seedMissingBoundaryCases(spec)}
+                      >
+                        Lengkapi Kasus Batas ({missing.length})
+                      </button>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           )}
 
-          <div className="filters">
-            <Field label="Filter Peminatan">
-              <select
-                value={specFilter}
-                onChange={e => setSpecFilter(e.target.value)}
-              >
-                <option value="">Semua peminatan</option>
-                {specs.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Filter Status">
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value as ValidationStatusFilter)}
-              >
-                <option value="">Semua status</option>
-                <option value="LULUS">LULUS</option>
-                <option value="GAGAL">GAGAL</option>
-                <option value="BELUM_DIUJI">Belum diuji</option>
-              </select>
-            </Field>
-            {hasFilters && (
-              <div style={{ alignSelf: "flex-end" }}>
-                <button type="button" className="secondary" onClick={resetFilters}>
-                  Reset Filter
-                </button>
-              </div>
-            )}
-          </div>
-
           {loading && <Notice>Memuat skenario…</Notice>}
-          <article className="card section">
-            <div className="spread wrap" style={{ marginBottom: 8 }}>
-              <h2 style={{ margin: 0 }}>Daftar Skenario Validasi</h2>
-              <span className="small muted">
-                Menampilkan {filteredCases.length} dari {cases.length} skenario
+          <article className="card admin-table-card">
+            <div className="admin-table-card-head">
+              <h2>Daftar Skenario Validasi</h2>
+              <span className="admin-count-pill">
+                {filteredCases.length}/{cases.length}
               </span>
             </div>
+
+            <div className="admin-table-toolbar">
+              <Field label="Filter Peminatan">
+                <select
+                  value={specFilter}
+                  onChange={e => setSpecFilter(e.target.value)}
+                >
+                  <option value="">Semua peminatan</option>
+                  {specs.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Filter Status">
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value as ValidationStatusFilter)}
+                >
+                  <option value="">Semua status</option>
+                  <option value="LULUS">LULUS</option>
+                  <option value="GAGAL">GAGAL</option>
+                  <option value="BELUM_DIUJI">Belum diuji</option>
+                </select>
+              </Field>
+              {hasFilters && (
+                <button type="button" className="secondary compact" onClick={resetFilters}>
+                  Reset
+                </button>
+              )}
+            </div>
+
             {!loading && !filteredCases.length ? (
               <Notice>
                 {cases.length
@@ -422,7 +426,7 @@ export function Validation({ initialModel = "" }: {
                             <div className="actions" style={{ gap: 6 }}>
                               <button
                                 type="button"
-                                className="secondary compact"
+                                className="secondary btn-row"
                                 disabled={locked || busy}
                                 onClick={() => openModal(c)}
                               >
@@ -431,8 +435,7 @@ export function Validation({ initialModel = "" }: {
                               {!locked && (
                                 <button
                                   type="button"
-                                  className="secondary compact"
-                                  style={{ color: "var(--danger)" }}
+                                  className="secondary btn-row btn-row-danger"
                                   disabled={busy}
                                   onClick={() => remove(c)}
                                 >
@@ -466,6 +469,6 @@ export function Validation({ initialModel = "" }: {
           />
         )}
       </Modal>
-    </>
+    </div>
   );
 }

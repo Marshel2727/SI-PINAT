@@ -177,9 +177,8 @@ export function ModelEditor({ id }: {
           />
           {!locked && (
             <article className="card section">
-              <h2>Validasi dan publikasi</h2>
               <div className="spread wrap">
-                <h3>Checklist Kesiapan Publikasi</h3>
+                <h2 style={{ margin: 0 }}>Kesiapan &amp; Publikasi Model</h2>
                 <button type="button" className="secondary compact" disabled={busy || dirty || readinessLoading} onClick={refreshReadiness}>
                   {readinessLoading ? "Memeriksa…" : "Periksa ulang kesiapan"}
                 </button>
@@ -239,13 +238,9 @@ export function ModelEditor({ id }: {
                 </ul>
               )}
               {dirty && <Notice>Simpan perubahan konfigurasi sebelum menjalankan validasi atau publikasi.</Notice>}
-              <p>
-                Lengkapi seluruh konfigurasi, sepuluh skenario batas/overlap per
-                peminatan, serta bank soal. Semua skenario harus lulus.
-              </p>
-              <div className="actions">
+              <div className="actions" style={{ marginTop: 12 }}>
                 <button type="button" disabled={busy || dirty} onClick={seedAndValidateBoundaryCases}>
-                  ⚡ Siapkan 30 Skenario Batas &amp; Uji Otomatis
+                  Siapkan &amp; Uji 30 Skenario Batas
                 </button>
                 <button type="button" className="secondary" disabled={busy || dirty} onClick={() => action("validate")}>
                   Jalankan seluruh skenario
@@ -253,8 +248,7 @@ export function ModelEditor({ id }: {
               </div>
               <label className="checkbox section">
                 <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />
-                Saya sudah meninjau sumber data, parameter, aturan, soal, dan
-                rentang ekspektasi untuk tujuan penggunaan model ini.
+                Saya telah meninjau konfigurasi, soal, dan hasil validasi model ini.
               </label>
               <button type="button" disabled={busy || dirty || !confirmed || !readiness?.ready || readinessLoading} onClick={() => action("publish")}>
                 Publikasikan versi model

@@ -225,7 +225,7 @@ def parse(filename, content, content_type, master=None, student_nim=None, warnin
 
 
 def import_file(db, assessment, filename, content, content_type, confirm):
-    editable(assessment)
+    editable(assessment, allow_completed=True)
     filename = Path(filename or "upload").name[:255]
     error, warnings = [], []
     try:

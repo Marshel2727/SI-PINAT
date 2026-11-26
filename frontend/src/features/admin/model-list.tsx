@@ -22,16 +22,19 @@ export function ModelList() {
   } = useModelList();
 
   return (
-    <>
-      <h1>Versi Model Fuzzy</h1>
-      <Notice>
-        Versi mencakup konversi, bobot, variabel, himpunan, dan aturan. Model
-        terpublikasi dikunci; perubahan dilakukan melalui kloning.
-      </Notice>
-      <button type="button" onClick={openCreateModal}>+ Buat Model Draf</button>
+    <div className="admin-page">
+      <header className="admin-page-header">
+        <div className="admin-page-title">
+          <h1>Model Fuzzy</h1>
+          <span className="admin-count-pill">{total}</span>
+        </div>
+        <button type="button" className="compact" onClick={openCreateModal}>
+          + Buat Model Draf
+        </button>
+      </header>
       <ErrorNotice error={error} />
       {loading && <Notice>Memuat model…</Notice>}
-      <article className="card section">
+      <article className="card admin-table-card">
         {!loading && !rows.length ? (
           <Notice>
             Belum ada model. Buat draf dan lengkapi instrumennya.
@@ -111,6 +114,6 @@ export function ModelList() {
           </button>
         </form>
       </Modal>
-    </>
+    </div>
   );
 }

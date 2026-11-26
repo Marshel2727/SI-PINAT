@@ -6,11 +6,7 @@ from app.fuzzy.engine import calculate, academic_score, ranks, quantize, ENGINE_
 from app.core.errors import fail
 
 
-def complete(db, assessment):
-    if assessment["status"] == "COMPLETED":
-        return result(db, assessment)
-    if assessment["status"] != "IN_PROGRESS" or not readiness(db, assessment)["ready"]:
-        fail(409, "Selesaikan nilai dan tes terlebih dahulu.")
+def _score_and_persist_run(db, assessment):
     packet = rows(db, "assessment_items", assessment_id=assessment["id"])
     answers = [one(db, "assessment_answers", assessment_item_id=i["id"]) for i in packet]
     if len(packet) != assessment["question_count"] or any(a is None for a in answers):
@@ -84,12 +80,34 @@ def complete(db, assessment):
         score_id = add(db, "recommendation_scores", run_id=run_id, **score)
         trace.pop("score")
         add(db, "fuzzy_traces", score_id=score_id, **trace)
+    return run_id
+
+
+def complete(db, assessment):
+    if assessment["status"] == "COMPLETED":
+        return result(db, assessment)
+    if assessment["status"] != "IN_PROGRESS" or not readiness(db, assessment)["ready"]:
+        fail(409, "Selesaikan nilai dan tes terlebih dahulu.")
+    _score_and_persist_run(db, assessment)
     change(
         db,
         "assessments",
         assessment["id"],
         status="COMPLETED",
         completed_at=now(),
+        updated_at=now(),
+    )
+    return result(db, one(db, "assessments", id=assessment["id"]))
+
+
+def recalculate(db, assessment):
+    if assessment["status"] != "COMPLETED" or not readiness(db, assessment)["ready"]:
+        fail(409, "Asesmen belum selesai atau nilai akademik belum siap.")
+    _score_and_persist_run(db, assessment)
+    change(
+        db,
+        "assessments",
+        assessment["id"],
         updated_at=now(),
     )
     return result(db, one(db, "assessments", id=assessment["id"]))

@@ -1,16 +1,50 @@
 import secrets
 import uuid
 from datetime import timedelta
-from sqlalchemy import select
+from sqlalchemy import select, case
 from app.repositories.store import one, rows, table, add, change, now
 from app.core.errors import fail
-from app.core.security import digest, cookie
+from app.core.security import digest, cookie, current_student
 from app.core.config import settings
 from app.services.specializations import by_code
 from app.services.students import identify
 
 
-def create(db, body, response):
+def create(db, body, response, request=None):
+    if body.mode == "FULL":
+        if request is None:
+            fail(401, "Silakan masuk menggunakan akun mahasiswa TEKOM.", "UNAUTHENTICATED")
+        student = current_student(request, db, required=True)
+        if body.semester < 4:
+            fail(422, "Input nilai dan penentuan peminatan wajib minimal Semester 4.")
+        assessments_table = table("assessments")
+        existing = db.execute(
+            select(assessments_table)
+            .where(assessments_table.c.student_id == student["id"], assessments_table.c.mode == "FULL")
+            .order_by(case((assessments_table.c.status == "COMPLETED", 1), else_=0).desc(), assessments_table.c.id.desc())
+        ).mappings().first()
+        if existing:
+            token = secrets.token_urlsafe(32)
+            change(
+                db,
+                "assessments",
+                existing["id"],
+                access_token_hash=digest(token),
+                expires_at=now() + timedelta(hours=settings().session_hours),
+            )
+            if response is not None:
+                cookie(
+                    response,
+                    "sipinat_a_" + existing["public_id"],
+                    token,
+                    path="/api/v1/assessments/" + existing["public_id"],
+                    hours=settings().session_hours,
+                )
+            return summary(db, one(db, "assessments", id=existing["id"]))
+        student_id = student["id"]
+    else:
+        student_id = None
+
     t = table("fuzzy_model_versions")
     candidates = list(db.execute(select(t).where(t.c.status == "PUBLISHED").order_by(t.c.published_at.desc(), t.c.id.desc())).mappings())
     if body.mode == "FULL":
@@ -23,7 +57,6 @@ def create(db, body, response):
         )
     model = candidates[0]
     token, public_id = secrets.token_urlsafe(32), str(uuid.uuid4())
-    student_id = identify(db, body) if body.mode == "FULL" else None
     preference = by_code(db, body.preferred_specialization_code)["id"] if body.preferred_specialization_code else None
     identifier = add(
         db,
@@ -39,18 +72,20 @@ def create(db, body, response):
         question_count=30,
         expires_at=now() + timedelta(hours=settings().session_hours),
     )
-    cookie(
-        response,
-        "sipinat_a_" + public_id,
-        token,
-        path="/api/v1/assessments/" + public_id,
-        hours=settings().session_hours,
-    )
+    if response is not None:
+        cookie(
+            response,
+            "sipinat_a_" + public_id,
+            token,
+            path="/api/v1/assessments/" + public_id,
+            hours=settings().session_hours,
+        )
     return summary(db, one(db, "assessments", id=identifier))
 
 
-def editable(value):
-    if value["status"] in {"IN_PROGRESS", "COMPLETED"}:
+def editable(value, allow_completed=False):
+    locked = {"IN_PROGRESS"} if allow_completed else {"IN_PROGRESS", "COMPLETED"}
+    if value["status"] in locked:
         fail(409, "Asesmen terkunci. Mulai asesmen baru untuk mengubah input.", "ASSESSMENT_LOCKED")
 
 
@@ -80,9 +115,17 @@ def summary(db, value):
 
 def profile(db, value, body):
     editable(value)
-    if value["mode"] == "FULL" and (not body.nim or not body.full_name):
-        fail(422, "NIM dan nama wajib.")
-    student_id = identify(db, body) if value["mode"] == "FULL" else None
+    if value["mode"] == "FULL":
+        if body.semester < 4:
+            fail(422, "Input nilai dan penentuan peminatan wajib minimal Semester 4.")
+        if value["student_id"]:
+            student_id = value["student_id"]
+        elif body.nim and body.full_name:
+            student_id = identify(db, body)
+        else:
+            fail(422, "NIM dan nama wajib.")
+    else:
+        student_id = None
     change(
         db,
         "assessments",

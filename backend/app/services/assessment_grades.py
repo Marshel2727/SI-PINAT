@@ -68,10 +68,12 @@ def readiness(db, value, grades=None):
 
 
 def save(db, value, data, source="MANUAL", allow_incomplete=True):
-    editable(value)
+    editable(value, allow_completed=True)
+    is_completed = value["status"] == "COMPLETED"
+    effective_allow_incomplete = False if is_completed else allow_incomplete
     grades, errors = check(db, value, data)
     state = readiness(db, value, grades)
-    if errors or (not allow_incomplete and not state["ready"]):
+    if errors or (not effective_allow_incomplete and not state["ready"]):
         fail(
             422,
             "Nilai belum valid.",
@@ -81,6 +83,10 @@ def save(db, value, data, source="MANUAL", allow_incomplete=True):
     remove_where(db, "assessment_grades", assessment_id=value["id"])
     for grade in grades:
         add(db, "assessment_grades", assessment_id=value["id"], source=source, **grade)
+    if is_completed:
+        from app.services.recommendation_runs import recalculate
+        recalculate(db, one(db, "assessments", id=value["id"]))
+        return {"grades": grades, **state, "recalculated": True}
     change(
         db,
         "assessments",

@@ -7,11 +7,13 @@ export function Steps({
   publicId,
   locked = true,
   maxReachable,
+  allowedSteps,
 }: {
   active: number;
   publicId?: string;
   locked?: boolean;
   maxReachable?: number;
+  allowedSteps?: number[];
 }) {
   const highestReachable = maxReachable ?? active;
 
@@ -21,12 +23,16 @@ export function Steps({
         const stepNo = i + 1;
         const isDone = stepNo < active || (stepNo > active && stepNo <= highestReachable);
         const canNavigate = Boolean(
-          publicId && !locked && stepNo !== active && stepNo <= highestReachable
+          publicId &&
+            stepNo !== active &&
+            (allowedSteps
+              ? allowedSteps.includes(stepNo)
+              : !locked && stepNo <= highestReachable)
         );
         const stage = ["peminatan", "nilai", "tes", "hasil"][i];
         const content = (
           <>
-            <span className="step-number">{stepNo < active ? "✓" : stepNo}</span>
+            <span className="step-number">{isDone ? "✓" : stepNo}</span>
             <div>
               <small>Tahap {stepNo}</small>
               <strong>{text}</strong>

@@ -22,10 +22,11 @@ import { useAdminSession } from "./use-admin-session";
 
 const PRIMARY_LINKS = [
   { href: "/admin", label: "Dashboard", Icon: IconLayoutGrid },
-  { href: "/admin/mata-kuliah", label: "Kelola Mata Kuliah", Icon: IconBookOpen },
-  { href: "/admin/bank-soal", label: "Bank Soal Kompetensi", Icon: IconFileText },
-  { href: "/admin/model-fuzzy", label: "Konfigurasi Fuzzy", Icon: IconSliders },
-  { href: "/admin/validasi", label: "Skenario Validasi", Icon: IconCheckCircle },
+  { href: "/admin/mahasiswa", label: "Mahasiswa", Icon: IconUser },
+  { href: "/admin/mata-kuliah", label: "Mata Kuliah", Icon: IconBookOpen },
+  { href: "/admin/bank-soal", label: "Bank Soal", Icon: IconFileText },
+  { href: "/admin/model-fuzzy", label: "Model Fuzzy", Icon: IconSliders },
+  { href: "/admin/validasi", label: "Validasi", Icon: IconCheckCircle },
   { href: "/admin/log-aktivitas", label: "Log Aktivitas", Icon: IconActivity },
 ] as const;
 
@@ -35,27 +36,29 @@ function resolveBreadcrumb(pathname: string): {
 } {
   if (pathname === "/admin")
     return { current: "Dashboard" };
+  if (pathname.startsWith("/admin/mahasiswa"))
+    return { current: "Mahasiswa" };
   if (pathname.startsWith("/admin/asesmen"))
     return { parent: { label: "Dashboard", href: "/admin" }, current: "Detail Asesmen" };
   if (pathname.startsWith("/admin/mata-kuliah"))
-    return { current: "Kelola Mata Kuliah" };
+    return { current: "Mata Kuliah" };
   if (pathname === "/admin/bank-soal/baru")
-    return { parent: { label: "Bank Soal Kompetensi", href: "/admin/bank-soal" }, current: "Tambah Soal" };
+    return { parent: { label: "Bank Soal", href: "/admin/bank-soal" }, current: "Tambah Soal" };
   if (pathname.startsWith("/admin/bank-soal/"))
-    return { parent: { label: "Bank Soal Kompetensi", href: "/admin/bank-soal" }, current: "Detail & Revisi Soal" };
+    return { parent: { label: "Bank Soal", href: "/admin/bank-soal" }, current: "Detail Soal" };
   if (pathname.startsWith("/admin/bank-soal"))
-    return { current: "Bank Soal Kompetensi" };
+    return { current: "Bank Soal" };
   if (pathname.startsWith("/admin/model-fuzzy/"))
-    return { parent: { label: "Konfigurasi Fuzzy", href: "/admin/model-fuzzy" }, current: "Editor Model Fuzzy" };
+    return { parent: { label: "Model Fuzzy", href: "/admin/model-fuzzy" }, current: "Editor Model" };
   if (pathname.startsWith("/admin/model-fuzzy"))
-    return { current: "Konfigurasi Fuzzy" };
+    return { current: "Model Fuzzy" };
   if (pathname.startsWith("/admin/validasi"))
-    return { current: "Skenario Validasi" };
+    return { current: "Validasi" };
   if (pathname.startsWith("/admin/log-aktivitas"))
     return { current: "Log Aktivitas" };
   if (pathname.startsWith("/admin/profil"))
-    return { current: "Profil Administrator" };
-  return { current: "Panel Administrasi" };
+    return { current: "Profil" };
+  return { current: "Panel Admin" };
 }
 
 export function AdminShell({ children }: {
@@ -263,7 +266,7 @@ export function AdminShell({ children }: {
                       }}
                     >
                       <IconLogOut size={16} />
-                      <span>{busy ? "Keluar\u2026" : "Keluar dari Sesi"}</span>
+                      <span>{busy ? "Keluar\u2026" : "Keluar"}</span>
                     </button>
                   </div>
                 )}
@@ -318,7 +321,7 @@ export function AdminShell({ children }: {
               </Link>
               <button type="button" className="logout" disabled={busy} onClick={logout}>
                 <IconLogOut size={16} />
-                <span>{busy ? "Keluar\u2026" : "Keluar dari Sesi"}</span>
+                <span>{busy ? "Keluar\u2026" : "Keluar"}</span>
               </button>
             </div>
           </aside>

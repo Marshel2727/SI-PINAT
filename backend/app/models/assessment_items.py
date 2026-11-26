@@ -11,6 +11,7 @@ assessment_items = Table(
     Column("question_id", mysql.BIGINT(unsigned=True), nullable=False),
     Column("order_no", mysql.SMALLINT(unsigned=True), nullable=False),
     Column("max_points", Numeric(7, 4), nullable=False),
+    Column("option_order", JSON, nullable=True),
     UniqueConstraint("assessment_id", "question_id", name="uq_assessment_items_1"),
     UniqueConstraint("assessment_id", "order_no", name="uq_assessment_items_2"),
     UniqueConstraint("id", "question_id", name="uq_assessment_items_3"),

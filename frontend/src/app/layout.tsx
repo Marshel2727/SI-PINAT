@@ -1,5 +1,6 @@
 import { AmbientBackground } from "@/components/ambient-background";
 import { Footer, Header } from "@/components/header";
+import { StudentSessionProvider } from "@/features/student-auth/student-session-context";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -23,9 +24,11 @@ export default function RootLayout({
           Lewati ke konten utama
         </a>
         <AmbientBackground />
-        <Header />
-        {children}
-        <Footer />
+        <StudentSessionProvider>
+          <Header />
+          {children}
+          <Footer />
+        </StudentSessionProvider>
       </body>
     </html>
   );

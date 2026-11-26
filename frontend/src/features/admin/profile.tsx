@@ -100,9 +100,8 @@ export function AdminProfile() {
   const passwordMatches = Boolean(confirmPassword && newPassword === confirmPassword);
 
   return (
-    <div className="profile-page">
+    <div className="admin-page profile-page">
       <section className="card profile-hero-card" aria-label="Ringkasan Profil Administrator">
-        <div className="profile-hero-banner" aria-hidden="true" />
         <div className="profile-hero-body">
           <div className="profile-hero-identity">
             <div className="profile-avatar-xl" aria-hidden="true">
@@ -111,14 +110,13 @@ export function AdminProfile() {
             </div>
             <div className="profile-hero-text">
               <div className="profile-hero-badges">
-                <span className="eyebrow">PROFIL ADMINISTRATOR</span>
+                <h1>{user.full_name}</h1>
                 <span className="badge success">● Akun Aktif</span>
               </div>
-              <h1>{user.full_name}</h1>
               <p className="profile-hero-email">
                 <span>{user.email}</span>
                 <span aria-hidden="true">·</span>
-                <span>Koordinator / Administrator SI-PINAT UNM</span>
+                <span>Administrator SI-PINAT</span>
               </p>
             </div>
           </div>
@@ -151,7 +149,7 @@ export function AdminProfile() {
           </div>
           <div className="profile-meta-item">
             <small>Sesi Aktif Saat Ini</small>
-            <strong>{user.active_sessions_count ?? 1} perangkat / tab</strong>
+            <strong>{user.active_sessions_count ?? 1} sesi</strong>
           </div>
         </div>
       </section>
@@ -164,7 +162,6 @@ export function AdminProfile() {
             </span>
             <div>
               <h2>Informasi Akun</h2>
-              <p className="small muted">Identitas administrator yang tampil pada navbar dan log audit.</p>
             </div>
           </div>
 
@@ -191,14 +188,14 @@ export function AdminProfile() {
                 aria-readonly="true"
               />
               <small className="muted">
-                Alamat email dikelola langsung oleh koordinator sistem dan tidak dapat diubah mandiri.
+                Email tidak dapat diubah secara mandiri.
               </small>
             </Field>
 
             <Field label="Peran akses">
               <input
                 type="text"
-                value="Administrator Sistem (Akses Penuh)"
+                value="Administrator"
                 readOnly
                 disabled
                 aria-readonly="true"
@@ -226,7 +223,7 @@ export function AdminProfile() {
             </span>
             <div>
               <h2>Keamanan &amp; Kata Sandi</h2>
-              <p className="small muted">Gunakan kata sandi kuat minimal 8 karakter. Sesi lain otomatis diakhiri.</p>
+              <p className="small muted">Minimal 8 karakter. Sesi lain otomatis diakhiri.</p>
             </div>
           </div>
 
@@ -346,7 +343,6 @@ export function AdminProfile() {
             </span>
             <div>
               <h2>Sesi &amp; Detail Akun</h2>
-              <p className="small muted">Pantau masa berlaku sesi saat ini dan kelola akses perangkat lain.</p>
             </div>
           </div>
 
@@ -413,7 +409,6 @@ export function AdminProfile() {
               </span>
               <div>
                 <h2>Aktivitas Terbaru</h2>
-                <p className="small muted">Jejak perubahan terbaru di modul administrasi.</p>
               </div>
             </div>
             <Link href="/admin/log-aktivitas" className="small" style={{ fontWeight: 600, whiteSpace: "nowrap" }}>

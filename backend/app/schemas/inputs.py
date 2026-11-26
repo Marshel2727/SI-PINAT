@@ -29,6 +29,45 @@ class AdminPasswordChange(Input):
         return self
 
 
+class StudentRegister(Input):
+    nim: str = Field(min_length=4, max_length=20)
+    full_name: str = Field(min_length=2, max_length=120)
+    class_name: str | None = Field(default=None, max_length=40)
+    password: str = Field(min_length=6, max_length=512)
+    confirm_password: str = Field(min_length=6, max_length=512)
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        if self.password != self.confirm_password:
+            raise ValueError("Konfirmasi kata sandi tidak cocok.")
+        return self
+
+
+class StudentLogin(Input):
+    nim: str = Field(min_length=4, max_length=20)
+    password: str = Field(min_length=1, max_length=512)
+
+
+class AdminStudentCreate(Input):
+    nim: str = Field(min_length=4, max_length=20)
+    full_name: str = Field(min_length=2, max_length=120)
+    class_name: str | None = Field(default=None, max_length=40)
+    study_program: str = Field(default="TEKOM", min_length=2, max_length=64)
+    password: str = Field(min_length=6, max_length=512)
+    is_active: bool = True
+
+
+class AdminStudentUpdate(Input):
+    full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    class_name: str | None = Field(default=None, max_length=40)
+    study_program: str | None = Field(default=None, min_length=2, max_length=64)
+    is_active: bool | None = None
+
+
+class AdminStudentResetPassword(Input):
+    new_password: str = Field(min_length=6, max_length=512)
+
+
 class Profile(Input):
     semester: int = Field(default=4, ge=1, le=14)
     nim: str | None = Field(default=None, max_length=20)
@@ -39,12 +78,6 @@ class Profile(Input):
 
 class AssessmentCreate(Profile):
     mode: Literal["DEMO", "FULL"]
-
-    @model_validator(mode="after")
-    def identity(self):
-        if self.mode == "FULL" and (not self.nim or not self.full_name):
-            raise ValueError("NIM dan nama wajib untuk asesmen FULL.")
-        return self
 
 
 class GradeRow(Input):

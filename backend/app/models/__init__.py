@@ -3,6 +3,7 @@ from app.models.admin_users import admin_users
 from app.models.admin_sessions import admin_sessions
 from app.models.audit_logs import audit_logs
 from app.models.students import students
+from app.models.student_sessions import student_sessions
 from app.models.specializations import specializations
 from app.models.courses import courses
 from app.models.questions import questions

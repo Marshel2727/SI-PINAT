@@ -158,6 +158,9 @@ export function Recommendation() {
           </ul>
 
           <div className="no-print">
+            <p className="small muted" style={{ marginBottom: 12 }}>
+              Tes kompetensi dikerjakan 1 kali per akun, dan nilai akademik tetap dapat diperbarui untuk menghitung ulang rekomendasi.
+            </p>
             <ErrorNotice error={pdfError} />
             <div className="actions">
               <button type="button" disabled={downloadingPdf} onClick={downloadPdf}>
@@ -166,8 +169,8 @@ export function Recommendation() {
               <button type="button" className="secondary" onClick={() => window.print()}>
                 Cetak Ringkasan
               </button>
-              <Link className="button secondary" href="/?mulai=baru">
-                Ulangi Penentuan Peminatan
+              <Link className="button secondary" href={`/asesmen/${assessment.public_id}/nilai`}>
+                Edit Nilai Akademik
               </Link>
             </div>
           </div>

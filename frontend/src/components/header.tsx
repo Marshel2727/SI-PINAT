@@ -1,10 +1,11 @@
 "use client";
 
+import { useStudentSession } from "@/features/student-auth/student-session-context";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BgMotionToggle } from "./ambient-background";
-import { IconClose, IconMenu } from "./icons";
+import { IconClose, IconLogOut, IconMenu, IconUser } from "./icons";
 
 const PUBLIC_NAV_LINKS = [
   { href: "/", label: "Beranda" },
@@ -14,6 +15,7 @@ const PUBLIC_NAV_LINKS = [
 
 export function Header() {
   const pathname = usePathname();
+  const { student, logout, loggingOut } = useStudentSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -47,8 +49,8 @@ export function Header() {
     };
   }, [mobileMenuOpen]);
 
-  // Jangan render header publik di modul admin
-  if (pathname.startsWith("/admin")) {
+  // Jangan render header publik di modul admin atau halaman masuk mahasiswa
+  if (pathname.startsWith("/admin") || pathname.startsWith("/masuk")) {
     return null;
   }
 
@@ -88,9 +90,33 @@ export function Header() {
         </nav>
 
         <div className="header-actions">
-          <Link className="button secondary compact desktop-only" href="/admin/login">
-            Portal Admin
-          </Link>
+          {student ? (
+            <div className="header-student-group desktop-only">
+              <span className="header-student-pill" title={`${student.full_name} (${student.nim})`}>
+                <IconUser size={14} />
+                <span className="header-student-name">{student.full_name}</span>
+                <span className="mono">{student.nim}</span>
+              </span>
+              <button
+                type="button"
+                className="secondary compact"
+                disabled={loggingOut}
+                onClick={() => void logout()}
+              >
+                <IconLogOut size={14} />
+                <span>{loggingOut ? "Keluar…" : "Keluar"}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="actions desktop-only">
+              <Link className="button secondary compact" href="/masuk">
+                Masuk TEKOM
+              </Link>
+              <Link className="button secondary compact" href="/admin/login">
+                Portal Admin
+              </Link>
+            </div>
+          )}
 
           {/* Tombol Hamburger untuk Mobile */}
           <button
@@ -126,9 +152,35 @@ export function Header() {
               );
             })}
             <hr className="drawer-divider" />
-            <Link className="button secondary compact full" href="/admin/login" onClick={closeMenu}>
-              Portal Admin
-            </Link>
+            {student ? (
+              <div className="drawer-student-box">
+                <div className="drawer-student-info">
+                  <strong>{student.full_name}</strong>
+                  <span className="small muted mono">{student.nim} · Teknik Komputer</span>
+                </div>
+                <button
+                  type="button"
+                  className="secondary compact full"
+                  disabled={loggingOut}
+                  onClick={() => {
+                    closeMenu();
+                    void logout();
+                  }}
+                >
+                  <IconLogOut size={14} />
+                  <span>{loggingOut ? "Keluar…" : "Keluar"}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="stack">
+                <Link className="button compact full" href="/masuk" onClick={closeMenu}>
+                  Masuk TEKOM
+                </Link>
+                <Link className="button secondary compact full" href="/admin/login" onClick={closeMenu}>
+                  Portal Admin
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       )}
@@ -139,8 +191,8 @@ export function Header() {
 export function Footer() {
   const pathname = usePathname();
 
-  // Jangan render footer publik di modul admin
-  if (pathname.startsWith("/admin")) {
+  // Jangan render footer publik di modul admin atau halaman masuk mahasiswa
+  if (pathname.startsWith("/admin") || pathname.startsWith("/masuk")) {
     return null;
   }
 

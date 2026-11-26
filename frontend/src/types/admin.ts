@@ -56,3 +56,16 @@ export interface AuditLogRow {
   after_data: unknown;
   created_at: string;
 }
+
+export interface AdminStudent {
+  id: string;
+  nim: string;
+  full_name: string;
+  class_name: string | null;
+  study_program: string;
+  is_active: boolean;
+  has_password?: boolean;
+  assessment_public_id?: string | null;
+  assessment_status?: string | null;
+  created_at: string | null;
+}

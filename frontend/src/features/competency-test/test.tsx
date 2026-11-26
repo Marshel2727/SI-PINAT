@@ -1,7 +1,6 @@
 "use client";
 
 import { ErrorNotice, Modal, Notice } from "@/components/ui";
-import { names } from "@/lib/format";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { useEffect, useState } from "react";
 import { useCompetencyTest } from "./use-competency-test";
@@ -86,16 +85,6 @@ export function CompetencyTest() {
     .map((item, idx) => ({ item, idx, pendingSave: pending[item.id] }))
     .filter((entry): entry is { item: typeof visible[number]; idx: number; pendingSave: NonNullable<typeof pending[string]> } => entry.pendingSave?.state === "failed");
 
-  const navGroups = Object.entries(names)
-    .map(([code, name]) => ({
-      code,
-      name,
-      entries: visible
-        .map((item, idx) => ({ item, idx }))
-        .filter(entry => entry.item.specialization_code === code),
-    }))
-    .filter(group => group.entries.length > 0);
-
   return (
     <>
       <span className="eyebrow">TAHAP 3 DARI 4</span>
@@ -118,9 +107,6 @@ export function CompetencyTest() {
             <div className="question-header">
               <span className="badge mono">
                 SOAL #{String(index + 1).padStart(2, "0")} / {visible.length}
-              </span>
-              <span className="badge">
-                {current.specialization_name}
               </span>
             </div>
 
@@ -243,54 +229,38 @@ export function CompetencyTest() {
           <aside className="stack">
             <article className="card">
               <h3>Navigasi Soal</h3>
-              <div className="question-nav-groups">
-                {navGroups.map(group => {
-                  const answeredInGroup = group.entries.filter(entry => Boolean(entry.item.answer)).length;
-                  const firstNo = group.entries[0].idx + 1;
-                  const lastNo = group.entries[group.entries.length - 1].idx + 1;
-                  const rangeLabel = firstNo === lastNo ? `No. ${firstNo}` : `No. ${firstNo}–${lastNo}`;
+              <div className="question-nav">
+                {visible.map((item, idx) => {
+                  const itemPending = pending[item.id];
+                  const statusLabel = itemPending?.state === "saving"
+                    ? "sedang disimpan"
+                    : itemPending?.state === "failed"
+                      ? "gagal disimpan"
+                      : item.answer
+                        ? "sudah dijawab"
+                        : "belum dijawab";
+                  const currentLabel = idx === index ? ", soal aktif" : "";
                   return (
-                    <div key={group.code}>
-                      <div className="question-nav-label">
-                        <span>{group.name} ({rangeLabel})</span>
-                        <span>{answeredInGroup}/{group.entries.length}</span>
-                      </div>
-                      <div className="question-nav">
-                        {group.entries.map(({ item, idx }) => {
-                          const itemPending = pending[item.id];
-                          const statusLabel = itemPending?.state === "saving"
-                            ? "sedang disimpan"
-                            : itemPending?.state === "failed"
-                              ? "gagal disimpan"
-                              : item.answer
-                                ? "sudah dijawab"
-                                : "belum dijawab";
-                          const currentLabel = idx === index ? ", soal aktif" : "";
-                          return (
-                            <button
-                              type="button"
-                              key={item.id}
-                              className={
-                                itemPending
-                                  ? "pending-answer " + itemPending.state
-                                  : idx === index
-                                    ? ""
-                                    : item.answer
-                                      ? "success-button"
-                                      : "secondary"
-                              }
-                              disabled={busy}
-                              aria-current={idx === index ? "step" : undefined}
-                              aria-label={`Soal nomor ${idx + 1} (${item.specialization_name}), ${statusLabel}${currentLabel}`}
-                              onClick={() => setIndex(idx)}
-                            >
-                              {String(idx + 1).padStart(2, "0")}
-                              {itemPending?.state === "saving" ? " …" : itemPending?.state === "failed" ? " !" : ""}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      key={item.id}
+                      className={
+                        itemPending
+                          ? "pending-answer " + itemPending.state
+                          : idx === index
+                            ? ""
+                            : item.answer
+                              ? "success-button"
+                              : "secondary"
+                      }
+                      disabled={busy}
+                      aria-current={idx === index ? "step" : undefined}
+                      aria-label={`Soal nomor ${idx + 1}, ${statusLabel}${currentLabel}`}
+                      onClick={() => setIndex(idx)}
+                    >
+                      {String(idx + 1).padStart(2, "0")}
+                      {itemPending?.state === "saving" ? " …" : itemPending?.state === "failed" ? " !" : ""}
+                    </button>
                   );
                 })}
               </div>

@@ -30,7 +30,7 @@ export function QuestionEditor({ id }: {
     <>
       <Link href="/admin/bank-soal">← Bank soal</Link>
       <h1>
-        {id === "baru" && !question?.id ? "Tambah soal" : "Detail dan revisi soal"}
+        {id === "baru" && !question?.id ? "Tambah Soal" : "Detail Soal"}
       </h1>
       <ErrorNotice error={error} />
       {message && <Notice tone={error ? "info" : "success"}>{message}</Notice>}
@@ -113,7 +113,7 @@ export function QuestionEditor({ id }: {
               </Field>
 
               <div className="spread wrap" style={{ marginTop: 16 }}>
-                <h3 style={{ margin: 0 }}>Opsi jawaban dan kunci tunggal ({question.options.length}/8)</h3>
+                <h3 style={{ margin: 0 }}>Opsi Jawaban ({question.options.length}/8)</h3>
                 {!locked && (
                   <button
                     type="button"
@@ -172,7 +172,7 @@ export function QuestionEditor({ id }: {
                 </div>
               ))}
 
-              <Field label="Penjelasan kunci (admin)">
+              <Field label="Penjelasan kunci (opsional)">
                 <textarea
                   name="explanation"
                   value={question.explanation ?? ""}
@@ -190,13 +190,13 @@ export function QuestionEditor({ id }: {
                         checked={autoPublish}
                         onChange={e => setAutoPublish(e.target.checked)}
                       />
-                      <span><strong>Langsung publikasikan</strong> (soal langsung aktif &amp; siap digunakan)</span>
+                      <span>Langsung publikasikan</span>
                     </label>
                   ) : (
-                    <span className="small muted">Simpan revisi draf sebelum mempublikasikan</span>
+                    <span />
                   )}
                   <button disabled={busy}>
-                    {busy ? "Menyimpan\u2026" : (!question.id ? "Simpan & Proses" : "Simpan Draf")}
+                    {busy ? "Menyimpan\u2026" : (!question.id ? "Simpan Soal" : "Simpan Draf")}
                   </button>
                 </div>
               )}
@@ -217,7 +217,7 @@ export function QuestionEditor({ id }: {
               )}
               {question.status === "ARCHIVED" && (
                 <button type="button" disabled={busy} onClick={() => action("publish")}>
-                  ↺ Tampilkan lagi di tes
+                  Tampilkan Lagi
                 </button>
               )}
               <button type="button" className="secondary" disabled={busy} onClick={() => action("revisions")}>

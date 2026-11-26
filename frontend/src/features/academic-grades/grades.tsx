@@ -31,6 +31,7 @@ export function Grades() {
     preview,
     closePreview,
     locked,
+    isCompleted,
     manual,
     upload,
     next,
@@ -67,8 +68,8 @@ export function Grades() {
     }
   }
 
-  const maxSemester = Math.max(1, Math.min(assessment.current_semester || 4, 4));
-  const semesterOptions = Array.from({ length: maxSemester }, (_, i) => i + 1);
+  const maxSemester = 4;
+  const semesterOptions = [1, 2, 3, 4];
   const activeSemesterFilter = semester && Number(semester) <= maxSemester ? semester : "";
   const filteredCourses = master ? master.courses.filter(c => !activeSemesterFilter || String(c.semester) === activeSemesterFilter) : [];
 
@@ -78,10 +79,20 @@ export function Grades() {
 
   return (
     <>
-      <span className="eyebrow">TAHAP 2 DARI 4</span>
-      <h1>Input Nilai Akademik</h1>
+      <span className="eyebrow">
+        {isCompleted ? "EDIT NILAI AKADEMIK · TAHAP 2 DARI 4" : "TAHAP 2 DARI 4"}
+      </span>
+      <h1>{isCompleted ? "Edit Nilai Akademik" : "Input Nilai Akademik"}</h1>
+      <p className="small muted">
+        Wajib mengisi seluruh mata kuliah wajib dari Semester 1 hingga Semester 4.
+      </p>
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
+      {isCompleted && (
+        <Notice tone="info">
+          <strong>Mode Edit Nilai Akademik:</strong> Tes kompetensi sudah selesai dan terkunci (1× per akun). Memperbarui nilai secara manual maupun impor transkrip akan otomatis menghitung ulang hasil rekomendasi Fuzzy Mamdani.
+        </Notice>
+      )}
       {locked && (
         <Notice>
           Nilai akademik telah terkunci setelah Anda memulai tes kompetensi.{" "}
@@ -346,7 +357,11 @@ export function Grades() {
 
       {!locked && validationAttempted && !canContinue && (
         <Notice tone="error">
-          <strong>Belum dapat melanjutkan ke tes kompetensi.</strong>{" "}
+          <strong>
+            {isCompleted
+              ? "Belum dapat menyimpan dan menghitung ulang hasil."
+              : "Belum dapat melanjutkan ke tes kompetensi."}
+          </strong>{" "}
           {missingRequired.length > 0 ? (
             <>
               Lengkapi <strong>{missingRequired.length} mata kuliah wajib</strong> yang masih kosong:{" "}
@@ -368,11 +383,25 @@ export function Grades() {
       )}
 
       <div className="spread wrap section">
-        <Link className="button secondary" href={"/asesmen/" + assessment.public_id + "/peminatan"}>
-          ← Kembali ke Peminatan Awal
-        </Link>
+        {isCompleted ? (
+          <Link className="button secondary" href={"/asesmen/" + assessment.public_id + "/hasil"}>
+            ← Kembali ke Hasil Rekomendasi
+          </Link>
+        ) : (
+          <Link className="button secondary" href={"/asesmen/" + assessment.public_id + "/peminatan"}>
+            ← Kembali ke Peminatan Awal
+          </Link>
+        )}
         <button type="button" disabled={busy || locked || !master} onClick={next}>
-          {busy ? "Menyimpan & menyiapkan tes…" : dirty ? "Simpan & Mulai Tes Kompetensi →" : "Mulai Tes Kompetensi →"}
+          {isCompleted
+            ? busy
+              ? "Menyimpan & menghitung ulang…"
+              : "Simpan & Hitung Ulang Hasil →"
+            : busy
+              ? "Menyimpan & menyiapkan tes…"
+              : dirty
+                ? "Simpan & Mulai Tes Kompetensi →"
+                : "Mulai Tes Kompetensi →"}
         </button>
       </div>
 

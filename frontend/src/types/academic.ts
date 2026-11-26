@@ -58,6 +58,7 @@ export interface GradeState {
     provided: number;
     available: number;
   };
+  recalculated?: boolean;
 }
 
 export interface GradeImportRow {

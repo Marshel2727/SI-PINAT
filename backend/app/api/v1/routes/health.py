@@ -6,7 +6,7 @@ from app.core.errors import fail
 from app.api.v1.common import ok
 
 router = APIRouter(tags=["health"])
-EXPECTED_MIGRATION = "0002_unm_grade_conversions"
+EXPECTED_MIGRATION = "0003_student_accounts"
 
 
 @router.get("/health/live")

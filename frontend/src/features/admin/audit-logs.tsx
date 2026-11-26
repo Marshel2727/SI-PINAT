@@ -117,59 +117,59 @@ export function AuditLogs() {
   const hasFilters = Boolean(entityTable || action);
 
   return (
-    <>
-      <span className="eyebrow">JEJAK AUDIT ADMINISTRATOR</span>
-      <h1>Log Aktivitas</h1>
-      <p>
-        Riwayat perubahan data kurikulum, bank soal, konfigurasi model fuzzy, validasi, dan sesi administrator.
-      </p>
-
-      <div className="filters">
-        <Field label="Entitas / Tabel">
-          <select
-            value={entityTable}
-            onChange={e => {
-              setEntityTable(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua entitas</option>
-            {ENTITY_OPTIONS.map(([val, label]) => (
-              <option key={val} value={val}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Aksi">
-          <select
-            value={action}
-            onChange={e => {
-              setAction(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua aksi</option>
-            {ACTION_OPTIONS.map(act => (
-              <option key={act} value={act}>
-                {ACTION_LABELS[act] ? `${ACTION_LABELS[act]} (${act})` : act}
-              </option>
-            ))}
-          </select>
-        </Field>
-        {hasFilters && (
-          <div style={{ alignSelf: "flex-end" }}>
-            <button type="button" className="secondary" onClick={resetFilters}>
-              Reset Filter
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="admin-page">
+      <header className="admin-page-header">
+        <div className="admin-page-title">
+          <h1>Log Aktivitas</h1>
+          <span className="admin-count-pill">{total}</span>
+        </div>
+      </header>
 
       <ErrorNotice error={error} />
-      {loading && <Notice>Memuat log aktivitas…</Notice>}
 
-      <article className="card">
+      <article className="card admin-table-card">
+        <div className="admin-table-toolbar">
+          <Field label="Modul">
+            <select
+              value={entityTable}
+              onChange={e => {
+                setEntityTable(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Semua modul</option>
+              {ENTITY_OPTIONS.map(([val, label]) => (
+                <option key={val} value={val}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Aksi">
+            <select
+              value={action}
+              onChange={e => {
+                setAction(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Semua aksi</option>
+              {ACTION_OPTIONS.map(act => (
+                <option key={act} value={act}>
+                  {ACTION_LABELS[act] ?? act}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {hasFilters && (
+            <button type="button" className="secondary compact" onClick={resetFilters}>
+              Reset
+            </button>
+          )}
+        </div>
+
+        {loading && <Notice>Memuat log aktivitas…</Notice>}
+
         {!loading && !rows.length ? (
           <Notice>Belum ada catatan log aktivitas sesuai filter.</Notice>
         ) : (
@@ -180,7 +180,7 @@ export function AuditLogs() {
                   <th>Waktu</th>
                   <th>Aktor</th>
                   <th>Aksi</th>
-                  <th>Entitas &amp; ID</th>
+                  <th>Modul &amp; ID</th>
                   <th>Rincian Perubahan</th>
                 </tr>
               </thead>
@@ -205,24 +205,20 @@ export function AuditLogs() {
                         <StatusBadge status={badgeStatusForAction(row.action)}>
                           {actionLabel}
                         </StatusBadge>
-                        {ACTION_LABELS[row.action] && (
-                          <small className="block mono muted">{row.action}</small>
-                        )}
                       </td>
                       <td>
                         <strong>{entityLabel}</strong>
                         {row.entity_id ? ` #${row.entity_id}` : ""}
-                        <small className="block mono muted">{row.entity_table}</small>
                       </td>
                       <td style={{ minWidth: 260 }}>
                         {hasDiff ? (
                           <details>
                             <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                              Lihat before / after JSON
+                              Lihat rincian
                             </summary>
                             <div className="two-columns" style={{ gap: 10, marginTop: 8 }}>
                               <div>
-                                <small className="muted block"><strong>Sebelum (before_data)</strong></small>
+                                <small className="muted block"><strong>Sebelum</strong></small>
                                 <pre
                                   className="mono"
                                   style={{
@@ -239,7 +235,7 @@ export function AuditLogs() {
                                 </pre>
                               </div>
                               <div>
-                                <small className="muted block"><strong>Sesudah (after_data)</strong></small>
+                                <small className="muted block"><strong>Sesudah</strong></small>
                                 <pre
                                   className="mono"
                                   style={{
@@ -270,6 +266,6 @@ export function AuditLogs() {
         )}
         <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
-    </>
+    </div>
   );
 }

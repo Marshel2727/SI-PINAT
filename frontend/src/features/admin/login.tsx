@@ -24,7 +24,7 @@ export function Login({ nextPath, expired = false }: {
           alt="Logo SI-PINAT"
         />
         <h1 className="login-title">Selamat Datang</h1>
-        <p className="login-subtitle">Masuk ke Panel Administrator SI-PINAT</p>
+        <p className="login-subtitle">Panel Administrator SI-PINAT</p>
 
         {expired && (
           <Notice>
@@ -81,10 +81,6 @@ export function Login({ nextPath, expired = false }: {
               </button>
             </div>
           </div>
-
-          <p className="login-page-link">
-            <span className="login-page-link-label">Maks. 10 percobaan / 5 menit</span>
-          </p>
 
           <ErrorNotice error={error} />
 

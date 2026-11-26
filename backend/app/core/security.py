@@ -71,16 +71,50 @@ def admin(request: Request, db=Depends(database)):
     return user
 
 
+def current_student(request: Request, db, required: bool = True):
+    token = request.cookies.get("sipinat_student", "") if request else ""
+    session = one(db, "student_sessions", token_hash=digest(token)) if token else None
+    if not session or session["revoked_at"] or session["expires_at"] <= now():
+        if not required:
+            return None
+        fail(401, "Silakan masuk menggunakan akun mahasiswa TEKOM.", "UNAUTHENTICATED")
+    student = one(db, "students", id=session["student_id"])
+    if not student or not student["is_active"]:
+        if not required:
+            return None
+        fail(401, "Silakan masuk menggunakan akun mahasiswa TEKOM.", "UNAUTHENTICATED")
+    if (student["study_program"] or "").strip().upper() != "TEKOM":
+        fail(
+            403,
+            "Akses ditolak. Sistem ini khusus untuk mahasiswa Program Studi Teknik Komputer (TEKOM).",
+            "NON_TEKOM_FORBIDDEN",
+        )
+    return student
+
+
+def student_user(request: Request, db=Depends(database)):
+    return current_student(request, db, required=True)
+
+
 def owned(db, request, public_id, lock=False):
     t = table("assessments")
     query = select(t).where(t.c.public_id == public_id)
     if lock:
         query = query.with_for_update()
     assessment = db.execute(query).mappings().first()
-    token = request.cookies.get("sipinat_a_" + public_id, "")
-    if not assessment or not token or not hmac.compare_digest(assessment["access_token_hash"], digest(token)):
+    if not assessment:
         fail(404, "Sesi tidak ditemukan atau bukan milik Anda.", "NOT_FOUND")
-    if assessment["expires_at"] and assessment["expires_at"] <= now():
+
+    student = current_student(request, db, required=False)
+    if student and assessment["student_id"] == student["id"]:
+        if assessment["status"] != "COMPLETED" and assessment["expires_at"] and assessment["expires_at"] <= now():
+            fail(401, "Sesi asesmen sudah kedaluwarsa. Mulai sesi baru.", "SESSION_EXPIRED")
+        return assessment
+
+    token = request.cookies.get("sipinat_a_" + public_id, "")
+    if not token or not hmac.compare_digest(assessment["access_token_hash"], digest(token)):
+        fail(404, "Sesi tidak ditemukan atau bukan milik Anda.", "NOT_FOUND")
+    if assessment["status"] != "COMPLETED" and assessment["expires_at"] and assessment["expires_at"] <= now():
         fail(401, "Sesi asesmen sudah kedaluwarsa. Mulai sesi baru.", "SESSION_EXPIRED")
     return assessment
 

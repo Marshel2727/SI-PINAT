@@ -1,5 +1,6 @@
 "use client";
 
+import { IconBookOpen, IconCheckCircle, IconFileText, IconSliders } from "@/components/icons";
 import { ErrorNotice, Field, Notice, Pagination, StatusBadge } from "@/components/ui";
 import { number, time } from "@/lib/format";
 import Link from "next/link";
@@ -52,37 +53,31 @@ export function Dashboard() {
   const modelSetupHref = draftModel ? `/admin/model-fuzzy/${draftModel.id}` : "/admin/model-fuzzy";
 
   return (
-    <>
-      <article className="card">
-        <span className="eyebrow">SISTEM PAKAR MAMDANI</span>
+    <div className="admin-page dashboard-page">
+      <header className="admin-page-header dashboard-header">
         <h1>Dashboard Administrator</h1>
-        <p>
-          Ringkasan database global, aktivitas asesmen mahasiswa, serta akses cepat pengelolaan instrumen.
-        </p>
-        <div className="actions">
-          <Link className="button secondary" href="/admin/mata-kuliah">
+        <div className="actions dashboard-header-actions">
+          <Link className="button secondary compact" href="/admin/mata-kuliah">
             + Mata kuliah
           </Link>
-          <Link className="button secondary" href="/admin/bank-soal">
+          <Link className="button secondary compact" href="/admin/bank-soal">
             + Butir soal
           </Link>
-          <Link className="button" href="/admin/validasi">
-            Uji skenario fuzzy
+          <Link className="button compact" href="/admin/validasi">
+            Uji skenario
           </Link>
           <button
             type="button"
-            className="secondary"
+            className="secondary compact"
             disabled={downloading}
             onClick={downloadXlsx}
+            title="Ekspor XLSX menyertakan 1 baris per peminatan sesuai filter aktif"
           >
-            {downloading ? "Menyiapkan XLSX\u2026" : "Unduh XLSX sesuai filter"}
+            {downloading ? "Menyiapkan XLSX\u2026" : "Unduh XLSX"}
           </button>
         </div>
-        <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
-          Ekspor XLSX menyertakan 1 baris per peminatan (3 baris per asesmen selesai) sesuai filter aktif di bawah.
-        </p>
-        <ErrorNotice error={exportError} />
-      </article>
+      </header>
+      <ErrorNotice error={exportError} />
 
       {stats && !readinessLoading && (
         <section
@@ -90,22 +85,23 @@ export function Dashboard() {
           className={"readiness-banner " + (systemReady ? "is-ready" : "needs-setup")}
         >
           <div className="spread wrap">
-            <div>
-              <span className="eyebrow">STATUS KESIAPAN SISTEM PUBLIK</span>
-              <h2 style={{ marginTop: 4, marginBottom: 4 }}>
-                {systemReady
-                  ? "✓ Sistem Siap Digunakan Mahasiswa"
-                  : "Lengkapi 3 prasyarat sebelum membuka portal mahasiswa"}
-              </h2>
-              <p className="small muted" style={{ margin: 0 }}>
-                {systemReady
-                  ? `Model fuzzy aktif: ${publishedModels[0].version_code} · ${stats.total_courses} mata kuliah aktif · ${readySpecsCount}/${totalSpecsCount} peminatan bank soal memenuhi kuota.`
-                  : "Portal publik membutuhkan minimal 1 mata kuliah aktif, kuota bank soal terpublikasi di seluruh peminatan, dan 1 model fuzzy terpublikasi."}
-              </p>
-            </div>
+            {systemReady ? (
+              <div className="readiness-status-row">
+                <span className="readiness-dot" aria-hidden="true" />
+                <strong className="readiness-title">Sistem Siap Digunakan</strong>
+              </div>
+            ) : (
+              <div>
+                <h2 style={{ marginTop: 0, marginBottom: 4 }}>
+                  Lengkapi 3 prasyarat sebelum membuka portal mahasiswa
+                </h2>
+                <p className="small muted" style={{ margin: 0 }}>
+                  Portal publik membutuhkan minimal 1 mata kuliah aktif, kuota bank soal terpublikasi di seluruh peminatan, dan 1 model fuzzy terpublikasi.
+                </p>
+              </div>
+            )}
             {systemReady && (
               <div className="actions">
-                <span className="badge success">{publishedModels[0].version_code}</span>
                 <Link className="button secondary compact" href="/admin/model-fuzzy">
                   Kelola Model
                 </Link>
@@ -170,198 +166,198 @@ export function Dashboard() {
         </section>
       )}
 
-      <div className="filters">
-        <Field label="Cari NIM, Nama, atau ID Sesi">
-          <input
-            value={search}
-            maxLength={150}
-            placeholder="Ketik NIM, nama mahasiswa, atau ID sesi…"
-            onChange={e => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-        </Field>
-        <Field label="Mode">
-          <select
-            value={mode}
-            onChange={e => {
-              setMode(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua sesi</option>
-            <option value="FULL">Asesmen Mahasiswa (Resmi)</option>
-            <option value="DEMO">Data Simulasi Lama</option>
-          </select>
-        </Field>
-        <Field label="Status">
-          <select
-            value={status}
-            onChange={e => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua status</option>
-            {ASSESSMENT_STATUSES.map(([val, label]) => (
-              <option key={val} value={val}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Dari tanggal dibuat (UTC)">
-          <input
-            type="date"
-            value={from}
-            onChange={e => updateFrom(e.target.value)}
-          />
-        </Field>
-        <Field label="Sampai tanggal dibuat (UTC)">
-          <input
-            type="date"
-            value={to}
-            min={from}
-            onChange={e => updateTo(e.target.value)}
-          />
-        </Field>
-        {hasActiveFilter && (
-          <div style={{ alignSelf: "flex-end" }}>
-            <button type="button" className="secondary" onClick={resetFilters}>
-              Reset Filter
-            </button>
-          </div>
-        )}
-      </div>
-      <p className="small muted" style={{ marginTop: -6 }}>
-        Filter tanggal menyaring waktu pembuatan sesi (UTC). Kolom &ldquo;Selesai&rdquo; pada tabel menampilkan waktu lokal perangkat.
-      </p>
+      {stats && (
+        <div className="four-columns dashboard-stats">
+          {([
+            ["Total Mata Kuliah", stats.total_courses, "/admin/mata-kuliah", IconBookOpen],
+            ["Soal Terpublikasi", stats.total_questions, "/admin/bank-soal", IconFileText],
+            ["Versi Model", stats.total_models, "/admin/model-fuzzy", IconSliders],
+            ["Skenario Validasi", stats.total_cases, "/admin/validasi", IconCheckCircle],
+          ] as const).map(([title, n, href, Icon]) => (
+            <Link className="card dashboard-stat-card" href={href} key={title}>
+              <div className="dashboard-stat-top">
+                <small>{title}</small>
+                <span className="dashboard-stat-icon" aria-hidden="true">
+                  <Icon size={17} />
+                </span>
+              </div>
+              <strong className="big-number">{n}</strong>
+            </Link>
+          ))}
+        </div>
+      )}
 
       <ErrorNotice error={error} />
       {loading && <Notice>Memuat ringkasan dan aktivitas…</Notice>}
 
       {stats && (
-        <>
-          <div style={{ marginTop: 18 }}>
-            <span className="eyebrow">KATALOG INSTRUMEN GLOBAL (TIDAK TERPENGARUH FILTER)</span>
-          </div>
-          <div className="four-columns stats" style={{ marginTop: 8 }}>
-            {[
-              ["Total mata kuliah", stats.total_courses],
-              ["Soal terpublikasi", stats.total_questions],
-              ["Versi model", stats.total_models],
-              ["Skenario validasi", stats.total_cases]
-            ].map(([title, n]) => (
-              <article className="card" key={title}>
-                <small>
-                  {title}
-                </small>
-                <strong className="big-number">
-                  {n}
-                </strong>
-              </article>
-            ))}
-          </div>
-
-          <Notice>
-            <strong>Ringkasan Asesmen (sesuai filter mode &amp; tanggal):</strong>{" "}
-            {stats.total_assessments} asesmen · {stats.completed} selesai
-            {stats.modes.DEMO > 0 ? ` · ${stats.modes.DEMO} simulasi lama` : ""}.
-            {(status || search.trim()) && " (Filter status & pencarian diterapkan pada daftar tabel dan ekspor XLSX.)"}
-          </Notice>
-
-          <div className="dashboard-grid">
-            <article className="card">
-              <div className="spread wrap">
-                <h2>Aktivitas Asesmen Mahasiswa</h2>
-                <span className="small muted">{total} sesi ditemukan</span>
+        <div className="dashboard-grid">
+          <article className="card admin-table-card">
+            <div className="admin-table-card-head">
+              <h2>Aktivitas Asesmen Mahasiswa</h2>
+              <div className="dashboard-summary-meta">
+                <span className="admin-count-pill">
+                  {stats.total_assessments} asesmen · {stats.completed} selesai
+                  {stats.modes.DEMO > 0 ? ` · ${stats.modes.DEMO} simulasi` : ""}
+                </span>
+                <span className="small muted">{total} tampil</span>
               </div>
-              {!records.length ? (
-                <Notice>Belum ada asesmen sesuai filter.</Notice>
-              ) : (
-                <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel aktivitas asesmen mahasiswa">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Peserta</th>
-                        <th>Mode / status</th>
-                        <th>Rekomendasi teratas</th>
-                        <th>Selesai (Waktu Lokal)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {records.map(r => (
-                        <tr key={r.public_id}>
-                          <td>
-                            <Link href={"/admin/asesmen/" + r.public_id}>
-                              {r.student?.full_name || "Peserta Asesmen"}
-                            </Link>
-                            <small className="block mono">
-                              {r.student?.nim || r.public_id.slice(0, 8)}
-                            </small>
-                          </td>
-                          <td>
+            </div>
+
+            <div className="admin-table-toolbar" role="search" aria-label="Filter aktivitas asesmen">
+              <div className="field is-search">
+                <span>Cari NIM, Nama, atau ID Sesi</span>
+                <input
+                  aria-label="Cari NIM, Nama, atau ID Sesi"
+                  value={search}
+                  maxLength={150}
+                  placeholder="Ketik NIM, nama, atau ID sesi…"
+                  onChange={e => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <Field label="Mode">
+                <select
+                  value={mode}
+                  onChange={e => {
+                    setMode(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">Semua sesi</option>
+                  <option value="FULL">Resmi</option>
+                  <option value="DEMO">Simulasi</option>
+                </select>
+              </Field>
+              <Field label="Status">
+                <select
+                  value={status}
+                  onChange={e => {
+                    setStatus(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">Semua status</option>
+                  {ASSESSMENT_STATUSES.map(([val, label]) => (
+                    <option key={val} value={val}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Dari tanggal">
+                <input
+                  type="date"
+                  value={from}
+                  onChange={e => updateFrom(e.target.value)}
+                />
+              </Field>
+              <Field label="Sampai tanggal">
+                <input
+                  type="date"
+                  value={to}
+                  min={from}
+                  onChange={e => updateTo(e.target.value)}
+                />
+              </Field>
+              {hasActiveFilter && (
+                <button type="button" className="secondary compact" onClick={resetFilters}>
+                  Reset
+                </button>
+              )}
+            </div>
+
+            {!records.length ? (
+              <Notice>Belum ada asesmen sesuai filter.</Notice>
+            ) : (
+              <div className="table-scroll" role="region" tabIndex={0} aria-label="Tabel aktivitas asesmen mahasiswa">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Peserta</th>
+                      <th>Mode / status</th>
+                      <th>Rekomendasi teratas</th>
+                      <th>Selesai</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.map(r => (
+                      <tr key={r.public_id}>
+                        <td>
+                          <Link href={"/admin/asesmen/" + r.public_id}>
+                            {r.student?.full_name || "Peserta Asesmen"}
+                          </Link>
+                          <small className="block mono muted">
+                            {r.student?.nim || r.public_id.slice(0, 8)}
+                          </small>
+                        </td>
+                        <td>
+                          <div className="dashboard-status-stack">
                             <span className="badge">
                               {r.mode === "FULL" ? "Resmi" : "Simulasi"}
                             </span>
-                            <small className="block">
-                              <StatusBadge status={r.status} />
-                            </small>
-                          </td>
-                          <td>
-                            {r.result
-                              ? r.result.scores
-                                .filter(s => s.rank_position === 1)
-                                .map(s => s.specialization_name + " (" +
-                                  number(s.suitability_score) + ")")
-                                .join(" / ")
-                              : "Belum selesai"}
-                          </td>
-                          <td>
-                            {time(r.completed_at)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
-            </article>
-            <article className="card">
+                            <StatusBadge status={r.status} />
+                          </div>
+                        </td>
+                        <td>
+                          {r.result
+                            ? r.result.scores
+                              .filter(s => s.rank_position === 1)
+                              .map(s => s.specialization_name + " (" +
+                                number(s.suitability_score) + ")")
+                              .join(" / ")
+                            : "Belum selesai"}
+                        </td>
+                        <td style={{ whiteSpace: "nowrap" }}>
+                          {time(r.completed_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
+          </article>
+
+          <article className="card">
+            <div className="dashboard-card-header" style={{ marginBottom: 4 }}>
               <h2>Sebaran Rekomendasi</h2>
-              {!stats.distribution.length ? (
-                <p>Belum ada hasil selesai.</p>
-              ) : (stats.distribution.map(r => {
-                const pct = stats.completed ? (100 * r.total) / stats.completed : 0;
-                return (
-                  <div key={r.specialization_id}>
-                    <p className="spread">
-                      <strong>
-                        {r.name}
-                      </strong>
-                      <span>
-                        {r.total} ({number(pct, 1)}%)
-                      </span>
-                    </p>
-                    <div className="bar">
-                      <div
-                        style={{
-                          width: Math.min(100, Math.max(0, pct)) + "%"
-                        }}
-                      />
+            </div>
+            {!stats.distribution.length ? (
+              <p>Belum ada hasil selesai.</p>
+            ) : (
+              <div className="dashboard-distribution-list">
+                {stats.distribution.map(r => {
+                  const pct = stats.completed ? (100 * r.total) / stats.completed : 0;
+                  return (
+                    <div className="dashboard-dist-item" key={r.specialization_id}>
+                      <div className="dashboard-dist-row">
+                        <strong>{r.name}</strong>
+                        <span className="small">
+                          {r.total} ({number(pct, 1)}%)
+                        </span>
+                      </div>
+                      <div className="bar">
+                        <div
+                          style={{
+                            width: Math.min(100, Math.max(0, pct)) + "%"
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              }))}
-              <p className="small muted">
-                {stats.distribution_note} Persentase dihitung terhadap {stats.completed} asesmen selesai (dapat melebihi 100% bila terjadi hasil seri).
-              </p>
-            </article>
-          </div>
-        </>
+                  );
+                })}
+              </div>
+            )}
+            <p className="small muted dashboard-dist-footer">
+              Basis: {stats.completed} asesmen selesai.
+            </p>
+          </article>
+        </div>
       )}
-    </>
+    </div>
   );
 }

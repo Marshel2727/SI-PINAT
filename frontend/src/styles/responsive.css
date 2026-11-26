@@ -29,7 +29,7 @@
   }
 
   .admin-shell-body {
-    grid-template-columns: 224px minmax(0, 1fr);
+    grid-template-columns: 208px minmax(0, 1fr);
   }
 
   .admin-navbar-divider,
@@ -125,7 +125,7 @@
   .three-columns,
   .two-columns,
   .test-grid,
-  .four-columns:not(.stats) {
+  .four-columns:not(.stats):not(.dashboard-stats) {
     grid-template-columns: 1fr;
   }
 
@@ -258,18 +258,18 @@
   .admin-mobile-backdrop {
     display: block;
     position: fixed;
-    inset: 64px 0 0 0;
+    inset: 56px 0 0 0;
     background: rgba(0, 24, 53, 0.36);
     z-index: 38;
   }
 
   .admin-sidebar {
     position: fixed;
-    top: 64px;
+    top: 56px;
     left: 0;
     bottom: 0;
-    width: min(280px, 84vw);
-    height: calc(100vh - 64px);
+    width: min(260px, 84vw);
+    height: calc(100dvh - 56px);
     z-index: 42;
     transform: translateX(-105%);
     transition: transform 0.22s ease-out;
@@ -312,20 +312,46 @@
   }
 
   .profile-hero-body {
-    padding: 0 18px 18px;
+    padding: 16px;
   }
 
   .profile-hero-identity {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 
   .profile-hero-text {
-    padding-top: 2px;
+    padding-top: 0;
   }
 
   .admin-main h1 {
+    font-size: 20px;
+  }
+
+  .admin-header-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-table-toolbar .field,
+  .admin-table-toolbar .field.is-search {
+    flex: 1 1 100%;
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .dashboard-stat-card {
+    padding: 14px 16px;
+  }
+
+  .dashboard-stat-card .big-number {
     font-size: 24px;
   }
 
@@ -341,7 +367,8 @@
     font-size: 28px;
   }
 
-  .login-form-container {
+  .login-form-container,
+  .student-auth-card {
     padding: 24px 20px;
   }
 

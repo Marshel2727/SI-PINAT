@@ -589,7 +589,7 @@ export function ConfigTable({
                 </span>
               </div>
               <p className="small muted" style={{ margin: "4px 0 0" }}>
-                Skala resmi Peraturan Rektor UNM No. 2 Tahun 2025 Pasal 37 ayat (6) &amp; (7) (C−, D+, D, D−, dan E dinyatakan tidak lulus) dengan rumus <code>Normalisasi = (Nilai Mutu ÷ 4) × 100</code>.
+                Peraturan Rektor UNM No. 2/2025 Pasal 37 · Normalisasi = (Nilai Mutu ÷ 4) × 100.
               </p>
             </div>
             <div className="actions">
@@ -611,19 +611,16 @@ export function ConfigTable({
 
       {isSetEditor && (
         <div className="preset-toolbar">
-          <div>
-            <strong>Panduan Titik Kurva A–B–C–D</strong>
-            <p className="small muted" style={{ margin: "2px 0 0" }}>
-              <strong>Trapesium</strong> memakai 4 titik (<code>A ≤ B ≤ C ≤ D</code> dengan bahu datar di antara B–C). <strong>Segitiga</strong> memakai 3 titik (<code>A ≤ B ≤ C</code>, titik D dikosongkan).
-            </p>
-          </div>
+          <p className="small muted" style={{ margin: 0 }}>
+            <strong>Trapesium:</strong> <code>A ≤ B ≤ C ≤ D</code> · <strong>Segitiga:</strong> <code>A ≤ B ≤ C</code> (D kosong)
+          </p>
           <button
             type="button"
             className="secondary compact"
             disabled={locked || busy || !local.length}
             onClick={applyStandardSetPoints}
           >
-            Terapkan Kurva Standar Bebas Celah (0–100)
+            Terapkan Kurva Standar
           </button>
         </div>
       )}
@@ -745,9 +742,6 @@ export function ConfigTable({
                   <strong>
                     Matriks Aturan 3×3 — {specOptions.find(s => String(s.id) === activeMatrixSpecId)?.name || "Peminatan"}
                   </strong>
-                  <p className="small muted" style={{ margin: "2px 0 0" }}>
-                    Pilih konsekuen (LOW, MEDIUM, HIGH) langsung pada sel matriks.
-                  </p>
                 </div>
                 <div className="actions">
                   {specFilter === "" && (
@@ -863,8 +857,8 @@ export function ConfigTable({
                   onClick={() => setShowAdvancedRules(v => !v)}
                 >
                   {showAdvancedRules
-                    ? "Sembunyikan Tabel Parameter Lanjutan"
-                    : "Tampilkan Tabel Parameter Lanjutan (Operator & Bobot Aturan)"}
+                    ? "Sembunyikan Parameter Lanjutan"
+                    : "Parameter Lanjutan"}
                 </button>
               </div>
             </div>
@@ -1044,9 +1038,6 @@ export function ConfigTable({
       {isSetEditor && (
         <section className="section">
           <h3>Pratinjau fungsi keanggotaan</h3>
-          <p className="small muted">
-            Satu grafik per variabel memperlihatkan irisan LOW, MEDIUM, dan HIGH dari titik yang sedang diedit. Simpan konfigurasi untuk menerapkannya pada model.
-          </p>
           <div className="stack">
             {groupSetsByVariable(local, columns).map(group => {
               const gaps = findCoverageGaps(group.sets);

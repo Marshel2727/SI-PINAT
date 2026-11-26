@@ -52,139 +52,131 @@ export function Questions() {
   }
 
   return (
-    <>
-      <div className="spread wrap" style={{ marginBottom: 12 }}>
-        <div>
-          <h1>Bank Soal Kompetensi</h1>
-          <p className="small muted">
-            Kelola dan publikasikan butir soal perwakilan untuk asesmen mahasiswa Teknik Komputer.
-          </p>
+    <div className="admin-page">
+      <header className="admin-page-header">
+        <div className="admin-page-title">
+          <h1>Bank Soal</h1>
+          <span className="admin-count-pill">{total}</span>
         </div>
         <div className="actions">
           {totalDraftCount > 0 && (
             <button
               type="button"
-              className="secondary"
+              className="secondary compact"
               disabled={bulkBusy || busyId !== null}
               onClick={publishAllDrafts}
               title="Publikasikan seluruh butir draf revisi terbaru di bank soal sekaligus"
             >
-              {bulkBusy ? "Memproses publikasi massal\u2026" : `⚡ Publikasikan Semua Draf (${totalDraftCount})`}
+              {bulkBusy ? "Memproses\u2026" : `Publikasikan Semua Draf (${totalDraftCount})`}
             </button>
           )}
           <button
             type="button"
-            className="secondary"
+            className="secondary compact"
             disabled={bulkBusy}
             onClick={openImportModal}
           >
-            Impor Soal Massal (JSON)
+            Impor JSON
           </button>
-          <Link className="button" href="/admin/bank-soal/baru">
+          <Link className="button compact" href="/admin/bank-soal/baru">
             + Tambah Soal
           </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="three-columns">
+      <div className="quota-grid">
         {summary.map(item => {
           const specId = String(item.specialization_id);
           const isSelected = specialization === specId;
+          const pct = item.required_count > 0
+            ? Math.min(100, Math.round((100 * item.published_count) / item.required_count))
+            : 100;
           return (
-            <article
+            <button
               key={item.code}
-              className={"card selectable" + (isSelected ? " selected" : "")}
+              type="button"
+              className={"quota-tile" + (isSelected ? " is-selected" : "")}
+              aria-pressed={isSelected}
               onClick={() => toggleSpecFilter(specId)}
             >
-              <div className="spread" style={{ marginBottom: 6 }}>
-                <h3 style={{ margin: 0 }}>{item.name}</h3>
+              <div className="quota-tile-top">
+                <strong>{item.name}</strong>
                 <span className="badge mono">{item.code}</span>
               </div>
-              <StatusBadge status={item.ready ? "PUBLISHED" : "DRAFT"}>
-                {item.published_count} / {item.required_count} soal terpublikasi
-              </StatusBadge>
-              <p className="small muted" style={{ marginTop: 8, marginBottom: 10 }}>
-                {item.ready
-                  ? "✓ Kuota publikasi terpenuhi."
-                  : `Masih memerlukan ${item.required_count - item.published_count} kode soal terpublikasi.`}
-              </p>
-              <button
-                type="button"
-                className="secondary compact"
-                aria-pressed={isSelected}
-                onClick={e => {
-                  e.stopPropagation();
-                  toggleSpecFilter(specId);
-                }}
-              >
-                {isSelected ? "✓ Filter Aktif (Klik untuk Batal)" : "Filter Peminatan Ini"}
-              </button>
-            </article>
+              <div className="quota-tile-meta">
+                <span>{item.published_count}/{item.required_count} terpublikasi</span>
+                <span className={item.ready ? "check-ready" : "muted"}>
+                  {item.ready ? "Siap" : `Kurang ${item.required_count - item.published_count}`}
+                </span>
+              </div>
+              <div className={"quota-bar" + (item.ready ? " is-ready" : "")}>
+                <div style={{ width: `${pct}%` }} />
+              </div>
+            </button>
           );
         })}
-      </div>
-      <Notice>
-        Paket tes mahasiswa mengambil <strong>10 kode soal terpublikasi pertama berdasarkan urutan abjad (A–Z)</strong> per peminatan.
-        Klik kartu kuota di atas untuk memfilter daftar soal berdasarkan peminatan.
-      </Notice>
-
-      <div className="filters">
-        <Field label="Cari kode atau pertanyaan">
-          <input
-            value={search}
-            maxLength={200}
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder="Cari kata kunci soal…"
-            onChange={event => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-          />
-        </Field>
-        <Field label="Peminatan">
-          <select
-            value={specialization}
-            onChange={event => {
-              setSpecialization(event.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua peminatan</option>
-            {specs.map(spec => (
-              <option key={spec.id} value={spec.id}>
-                {spec.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Status">
-          <select
-            value={status}
-            onChange={e => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua status</option>
-            {[
-              ["DRAFT", "Draf"],
-              ["PUBLISHED", "Terpublikasi"],
-              ["ARCHIVED", "Diarsipkan"]
-            ].map(([s, label]) => (
-              <option key={s} value={s}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </Field>
       </div>
 
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
-      {loading && <Notice>Memuat bank soal…</Notice>}
 
-      <article className="card">
+      <article className="card admin-table-card">
+        <div className="admin-table-toolbar">
+          <div className="field is-search">
+            <span>Cari kode atau pertanyaan</span>
+            <input
+              aria-label="Cari kode atau pertanyaan"
+              value={search}
+              maxLength={200}
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="Cari kata kunci soal…"
+              onChange={event => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <Field label="Peminatan">
+            <select
+              value={specialization}
+              onChange={event => {
+                setSpecialization(event.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Semua peminatan</option>
+              {specs.map(spec => (
+                <option key={spec.id} value={spec.id}>
+                  {spec.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Status">
+            <select
+              value={status}
+              onChange={e => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Semua status</option>
+              {[
+                ["DRAFT", "Draf"],
+                ["PUBLISHED", "Terpublikasi"],
+                ["ARCHIVED", "Diarsipkan"]
+              ].map(([s, label]) => (
+                <option key={s} value={s}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {loading && <Notice>Memuat bank soal…</Notice>}
+
         {!loading && !rows.length ? (
           <Notice>Tidak ada soal yang cocok dengan filter.</Notice>
         ) : (
@@ -196,7 +188,7 @@ export function Questions() {
                   <th>Pertanyaan Soal</th>
                   <th>Peminatan</th>
                   <th>Status</th>
-                  <th style={{ minWidth: 260 }}>Aksi Cepat</th>
+                  <th style={{ minWidth: 230 }}>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,7 +200,7 @@ export function Questions() {
                         <strong>{r.code}</strong> · r{r.revision}
                       </td>
                       <td>
-                        <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        <span className="question-prompt-clamp">
                           {r.prompt}
                         </span>
                       </td>
@@ -219,25 +211,18 @@ export function Questions() {
                         <StatusBadge status={r.status} />
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                        <div className="actions" style={{ gap: 6 }}>
                           {(r.status === "DRAFT" || (r.status === "ARCHIVED" && latest)) && (
                             <button
                               type="button"
-                              className="compact"
-                              style={{
-                                background: "var(--teal)",
-                                color: "white",
-                                minHeight: 30,
-                                padding: "4px 10px",
-                                fontSize: "11.5px"
-                              }}
+                              className="btn-row btn-row-teal"
                               disabled={busyId !== null || bulkBusy}
                               onClick={() => publish(r.id)}
                               title={r.status === "DRAFT"
                                 ? "Publikasikan soal ini langsung ke instrumen"
                                 : "Tampilkan kembali soal yang disembunyikan"}
                             >
-                              {busyId === r.id ? "…" : r.status === "DRAFT" ? "✓ Publikasikan" : "↺ Tampilkan Lagi"}
+                              {busyId === r.id ? "…" : r.status === "DRAFT" ? "Publikasikan" : "Tampilkan"}
                             </button>
                           )}
                           {r.status === "ARCHIVED" && !latest && (
@@ -248,12 +233,7 @@ export function Questions() {
                           {r.status === "PUBLISHED" && (
                             <button
                               type="button"
-                              className="secondary compact"
-                              style={{
-                                minHeight: 30,
-                                padding: "4px 10px",
-                                fontSize: "11.5px"
-                              }}
+                              className="secondary btn-row"
                               disabled={busyId !== null || bulkBusy}
                               onClick={() => archive(r.id)}
                               title="Sembunyikan soal ini dari tes (dapat ditampilkan lagi)"
@@ -262,26 +242,15 @@ export function Questions() {
                             </button>
                           )}
                           <Link
-                            className="button secondary compact"
+                            className="button secondary btn-row"
                             href={"/admin/bank-soal/" + r.id}
-                            style={{
-                              minHeight: 30,
-                              padding: "4px 10px",
-                              fontSize: "11.5px"
-                            }}
                           >
-                            Buka / Edit
+                            Edit
                           </Link>
                           {r.status === "DRAFT" && (
                             <button
                               type="button"
-                              className="secondary compact"
-                              style={{
-                                minHeight: 30,
-                                padding: "4px 10px",
-                                fontSize: "11.5px",
-                                color: "var(--danger)"
-                              }}
+                              className="secondary btn-row btn-row-danger"
                               disabled={busyId !== null || bulkBusy}
                               onClick={() => removeDraft(r)}
                               title="Hapus permanen butir draf ini"
@@ -301,11 +270,10 @@ export function Questions() {
         <Pagination page={page} total={pages} totalItems={total} onChange={setPage} />
       </article>
 
-      <Modal open={importOpen} title="Impor Soal Massal (JSON)" dismissible={!importBusy} onClose={closeImportModal}>
+      <Modal open={importOpen} title="Impor Soal (JSON)" dismissible={!importBusy} onClose={closeImportModal}>
         <form onSubmit={submitImport}>
           <p className="small muted">
-            Unggah atau tempel payload JSON berisi 1–100 butir soal (<code>{`{ "questions": [...] }`}</code> atau array <code>[...]</code>).
-            Gunakan <code>specialization_code</code> (misal <code>ES-01</code>, <code>SC-02</code>, <code>JDF-03</code>) atau <code>specialization_id</code>.
+            Unggah berkas .json atau tempel data soal (1–100 butir). Gunakan template sebagai acuan format.
           </p>
           <div className="actions" style={{ marginBottom: 12, alignItems: "center" }}>
             <select
@@ -385,6 +353,6 @@ export function Questions() {
           </div>
         </form>
       </Modal>
-    </>
+    </div>
   );
 }

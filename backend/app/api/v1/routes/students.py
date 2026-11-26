@@ -9,5 +9,5 @@ router = APIRouter(tags=["students"])
 
 
 @router.patch("/assessments/{public_id}/profile")
-def edit(public_id: str, body: Profile, request: Request, db=Depends(database)):
+def edit(public_id: str, body: Profile, request: Request, db=Depends(database, scope="function")):
     return ok(profile(db, owned(db, request, public_id, lock=True), body))

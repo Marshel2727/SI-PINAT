@@ -5,6 +5,24 @@ export interface Student {
   nim: string | null;
   full_name: string;
   class_name: string | null;
+  study_program?: string;
+  is_active?: boolean;
+  created_at?: string | null;
+}
+
+export interface StudentAccount {
+  id: Id;
+  nim: string;
+  full_name: string;
+  class_name: string | null;
+  study_program: string;
+  is_active: boolean;
+  created_at: string | null;
+}
+
+export interface StudentAuthResponse {
+  student: StudentAccount;
+  latest_assessment: Assessment | null;
 }
 
 export interface Assessment {

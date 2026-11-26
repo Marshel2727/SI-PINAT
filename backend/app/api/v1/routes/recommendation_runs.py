@@ -8,5 +8,5 @@ router = APIRouter(tags=["recommendation_runs"])
 
 
 @router.post("/assessments/{public_id}/complete")
-def finish(public_id: str, request: Request, db=Depends(database)):
+def finish(public_id: str, request: Request, db=Depends(database, scope="function")):
     return ok(complete(db, owned(db, request, public_id, lock=True)))

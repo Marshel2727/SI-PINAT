@@ -1,69 +1,52 @@
 "use client";
 
+import { useStudentSession } from "@/features/student-auth/student-session-context";
 import { send } from "@/lib/api";
-import { readRememberedAssessment, rememberAssessment, type RememberedAssessment } from "@/lib/assessment-session";
+import { rememberAssessment, type AssessmentStage } from "@/lib/assessment-session";
 import type { Assessment } from "@/types/api";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-export function useStartAssessment(options?: { listenGlobal?: boolean }) {
-  const listenGlobal = options?.listenGlobal ?? true;
-  const [open, setOpen] = useState(false);
+export function resolveAssessmentStage(assessment: Assessment): AssessmentStage {
+  if (assessment.status === "COMPLETED") return "hasil";
+  if (assessment.status === "IN_PROGRESS") return "tes";
+  if (assessment.status === "ACADEMIC_READY") return "nilai";
+  if (assessment.preferred_specialization_code) return "nilai";
+  return "peminatan";
+}
+
+export function useStartAssessment() {
+  const { student, latestAssessment, loading, refreshSession } = useStudentSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [unfinishedSession, setUnfinishedSession] = useState<RememberedAssessment | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const syncRemembered = () => {
-      const remembered = readRememberedAssessment();
-      setUnfinishedSession(remembered && remembered.stage !== "hasil" ? remembered : null);
-    };
+  async function startOrContinue() {
+    if (busy || loading) return;
 
-    const openNew = () => {
-      syncRemembered();
-      setError(null);
-      setOpen(true);
-    };
-
-    syncRemembered();
-    window.addEventListener("sipinat-session-change", syncRemembered);
-
-    if (listenGlobal) {
-      if (new URLSearchParams(window.location.search).get("mulai") === "baru") {
-        openNew();
-      }
-      window.addEventListener("sipinat-start-new", openNew);
+    if (!student) {
+      router.push("/masuk");
+      return;
     }
 
-    return () => {
-      window.removeEventListener("sipinat-session-change", syncRemembered);
-      if (listenGlobal) {
-        window.removeEventListener("sipinat-start-new", openNew);
-      }
-    };
-  }, [listenGlobal]);
-
-  async function start(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) {
+    if (latestAssessment) {
+      const stage = resolveAssessmentStage(latestAssessment);
+      rememberAssessment(latestAssessment, stage, false);
+      router.push(`/asesmen/${latestAssessment.public_id}/${stage}`);
       return;
     }
 
     setBusy(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
-
     try {
       const { data } = await send<Assessment>("/assessments", {
         mode: "FULL",
-        semester: Number(form.get("semester")),
-        nim: form.get("nim"),
-        full_name: form.get("full_name"),
-        class_name: form.get("class_name") || null,
+        semester: 4,
       });
-      rememberAssessment(data, "peminatan");
-      router.push("/asesmen/" + data.public_id + "/peminatan");
+      const stage = resolveAssessmentStage(data);
+      rememberAssessment(data, stage);
+      await refreshSession();
+      router.push(`/asesmen/${data.public_id}/${stage}`);
     } catch (e) {
       setError(e);
     } finally {
@@ -72,11 +55,11 @@ export function useStartAssessment(options?: { listenGlobal?: boolean }) {
   }
 
   return {
-    open,
-    setOpen,
+    student,
+    latestAssessment,
+    loading,
     busy,
     error,
-    start,
-    unfinishedSession,
+    startOrContinue,
   };
 }

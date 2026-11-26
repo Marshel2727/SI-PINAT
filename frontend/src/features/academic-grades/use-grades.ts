@@ -1,6 +1,7 @@
 "use client";
 
 import { useAssessment } from "@/features/assessments/context";
+import { useStudentSession } from "@/features/student-auth/student-session-context";
 import { api, downloadFile, send } from "@/lib/api";
 import type { AcademicMaster, GradeImport, GradeState } from "@/types/api";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { useEffect, useState } from "react";
 
 export function useGrades() {
   const { assessment, base, reload } = useAssessment();
+  const { refreshSession: refreshStudentSession } = useStudentSession();
   const router = useRouter();
   const [master, setMaster] = useState<AcademicMaster | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -23,7 +25,9 @@ export function useGrades() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<GradeImport | null>(null);
   const [validationAttempted, setValidationAttempted] = useState(false);
-  const locked = ["IN_PROGRESS", "COMPLETED"].includes(assessment.status);
+
+  const isCompleted = assessment.status === "COMPLETED";
+  const locked = assessment.status === "IN_PROGRESS";
 
   useEffect(() => {
     let active = true;
@@ -98,6 +102,10 @@ export function useGrades() {
 
   async function manual() {
     if (!master || busy || locked) return;
+    if (isCompleted && (missingRequired.length > 0 || !hasPositiveScores)) {
+      setValidationAttempted(true);
+      return;
+    }
 
     setBusy(true);
     setError(null);
@@ -105,11 +113,16 @@ export function useGrades() {
     try {
       const data = await persist();
       await reload();
+      if (isCompleted) {
+        await refreshStudentSession();
+      }
       setValidationAttempted(!data.ready);
       setMessage(
-        data.ready
-          ? "Nilai lengkap dan siap untuk tes."
-          : "Draf tersimpan. Lengkapi mata kuliah wajib."
+        isCompleted
+          ? "Nilai akademik disimpan dan hasil rekomendasi otomatis dihitung ulang."
+          : data.ready
+            ? "Nilai lengkap dan siap untuk tes."
+            : "Draf tersimpan. Lengkapi mata kuliah wajib."
       );
     } catch (e) {
       setError(e);
@@ -120,7 +133,7 @@ export function useGrades() {
 
   async function upload(confirm = false, overrideFile?: File | null) {
     const target = overrideFile ?? file;
-    if (!target || busy) return;
+    if (!target || busy || locked) return;
 
     setBusy(true);
     if (confirm) {
@@ -149,7 +162,14 @@ export function useGrades() {
         setValues(imported);
         setSavedValues(imported);
         await reload();
-        setMessage("Paket nilai impor tersimpan.");
+        if (isCompleted) {
+          await refreshStudentSession();
+        }
+        setMessage(
+          isCompleted
+            ? "Paket nilai impor tersimpan dan hasil rekomendasi otomatis dihitung ulang."
+            : "Paket nilai impor tersimpan."
+        );
       }
     } catch (e) {
       if (confirm) {
@@ -190,10 +210,18 @@ export function useGrades() {
         const data = await persist();
         if (!data.ready) {
           setValidationAttempted(true);
-          setMessage("Nilai tersimpan. Lengkapi mata kuliah wajib sebelum memulai tes.");
+          setMessage("Nilai tersimpan. Lengkapi mata kuliah wajib sebelum melanjutkan.");
           return;
         }
       }
+
+      if (isCompleted) {
+        await reload();
+        await refreshStudentSession();
+        router.push("/asesmen/" + assessment.public_id + "/hasil");
+        return;
+      }
+
       await send(base + "/test/start");
       router.push("/asesmen/" + assessment.public_id + "/tes");
     } catch (e) {
@@ -227,6 +255,7 @@ export function useGrades() {
     setPreview,
     closePreview,
     locked,
+    isCompleted,
     manual,
     upload,
     next,

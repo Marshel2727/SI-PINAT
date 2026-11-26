@@ -5,10 +5,20 @@ from app.repositories.store import one, rows
 from openpyxl import load_workbook
 
 
-def create(client, mode="DEMO", preference="ES-01"):
+def create(client, mode="DEMO", preference="ES-01", nim_suffix="1001"):
     body = {"mode": mode, "semester": 4, "preferred_specialization_code": preference}
     if mode == "FULL":
-        body.update(nim=uuid.uuid4().hex[:20], full_name="Test Participant", class_name="TEST")
+        reg = client.post(
+            "/api/v1/student-auth/register",
+            json={
+                "nim": f"25021050{nim_suffix}",
+                "full_name": "Test Participant",
+                "class_name": "TEKOM-A",
+                "password": "Password123!",
+                "confirm_password": "Password123!",
+            },
+        )
+        assert reg.status_code == 201, reg.text
     response = client.post("/api/v1/assessments", json=body)
     assert response.status_code == 201, response.text
     return "/api/v1/assessments/" + response.json()["data"]["public_id"]
@@ -38,8 +48,8 @@ def correct_options(db, packet):
 
 def test_schema_and_composite_foreign_keys(prepared_database):
     inspector = inspect(prepared_database)
-    assert len([t for t in inspector.get_table_names() if t != "alembic_version"]) == 23
-    assert sum(len(inspector.get_foreign_keys(t)) for t in inspector.get_table_names()) == 34
+    assert len([t for t in inspector.get_table_names() if t != "alembic_version"]) == 24
+    assert sum(len(inspector.get_foreign_keys(t)) for t in inspector.get_table_names()) == 35
     foreign = inspector.get_foreign_keys("assessment_answers")
     assert {tuple(f["constrained_columns"]) for f in foreign} == {
         ("assessment_item_id", "question_id"),
@@ -74,7 +84,8 @@ def test_demo_complete_and_idempotence(client, prepared_database):
     assert again["run_id"] == value["run_id"]
     trace = client.get(base + "/result/trace").json()["data"]
     assert trace["centroid_denominator"] > 0
-    assert client.put(base + "/grades", json={"grades": []}).status_code == 409
+    assert client.post(base + "/test/start").status_code == 409
+    assert client.put(base + "/grades", json={"grades": []}).status_code == 422
     pdf = client.get(base + "/result/report.pdf")
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
     # UUID alone cannot disclose result or report.
@@ -133,8 +144,8 @@ def test_invalid_import_preserves_grades_and_csrf_admin(client):
 
 def test_fuzzy_preference_invariance(client, prepared_database):
     results = []
-    for preference in ["ES-01", "SC-02"]:
-        base = create(client, "FULL", preference)
+    for idx, preference in enumerate(["ES-01", "SC-02"], 1):
+        base = create(client, "FULL", preference, nim_suffix=f"200{idx}")
         grades(client, base)
         packet = client.post(base + "/test/start").json()["data"]
         with prepared_database.connect() as db:

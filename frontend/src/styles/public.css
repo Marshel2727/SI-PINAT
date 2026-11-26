@@ -558,3 +558,151 @@ html[data-bg-motion="paused"] .hero::before {
     background: #dfe6ff;
   }
 }
+
+.student-identity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--navy);
+  font-size: 12.5px;
+  flex-wrap: wrap;
+}
+
+.header-student-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-student-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--navy);
+  font-size: 12px;
+  max-width: 260px;
+}
+
+.header-student-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-student-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+}
+
+.student-auth-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background: var(--page);
+}
+
+.student-auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.student-auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.student-auth-brand h1 {
+  font-size: 20px;
+  margin: 0 0 2px;
+  letter-spacing: -0.35px;
+}
+
+.student-auth-brand p {
+  margin: 0;
+}
+
+.student-auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--soft);
+  margin-bottom: 16px;
+}
+
+.student-auth-tabs button {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.student-auth-tabs button.secondary {
+  background: transparent;
+  color: var(--navy);
+}
+
+@media (hover: hover) {
+  .student-auth-tabs button.secondary:not(:disabled):hover {
+    background: rgba(0, 81, 213, 0.08);
+    color: var(--primary);
+    box-shadow: none;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .student-auth-tabs button:not(:disabled):hover {
+    translate: 0 0;
+  }
+}
+
+.student-auth-form .field {
+  margin: 12px 0;
+}
+
+.student-auth-hint {
+  margin: -6px 0 8px;
+}
+
+.student-auth-status {
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.student-auth-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12.5px;
+}

@@ -9,9 +9,9 @@ router = APIRouter(tags=["assessments"])
 
 
 @router.post("/assessments", status_code=201)
-def new(body: AssessmentCreate, request: Request, response: Response, db=Depends(database)):
+def new(body: AssessmentCreate, request: Request, response: Response, db=Depends(database, scope="function")):
     limit(db, request, "assessment", 20, 300)
-    return ok(create(db, body, response))
+    return ok(create(db, body, response, request))
 
 
 @router.get("/assessments/{public_id}")

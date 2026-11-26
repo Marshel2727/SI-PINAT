@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.core.security import csrf
 from app.api.v1.routes import admin_sessions
+from app.api.v1.routes import admin_students
 from app.api.v1.routes import admin_users
 from app.api.v1.routes import assessments
 from app.api.v1.routes import assessment_answers
@@ -22,11 +23,13 @@ from app.api.v1.routes import question_options
 from app.api.v1.routes import recommendation_runs
 from app.api.v1.routes import recommendation_scores
 from app.api.v1.routes import specializations
+from app.api.v1.routes import student_auth
 from app.api.v1.routes import students
 from app.api.v1.routes import transcript_imports
 
 router = APIRouter(prefix="/api/v1", dependencies=[Depends(csrf)])
 router.include_router(admin_sessions.router)
+router.include_router(admin_students.router)
 router.include_router(admin_users.router)
 router.include_router(assessments.router)
 router.include_router(assessment_answers.router)
@@ -48,5 +51,6 @@ router.include_router(question_options.router)
 router.include_router(recommendation_runs.router)
 router.include_router(recommendation_scores.router)
 router.include_router(specializations.router)
+router.include_router(student_auth.router)
 router.include_router(students.router)
 router.include_router(transcript_imports.router)

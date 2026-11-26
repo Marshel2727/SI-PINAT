@@ -107,8 +107,20 @@ def dashboard(db, **filters):
     total = db.execute(select(func.count()).select_from(t)).scalar()
     modes = {key: db.execute(select(func.count()).select_from(t).where(t.c.mode == key)).scalar() for key in ["DEMO", "FULL"]}
     completed = db.execute(select(func.count()).select_from(t).where(t.c.status == "COMPLETED")).scalar()
-    s, r, a = table("recommendation_scores"), table("recommendation_runs"), table("assessments")
-    dist_query = select(s.c.specialization_id, func.count().label("total")).select_from(s.join(r, s.c.run_id == r.c.id).join(t, r.c.assessment_id == t.c.id)).where(s.c.rank_position == 1, r.c.status == "SUCCESS").group_by(s.c.specialization_id)
+    s, r = table("recommendation_scores"), table("recommendation_runs")
+    latest_runs = (
+        select(func.max(r.c.id).label("run_id"))
+        .select_from(r.join(t, r.c.assessment_id == t.c.id))
+        .where(r.c.status == "SUCCESS")
+        .group_by(r.c.assessment_id)
+        .subquery()
+    )
+    dist_query = (
+        select(s.c.specialization_id, func.count().label("total"))
+        .select_from(s.join(latest_runs, s.c.run_id == latest_runs.c.run_id))
+        .where(s.c.rank_position == 1)
+        .group_by(s.c.specialization_id)
+    )
     distribution = [{
         **row,
         "name": one(db, "specializations", id=row["specialization_id"])["name"],

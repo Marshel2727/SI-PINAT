@@ -35,89 +35,89 @@ export function Courses() {
   const isEditLocked = Boolean(edit?.id && edit.is_locked_by_published);
 
   return (
-    <>
-      <span className="eyebrow">MATRIKS PRASYARAT INFERENSI</span>
-      <h1>Kelola Mata Kuliah Prasyarat Peminatan</h1>
-      <p>
-        Bobot relevansi diatur pada{" "}
-        <Link href="/admin/model-fuzzy">Konfigurasi Model Fuzzy</Link>.
-        Klik status untuk menampilkan atau menyembunyikan mata kuliah secara cepat.
-      </p>
-      <div className="spread wrap">
-        <span className="badge">{total} mata kuliah ditemukan</span>
+    <div className="admin-page">
+      <header className="admin-page-header">
+        <div className="admin-page-title">
+          <h1>Mata Kuliah</h1>
+          <span className="admin-count-pill">{total}</span>
+        </div>
         <div className="actions">
-          <Link className="button secondary" href="/admin/model-fuzzy">
-            Atur Bobot di Model Fuzzy →
+          <Link className="button secondary compact" href="/admin/model-fuzzy">
+            Bobot Model →
           </Link>
           <button
             type="button"
+            className="compact"
             onClick={() => openModal({ is_active: true, semester: 1, credits: 3 })}
           >
-            + Tambah mata kuliah
+            + Tambah
           </button>
         </div>
-      </div>
-
-      <div className="filters">
-        <Field label="Cari kode atau nama">
-          <input
-            value={search}
-            onChange={e => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Cari mata kuliah…"
-          />
-        </Field>
-        <Field label="Semester">
-          <select
-            value={semester}
-            onChange={e => {
-              setSemester(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Semua semester</option>
-            {[1, 2, 3, 4].map(n => (
-              <option key={n} value={n}>
-                Semester {n}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Status">
-          <select
-            value={isActive}
-            onChange={e => {
-              setIsActive(e.target.value as "" | "true" | "false");
-              setPage(1);
-            }}
-          >
-            <option value="">Semua status</option>
-            <option value="true">Aktif (Tampil)</option>
-            <option value="false">Nonaktif (Sembunyi)</option>
-          </select>
-        </Field>
-        <Field label="Urutkan">
-          <select
-            value={sort}
-            onChange={e => {
-              setSort(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="code">Kode MK</option>
-            <option value="name">Nama Mata Kuliah</option>
-            <option value="semester">Semester</option>
-          </select>
-        </Field>
-      </div>
+      </header>
 
       <ErrorNotice error={error} />
       {message && <Notice tone="success">{message}</Notice>}
-      {loading && <Notice>Memuat mata kuliah…</Notice>}
 
-      <article className="card">
+      <article className="card admin-table-card">
+        <div className="admin-table-toolbar">
+          <div className="field is-search">
+            <span>Cari kode atau nama</span>
+            <input
+              aria-label="Cari kode atau nama mata kuliah"
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Cari mata kuliah…"
+            />
+          </div>
+          <Field label="Semester">
+            <select
+              value={semester}
+              onChange={e => {
+                setSemester(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">Semua semester</option>
+              {[1, 2, 3, 4].map(n => (
+                <option key={n} value={n}>
+                  Semester {n}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Status">
+            <select
+              value={isActive}
+              onChange={e => {
+                setIsActive(e.target.value as "" | "true" | "false");
+                setPage(1);
+              }}
+            >
+              <option value="">Semua status</option>
+              <option value="true">Aktif</option>
+              <option value="false">Nonaktif</option>
+            </select>
+          </Field>
+          <Field label="Urutkan">
+            <select
+              value={sort}
+              onChange={e => {
+                setSort(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="code">Kode MK</option>
+              <option value="name">Nama Mata Kuliah</option>
+              <option value="semester">Semester</option>
+            </select>
+          </Field>
+        </div>
+
+        {loading && <Notice>Memuat mata kuliah…</Notice>}
+
         {!loading && !rows.length ? (
           <Notice>Belum ada mata kuliah sesuai filter.</Notice>
         ) : (
@@ -129,7 +129,7 @@ export function Courses() {
                   <th>Mata kuliah</th>
                   <th>SKS</th>
                   <th>Semester</th>
-                  <th>Status (Klik untuk Ubah)</th>
+                  <th>Status</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -156,34 +156,19 @@ export function Courses() {
                     <td>
                       <button
                         type="button"
-                        className="compact"
+                        className={`status-toggle-pill ${r.is_active ? "is-active" : "is-inactive"}`}
                         aria-pressed={r.is_active}
-                        style={{
-                          minHeight: 28,
-                          padding: "3px 12px",
-                          fontSize: "11px",
-                          borderRadius: "999px",
-                          background: r.is_active ? "#def5e8" : "#f1f3f8",
-                          color: r.is_active ? "#165534" : "#555862",
-                          border: r.is_active ? "1px solid #bcead0" : "1px solid #d1d5db",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5
-                        }}
                         disabled={busy || busyId !== null}
                         onClick={() => toggleActive(r)}
-                        title={r.is_active ? "Klik untuk menyembunyikan / menonaktifkan" : "Klik untuk menampilkan / mengaktifkan"}
+                        title={r.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
                       >
-                        {busyId === r.id ? "…" : (r.is_active ? "● Aktif (Tampil)" : "○ Nonaktif (Sembunyi)")}
+                        {busyId === r.id ? "…" : (r.is_active ? "● Aktif" : "○ Nonaktif")}
                       </button>
                     </td>
                     <td>
                       <button
                         type="button"
-                        className="secondary compact"
-                        style={{ minHeight: 28, padding: "3px 12px", fontSize: "11.5px" }}
+                        className="secondary btn-row"
                         onClick={() => openModal(r)}
                       >
                         Edit
@@ -208,7 +193,7 @@ export function Courses() {
           <form onSubmit={save} key={edit.id || "new"}>
             {isEditLocked && (
               <Notice>
-                Metadata mata kuliah (Kode, Nama, Semester, SKS) dikunci karena dirujuk oleh model fuzzy terpublikasi. Anda tetap dapat mengubah status aktif/nonaktif, atau tambahkan mata kuliah baru bila diperlukan perubahan metadata.
+                Metadata dikunci karena digunakan model aktif. Hanya status aktif yang dapat diubah.
               </Notice>
             )}
             <Field label="Kode MK">
@@ -257,7 +242,7 @@ export function Courses() {
             </div>
             <label className="checkbox">
               <input type="checkbox" name="is_active" defaultChecked={edit.is_active} />
-              Aktif (Tampil di kurikulum asesmen)
+              Mata kuliah aktif
             </label>
             <ErrorNotice error={modalError} />
             <button disabled={busy} style={{ marginTop: 12 }}>
@@ -266,6 +251,6 @@ export function Courses() {
           </form>
         )}
       </Modal>
-    </>
+    </div>
   );
 }
